@@ -37,4 +37,8 @@ public class Company extends BaseCreatedEntity {
     // 제품 분류 ID
     @Column(name = "class_id", nullable = false)
     private Long classId;
+
+    // 비고
+    @Column(name = "remark", nullable = false)
+    private String remark;
 }
