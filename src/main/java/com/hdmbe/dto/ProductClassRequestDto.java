@@ -8,4 +8,5 @@ import lombok.Setter;
 public class ProductClassRequestDto {
 
     private String className;
+    private String remark;
 }

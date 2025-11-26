@@ -19,8 +19,4 @@ public class ProcessEntity extends BaseCreatedEntity {
     // 공정 이름
     @Column(name = "process_name", length = 30, unique = true)
     private String processName;
-
-    // 비고
-    @Column(name = "remark", nullable = false)
-    private String remark;
 }

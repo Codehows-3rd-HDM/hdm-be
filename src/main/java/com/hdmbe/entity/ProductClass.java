@@ -21,4 +21,8 @@ public class ProductClass extends BaseCreatedEntity {
     // 분류 이름
     @Column(name = "class_name", length = 20, nullable = false)
     private String className;
+
+    // 비고
+    @Column(name = "remark", nullable = false)
+    private String remark;
 }

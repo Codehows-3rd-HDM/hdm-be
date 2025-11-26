@@ -1,17 +1,23 @@
 package com.hdmbe.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
+import lombok.*;
+import com.hdmbe.entity.ProcessEntity;
+
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProcessResponseDto {
 
     private Long id;
     private String processName;
-    private String remark;
-    private LocalDateTime createdAt;
+
+    public static ProcessResponseDto fromEntity(ProcessEntity entity) {
+        return ProcessResponseDto.builder()
+                .id(entity.getId())
+                .processName(entity.getProcessName())
+                .build();
+    }
 }

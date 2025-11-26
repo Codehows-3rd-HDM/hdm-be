@@ -3,12 +3,14 @@ package com.hdmbe.controller;
 import com.hdmbe.dto.CarModelRequestDto;
 import com.hdmbe.dto.CarModelResponseDto;
 import com.hdmbe.service.CarModelService;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/car-model")
 @RequiredArgsConstructor
+@Builder
 public class CarModelController {
 
     private final CarModelService service;
