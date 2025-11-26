@@ -1,5 +1,6 @@
 package com.hdmbe.entity;
 
+import com.hdmbe.constant.FuelType;
 import jakarta.persistence.*;
 import lombok.*;
 

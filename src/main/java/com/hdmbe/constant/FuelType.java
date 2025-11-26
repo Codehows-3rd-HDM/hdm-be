@@ -1,4 +1,4 @@
-package com.hdmbe.entity;
+package com.hdmbe.constant;
 
 public enum FuelType {
     휘발유,
