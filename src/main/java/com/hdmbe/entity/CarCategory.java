@@ -3,6 +3,9 @@ package com.hdmbe.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "CAR_CATEGORY")
 @Getter
@@ -15,7 +18,7 @@ public class CarCategory extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 분류 ID
-    @Column(name = "category_id")
+    @Column(name = "category_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 차량 분류 이름
@@ -23,6 +26,9 @@ public class CarCategory extends BaseTimeEntity {
     private String categoryName;
 
     // 상위 카테고리 ID
-    @Column(name = "parent_id")
-    private Long parentId;
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
+    private List<CarCategory> childCategories = new ArrayList<>();
+    // 차종
+    @OneToMany(mappedBy = "carCategory", cascade = CascadeType.ALL)
+    private List<CarModel> carModels = new ArrayList<>();
 }

@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class S1Log extends BaseCreatedEntity {
+public class S1Log extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 로그 ID
-    @Column(name = "log_id")
+    @Column(name = "log_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 사원번호

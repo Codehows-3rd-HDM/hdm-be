@@ -1,11 +1,17 @@
 package com.hdmbe.dto;
 
+import com.hdmbe.entity.Vehicle;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class VehicleResponseDto {
 
     private Long id;
@@ -17,4 +23,18 @@ public class VehicleResponseDto {
     private Long purposeId;
     private BigDecimal operationDistance;
     private String remark;
+
+    public static VehicleResponseDto fromEntity(Vehicle entity) {
+        return VehicleResponseDto.builder()
+                .id(entity.getId())
+                .carNumber(entity.getCarNumber())
+                .carName(entity.getCarName())
+                .carModelId(entity.getCarModelId())
+                .driverMemberId(entity.getDriverMemberId())
+                .companyId(entity.getCompanyId())
+                .purposeId(entity.getPurposeId())
+                .operationDistance(entity.getOperationDistance())
+                .remark(entity.getRemark())
+                .build();
+    }
 }

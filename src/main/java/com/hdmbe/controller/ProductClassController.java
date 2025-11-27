@@ -30,7 +30,7 @@ public class ProductClassController {
     public ResponseEntity<List<ProductClassResponseDto>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
-    // 검색
+    // 검색 (검색 조건이 있으면 POST ex.품목명)
     @PostMapping("/search")
     public ResponseEntity<List<ProductClassResponseDto>> search(
             @RequestBody ProductClassSearchDto searchDto) {

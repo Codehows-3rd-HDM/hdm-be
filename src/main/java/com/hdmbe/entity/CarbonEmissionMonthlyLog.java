@@ -10,17 +10,18 @@ import java.math.BigDecimal;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CarbonEmissionMonthlyLog extends BaseCreatedEntity {
+public class CarbonEmissionMonthlyLog extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 월별 ID
-    @Column(name = "monthly_id")
+    @Column(name = "monthly_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 차량 ID
-    @Column(name = "car_id", nullable = false)
-    private Long carId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car_id", nullable = false)
+    private Vehicle vehicle;
 
     // 기준 연도
     @Column(name = "year", nullable = false)

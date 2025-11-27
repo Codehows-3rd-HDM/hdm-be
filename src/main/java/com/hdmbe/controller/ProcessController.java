@@ -28,5 +28,11 @@ public class ProcessController {
     public ResponseEntity<List<ProcessResponseDto>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
+    // 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<ProcessResponseDto>> search() {
+        return ResponseEntity.ok(service.search());
+    }
+
 
 }

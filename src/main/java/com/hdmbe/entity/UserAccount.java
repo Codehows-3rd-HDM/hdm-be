@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserAccount extends BaseTimeEntity {
     @Id
-    @Column(name = "user_id")
+    @Column(name = "user_id", columnDefinition = "BIGINT")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

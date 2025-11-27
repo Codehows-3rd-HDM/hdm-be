@@ -10,17 +10,18 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReductionActivityPhoto extends BaseCreatedEntity {
+public class ReductionActivityPhoto extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 사진 ID
-    @Column(name = "photo_id")
+    @Column(name = "photo_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 활동 ID
-    @Column(name = "activity_id", nullable = false)
-    private Long activityId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "activity_id", nullable = false)
+    private ReductionActivity reductionActivity;
 
     // 사진 파일 경로
     @Column(name = "photo_url", nullable = false)

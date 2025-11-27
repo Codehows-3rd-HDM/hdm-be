@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EmissionTarget {
+public class EmissionTarget extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 목표 ID
-    @Column(name = "target_id")
+    @Column(name = "target_id", columnDefinition = "BIGINT")
     private Long id;
 
     //  연도

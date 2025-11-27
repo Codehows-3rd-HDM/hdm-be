@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NiceparkLog extends BaseCreatedEntity {
+public class NiceparkLog extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     // 로그 ID
-    @Column(name = "log_id")
+    @Column(name = "log_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 차량번호
