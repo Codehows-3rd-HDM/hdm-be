@@ -5,6 +5,7 @@ import com.hdmbe.dto.UserAccountDto;
 import com.hdmbe.entity.UserAccount;
 import com.hdmbe.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +17,12 @@ import java.time.LocalDateTime;
 public class UserAccountService
 {
     private final UserAccountRepository userAccountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void saveUserAccount(UserAccountDto userAccountDto)
     {
-        UserAccount userAccount = UserAccount.createUserAccount(userAccountDto);
+        UserAccount userAccount = UserAccount.createUserAccount(userAccountDto, passwordEncoder);
+
         validateDuplicateUserAccount(userAccount);    //validateDuplicateUserAccount 이거를 호출!!!
         userAccountRepository.save(userAccount);
     }
