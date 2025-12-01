@@ -1,9 +1,12 @@
 package com.hdmbe.entity;
 
+import com.hdmbe.constant.FuelType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "CAR_MODEL")
@@ -15,12 +18,13 @@ public class CarModel extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 차종 ID
-    @Column(name = "car_model_id")
+    @Column(name = "car_model_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 차종 분류ID
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CarCategory carCategory;
 
     // 연료 타입
     @Enumerated(EnumType.STRING)
@@ -31,4 +35,7 @@ public class CarModel extends BaseTimeEntity {
     @Column(name = "custom_efficiency", precision = 6, scale = 2, nullable = false)
     private BigDecimal customEfficiency;
     //(NUMERIC) 타입을 안전한 소수계산을 위해 사용함
+
+    @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
+    private List<Vehicle> vehicles = new ArrayList<>();
 }

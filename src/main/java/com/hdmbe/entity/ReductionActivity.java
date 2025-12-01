@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "REDUCTION_ACTIVITY")
@@ -13,21 +16,21 @@ import java.sql.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReductionActivity extends BaseCreatedEntity {
+public class ReductionActivity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 활동 ID
-    @Column(name = "activity_id")
+    @Column(name = "activity_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 시작일
     @Column(name = "activity_period_start", nullable = false)
-    private Date periodStart;
+    private LocalDate periodStart;
 
     // 종료일
     @Column(name = "activity_period_end", nullable = false)
-    private Date periodEnd;
+    private LocalDate periodEnd;
 
     // 활동명
     @Column(name = "activity_name", length = 255, nullable = false)
@@ -44,4 +47,7 @@ public class ReductionActivity extends BaseCreatedEntity {
     // 기대효과
     @Column(name = "expected_effect")
     private String expectedEffect;
+
+    @OneToMany(mappedBy = "reductionActivity", cascade = CascadeType.ALL)
+    private List<ReductionActivityPhoto> photos = new ArrayList<>();
 }

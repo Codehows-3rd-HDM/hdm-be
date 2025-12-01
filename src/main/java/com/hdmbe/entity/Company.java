@@ -4,18 +4,20 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "COMPANY")
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Company extends BaseCreatedEntity {
+public class Company extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 업체 ID
-    @Column(name = "company_id")
+    @Column(name = "company_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 업체명
@@ -31,10 +33,19 @@ public class Company extends BaseCreatedEntity {
     private String address;
 
     // 공정 ID
-    @Column(name = "process_id", nullable = false)
-    private Long processId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "process_id", nullable = false)
+    private ProcessEntity process;
 
     // 제품 분류 ID
-    @Column(name = "class_id", nullable = false)
-    private Long classId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private ProductClass productClass;
+
+    // 비고
+    @Column(name = "remark", nullable = false)
+    private String remark;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    private List<Vehicle> vehicles = new ArrayList<>();
 }
