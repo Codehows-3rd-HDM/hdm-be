@@ -1,6 +1,11 @@
 package com.hdmbe.dto;
 
-import lombok.*;
+import com.hdmbe.constant.FuelType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Getter
 @Setter
@@ -8,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CarModelSearchDto {
+    private Long categoryId;
+    private FuelType fuelType;
 
-    private String type;      // 검색 기준: "all", "category", "subCategory", "fuelType"
-    private String keyword;   // 검색 키워드 (차종, 소분류, 연료종류)
 }

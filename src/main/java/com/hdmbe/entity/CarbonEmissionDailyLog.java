@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "CARBON_EMISSION_DAILY_LOG")
@@ -28,7 +28,7 @@ public class CarbonEmissionDailyLog extends BaseTimeEntity {
 
     // 운행일자
     @Column(name = "operation_date", nullable = false)
-    private Date operationDate;
+    private LocalDate operationDate;
 
     // 일별배출량
     @Column(name = "daily_calculated_emission", precision = 10, scale = 3)

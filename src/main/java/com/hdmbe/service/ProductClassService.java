@@ -17,11 +17,12 @@ public class ProductClassService {
 
     private final ProductClassRepository repository;
 
+    // 등록
     @Transactional
     public ProductClassResponseDto create(ProductClassRequestDto dto) {
-        // 등록
+
         if (repository.existsByClassName(dto.getClassName())) {
-            throw new RuntimeException("이미 등록된 제품 분류명입니다: " + dto.getClassName());  // 클래스명 중복 검사
+            throw new RuntimeException("이미 등록된 제품 분류명입니다: " + dto.getClassName());
         }
 
         ProductClass saved = repository.save(
@@ -30,10 +31,11 @@ public class ProductClassService {
                         .remark(dto.getRemark())
                         .build()
         );
+
         return ProductClassResponseDto.fromEntity(saved);
     }
 
-    //  조회
+    // 전체 조회
     @Transactional(readOnly = true)
     public List<ProductClassResponseDto> getAll() {
         return repository.findAll().stream()
@@ -41,22 +43,20 @@ public class ProductClassService {
                 .toList();
     }
 
-    // 전체 검색
+    // 검색
     @Transactional(readOnly = true)
     public List<ProductClassResponseDto> search(ProductClassSearchDto searchDto) {
 
-        if (searchDto == null ||
-                (searchDto.getClassName() == null || searchDto.getClassName().isBlank())) {
+        if (searchDto == null || searchDto.getClassName() == null || searchDto.getClassName().isBlank()) {
             return getAll();
         }
-        // 품목명 검색
-        if (searchDto.getClassName() != null && !searchDto.getClassName().isBlank()) {
-            return repository.findByClassNameContainingIgnoreCase(searchDto.getClassName())
-                    .stream()
-                    .map(ProductClassResponseDto::fromEntity)
-                    .toList();
-        }
-        return getAll();
+
+        String keyword = searchDto.getClassName().toLowerCase();
+
+        return repository.findAll().stream()
+                .filter(pc -> pc.getClassName() != null &&
+                        pc.getClassName().toLowerCase().contains(keyword))
+                .map(ProductClassResponseDto::fromEntity)
+                .toList();
     }
 }
-

@@ -1,11 +1,11 @@
 package com.hdmbe.service;
 
-import com.hdmbe.constant.FuelType;
 import com.hdmbe.dto.CarModelRequestDto;
 import com.hdmbe.dto.CarModelResponseDto;
 import com.hdmbe.dto.CarModelSearchDto;
-import com.hdmbe.dto.OperationPurposeResponseDto;
+import com.hdmbe.entity.CarCategory;
 import com.hdmbe.entity.CarModel;
+import com.hdmbe.repository.CarCategoryRepository;
 import com.hdmbe.repository.CarModelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,48 +17,42 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CarModelService {
 
-    private final CarModelRepository repository;
+    private final CarModelRepository carModelRepository;
+    private final CarCategoryRepository carCategoryRepository;
 
+    // 등록
     @Transactional
     public CarModelResponseDto create(CarModelRequestDto dto) {
+        CarCategory category = carCategoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다"));
 
-        CarModel saved = repository.save(
+        CarModel saved = carModelRepository.save(
                 CarModel.builder()
-                        .categoryId(dto.getCategoryId())
+                        .carCategory(category)
                         .fuelType(dto.getFuelType())
                         .customEfficiency(dto.getCustomEfficiency())
                         .build()
         );
+
         return CarModelResponseDto.fromEntity(saved);
     }
+
     // 전체 조회
     @Transactional(readOnly = true)
     public List<CarModelResponseDto> getAll() {
-        return repository.findAll()
-                .stream()
+        return carModelRepository.findAll().stream()
                 .map(CarModelResponseDto::fromEntity)
                 .toList();
     }
 
-    // 조건 검색
+    // 검색
     @Transactional(readOnly = true)
-    public List<CarModelResponseDto> search(CarModelSearchDto searchDto) {
-        List<CarModel> list;
-
-        switch (searchDto.getType()) {
-            case "category", "subCategory":
-                Long categoryId = Long.valueOf(searchDto.getKeyword());
-                list = repository.findByCategoryId(categoryId);
-                break;
-            case "fuelType":
-                FuelType fuelType = FuelType.valueOf(searchDto.getKeyword());
-                list = repository.findByFuelType(fuelType);
-                break;
-            default:
-                list = repository.findAll();
-        }
-
-        return list.stream()
+    public List<CarModelResponseDto> search(CarModelSearchDto dto) {
+        return carModelRepository.findAll().stream()
+                .filter(m -> dto.getCategoryId() == null
+                        || m.getCarCategory().getId().equals(dto.getCategoryId()))
+                .filter(m -> dto.getFuelType() == null
+                        || m.getFuelType().equals(dto.getFuelType()))
                 .map(CarModelResponseDto::fromEntity)
                 .toList();
     }

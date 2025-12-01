@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OperationPurposeSearchDto {
-    private String purposeName;
-    private Integer defaultScope;
+public class CarCategoryRequestDto {
+    private String categoryName;
+    private Long parentId;
 }

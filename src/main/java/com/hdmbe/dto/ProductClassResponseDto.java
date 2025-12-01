@@ -1,27 +1,20 @@
 package com.hdmbe.dto;
 
 import com.hdmbe.entity.ProductClass;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class ProductClassResponseDto {
-
     private Long id;
     private String className;
     private String remark;
 
-    public static ProductClassResponseDto fromEntity(ProductClass entity) {
+    public static ProductClassResponseDto fromEntity(ProductClass pc) {
         return ProductClassResponseDto.builder()
-                .id(entity.getId())
-                .className(entity.getClassName())
-                .remark(entity.getRemark())
+                .id(pc.getId())
+                .className(pc.getClassName())
+                .remark(pc.getRemark())
                 .build();
     }
 }

@@ -2,45 +2,73 @@ package com.hdmbe.service;
 
 import com.hdmbe.dto.CompanyRequestDto;
 import com.hdmbe.dto.CompanyResponseDto;
+import com.hdmbe.dto.CompanySearchDto;
 import com.hdmbe.entity.Company;
+import com.hdmbe.entity.ProcessEntity;
+import com.hdmbe.entity.ProductClass;
 import com.hdmbe.repository.CompanyRepository;
+import com.hdmbe.repository.ProcessRepository;
+import com.hdmbe.repository.ProductClassRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
 
-    private final CompanyRepository repository;
+    private final CompanyRepository companyRepository;
+    private final ProcessRepository processRepository;
+    private final ProductClassRepository productClassRepository;
 
+    // 등록
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto dto) {
 
-        // 업체명 중복 방지
-        if (repository.existsByCompanyName(dto.getCompanyName())) {
-            throw new RuntimeException("이미 등록된 업체명입니다: " + dto.getCompanyName());
-        }
+        ProcessEntity process = processRepository.findById(dto.getProcessId())
+                .orElseThrow(() -> new IllegalArgumentException("생산공정을 찾을 수 없습니다"));
 
-        Company saved = repository.save(
+        ProductClass productClass = productClassRepository.findById(dto.getProductClassId())
+                .orElseThrow(() -> new IllegalArgumentException("생산품목을 찾을 수 없습니다"));
+
+        Company saved = companyRepository.save(
                 Company.builder()
                         .companyName(dto.getCompanyName())
                         .oneWayDistance(dto.getOneWayDistance())
                         .address(dto.getAddress())
-                        .processId(dto.getProcessId())
-                        .classId(dto.getClassId())
+                        .process(process)
+                        .productClass(productClass)
                         .remark(dto.getRemark())
                         .build()
         );
 
-        return new CompanyResponseDto(
-                saved.getId(),
-                saved.getCompanyName(),
-                saved.getOneWayDistance(),
-                saved.getAddress(),
-                saved.getProcessId(),
-                saved.getClassId(),
-                saved.getRemark()
-        );
+        return CompanyResponseDto.fromEntity(saved);
+    }
+
+    // 전체 조회
+    @Transactional(readOnly = true)
+    public List<CompanyResponseDto> getAll() {
+        return companyRepository.findAll().stream()
+                .map(CompanyResponseDto::fromEntity)
+                .toList();
+    }
+
+    // 검색
+    @Transactional(readOnly = true)
+    public List<CompanyResponseDto> search(CompanySearchDto dto) {
+
+        return companyRepository.findAll().stream()
+                .filter(c -> dto.getCompanyName() == null
+                        || c.getCompanyName().contains(dto.getCompanyName()))
+                .filter(c -> dto.getProcessId() == null
+                        || c.getProcess().getId().equals(dto.getProcessId()))
+                .filter(c -> dto.getProductClassId() == null
+                        || c.getProductClass().getId().equals(dto.getProductClassId()))
+                .filter(c -> dto.getAddress() == null
+                        || c.getAddress().contains(dto.getAddress()))
+                .map(CompanyResponseDto::fromEntity)
+                .toList();
     }
 }

@@ -2,10 +2,9 @@ package com.hdmbe.controller;
 
 import com.hdmbe.dto.ProcessRequestDto;
 import com.hdmbe.dto.ProcessResponseDto;
+import com.hdmbe.dto.ProcessSearchDto;
 import com.hdmbe.service.ProcessService;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,26 +12,25 @@ import java.util.List;
 @RestController
 @RequestMapping("/process")
 @RequiredArgsConstructor
-@Builder
 public class ProcessController {
 
-    private final ProcessService service;
+    private final ProcessService processService;
+
     // 등록
     @PostMapping
-    public ResponseEntity<ProcessResponseDto> create(@RequestBody ProcessRequestDto requestDto) {
-        ProcessResponseDto response = service.create(requestDto);
-        return ResponseEntity.ok(response);
+    public ProcessResponseDto create(@RequestBody ProcessRequestDto requestDto) {
+        return processService.create(requestDto);
     }
-    // 조회
+
+    // 전체 조회
     @GetMapping
-    public ResponseEntity<List<ProcessResponseDto>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public List<ProcessResponseDto> getAll() {
+        return processService.getAll();
     }
+
     // 검색
-    @GetMapping("/search")
-    public ResponseEntity<List<ProcessResponseDto>> search() {
-        return ResponseEntity.ok(service.search());
+    @PostMapping("/search")
+    public List<ProcessResponseDto> search(@RequestBody ProcessSearchDto searchDto) {
+        return processService.search(searchDto);
     }
-
-
 }

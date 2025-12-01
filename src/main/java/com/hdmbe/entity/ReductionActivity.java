@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +26,11 @@ public class ReductionActivity extends BaseTimeEntity {
 
     // 시작일
     @Column(name = "activity_period_start", nullable = false)
-    private Date periodStart;
+    private LocalDate periodStart;
 
     // 종료일
     @Column(name = "activity_period_end", nullable = false)
-    private Date periodEnd;
+    private LocalDate periodEnd;
 
     // 활동명
     @Column(name = "activity_name", length = 255, nullable = false)

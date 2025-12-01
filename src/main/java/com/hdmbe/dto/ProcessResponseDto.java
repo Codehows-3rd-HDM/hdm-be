@@ -1,8 +1,7 @@
 package com.hdmbe.dto;
 
-import lombok.*;
 import com.hdmbe.entity.ProcessEntity;
-
+import lombok.*;
 
 @Getter
 @Setter
@@ -10,7 +9,6 @@ import com.hdmbe.entity.ProcessEntity;
 @AllArgsConstructor
 @Builder
 public class ProcessResponseDto {
-
     private Long id;
     private String processName;
 

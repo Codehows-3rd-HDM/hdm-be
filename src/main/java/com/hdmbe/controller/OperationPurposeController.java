@@ -17,23 +17,18 @@ public class OperationPurposeController {
 
     private final OperationPurposeService service;
 
-    // 등록
     @PostMapping
     public ResponseEntity<OperationPurposeResponseDto> create(@RequestBody OperationPurposeRequestDto dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
-    // 전체 조회
     @GetMapping
     public ResponseEntity<List<OperationPurposeResponseDto>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
-    // 검색 (필터링)
     @PostMapping("/search")
-    public ResponseEntity<List<OperationPurposeResponseDto>> search(
-            @RequestBody OperationPurposeSearchDto searchDto) {
-        return ResponseEntity.ok(service.search(searchDto));
+    public ResponseEntity<List<OperationPurposeResponseDto>> search(@RequestBody OperationPurposeSearchDto dto) {
+        return ResponseEntity.ok(service.search(dto));
     }
-
 }

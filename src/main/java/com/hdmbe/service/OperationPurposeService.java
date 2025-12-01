@@ -20,10 +20,6 @@ public class OperationPurposeService {
     // 등록
     @Transactional
     public OperationPurposeResponseDto create(OperationPurposeRequestDto dto) {
-        if (repository.existsByPurposeName(dto.getPurposeName())) {
-            throw new RuntimeException("이미 등록된 목적명입니다: " + dto.getPurposeName());
-        }
-
         OperationPurpose saved = repository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
@@ -42,32 +38,16 @@ public class OperationPurposeService {
                 .toList();
     }
 
-    // 검색 (필터링)
+    // 검색
     @Transactional(readOnly = true)
-    public List<OperationPurposeResponseDto> search(OperationPurposeSearchDto searchDto) {
+    public List<OperationPurposeResponseDto> search(OperationPurposeSearchDto dto) {
 
-        if (searchDto.getType() == null || searchDto.getType().equals("all")) {
-            return repository.findAll()
-                    .stream()
-                    .map(OperationPurposeResponseDto::fromEntity)
-                    .toList();
-        }
-
-        if ("purposeName".equals(searchDto.getType()) && searchDto.getKeyword() != null) {
-            return repository.findByPurposeNameContaining(searchDto.getKeyword())
-                    .stream()
-                    .map(OperationPurposeResponseDto::fromEntity)
-                    .toList();
-        }
-
-        if ("scope".equals(searchDto.getType()) && searchDto.getScope() != null) {
-            return repository.findByDefaultScope(searchDto.getScope())
-                    .stream()
-                    .map(OperationPurposeResponseDto::fromEntity)
-                    .toList();
-        }
-
-        return List.of(); // 조건에 맞는 검색 없으면 빈 리스트 반환
+        return repository.findAll().stream()
+                .filter(p -> dto.getPurposeName() == null
+                        || p.getPurposeName().contains(dto.getPurposeName()))
+                .filter(p -> dto.getDefaultScope() == null
+                        || p.getDefaultScope().equals(dto.getDefaultScope()))
+                .map(OperationPurposeResponseDto::fromEntity)
+                .toList();
     }
-
 }

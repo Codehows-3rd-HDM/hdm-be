@@ -26,8 +26,9 @@ public class CarCategory extends BaseTimeEntity {
     private String categoryName;
 
     // 상위 카테고리 ID
-    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
-    private List<CarCategory> childCategories = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private CarCategory parentCategory;
     // 차종
     @OneToMany(mappedBy = "carCategory", cascade = CascadeType.ALL)
     private List<CarModel> carModels = new ArrayList<>();
