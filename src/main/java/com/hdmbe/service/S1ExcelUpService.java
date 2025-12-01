@@ -1,6 +1,5 @@
 package com.hdmbe.service;
 
-import com.hdmbe.dto.NiceExcelUpDto;
 import com.hdmbe.dto.S1ExcelUpDto;
 import com.hdmbe.entity.S1Log;
 import com.hdmbe.repository.EmissionDailyRepository;
@@ -17,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -63,10 +61,10 @@ public class S1ExcelUpService {
     // 내부 메서드 1: 기존 데이터 삭제 (연간, 월간 분기 처리)
     private void deleteExistingData(int year, int month)
     {
-        LocalDateTime startDateTime;
-        LocalDateTime endDateTime;
-        LocalDate startDate;
-        LocalDate endDate;
+        LocalDateTime startDateTime;         // 에스원 원본 데이터 (차량 출입 로그)
+        LocalDateTime endDateTime;           // 에스원 원본 데이터 (차량 출입 로그)
+        LocalDate startDate;                 // 일별 탄소배출량 (하룻동안 탄소 배출량)
+        LocalDate endDate;                   // 일별 탄소배출량 (하룻동안 탄소 배출량)
 
         if (month == 0)
         {

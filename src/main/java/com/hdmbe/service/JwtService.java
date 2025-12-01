@@ -1,10 +1,13 @@
 package com.hdmbe.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -58,52 +61,34 @@ public class JwtService
         }
     }
 
-    // JWT를 받아서 loginId(ID)를 반환
-    public String parseToken(HttpServletRequest request) {
-        String token = resolveToken(request); // 헤더에서 토큰 꺼내기 (아래 메서드 활용)
-
-        if (token != null) {
-            try {
-                return Jwts.parserBuilder()
-                        .setSigningKey(SIGNING_KEY)
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody()
-                        .getSubject(); // ID 반환
-            } catch (Exception e) {
-                // 토큰이 위조되었거나 만료되면 null 반환
-                return null;
-            }
-        }
-        return null;
+    // 3. [변경] 토큰에서 ID(userName) 꺼내기 (Request 아님!)
+    // (기존 parseToken 대체)
+    public String getUserName(String token) {
+        return getClaims(token).getSubject();
     }
 
-    // ✅ [추가] 토큰에서 Role(권한)을 꺼내는 기능 (나중에 관리자 페이지 접근 막을 때 씀)
-    public String parseRole(HttpServletRequest request) {
-        String token = resolveToken(request);
-
-        if (token != null) {
-            try {
-                return Jwts.parserBuilder()
-                        .setSigningKey(SIGNING_KEY)
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody()
-                        .get("role", String.class); // Role 반환
-            } catch (Exception e) {
-                return null;
-            }
-        }
-        return null;
+    // 4. [변경] 토큰에서 Role 꺼내기 (Request 아님!)
+    // (기존 parseRole 대체)
+    public String getRole(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
-    // (내부 사용용) 헤더에서 Bearer 떼고 순수 토큰만 가져오는 메서드
+    // 헤더에서 토큰 추출 (필터가 제일 먼저 호출하는 놈)
     public String resolveToken(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header != null && header.startsWith(PREFIX)) {
             return header.replace(PREFIX, "");
         }
         return null;
+    }
+
+    // [내부용] 토큰 파싱 공통 로직
+    private Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
 //    결론: JwtService나 Filter는 고칠 필요 없나요?

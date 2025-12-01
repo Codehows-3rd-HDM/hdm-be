@@ -60,18 +60,19 @@ public class NiceExcelUpService
     // 내부 메서드 1: 기존 데이터 삭제
     private void deleteExistingData(int year, int month)
     {
-        LocalDateTime startDateTime;
-        LocalDateTime endDateTime;
-        LocalDate startDate;
-        LocalDate endDate;
+        LocalDateTime startDateTime;    // 나이스파크 원본 데이터 (차량 출입 로그)
+        LocalDateTime endDateTime;      // 나이스파크 원본 데이터 (차량 출입 로그)
+        LocalDate startDate;            // 일별 탄소배출량 (하룻동안 탄소 배출량)
+        LocalDate endDate;              // 일별 탄소배출량 (하룻동안 탄소 배출량)
 
         if (month == 0)
         {
+            // 원본 데이터 (차량 출입 로그)
             // '월-전체' 선택 시 : 해당 연도의 1월1일 ~ 12월 31일 삭제
             startDateTime =  LocalDateTime.of(year,1, 1, 0, 0, 0);
             endDateTime = LocalDateTime.of(year, 12, 31, 23, 59, 59);
 
-            // Daily 로그용 (DATE)
+            // Daily 탄소 배출량 로그용 (DATE)
             startDate = LocalDate.of(year, 1, 1);
             endDate = LocalDate.of(year, 12, 31);
 

@@ -2,13 +2,11 @@ package com.hdmbe.config;
 
 import com.hdmbe.service.JwtService;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -29,7 +26,8 @@ public class JwtFilter extends OncePerRequestFilter
 //    private final Servlet servlet;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
+    {
         // 필터 ==> 요청, 응답을 중간에서 가로챈 다음 ==> 필요한 동작을 수행
         // 1. 요청 헤더 (Authorization)에서 JWT 토큰을 꺼냄
         // String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -39,22 +37,25 @@ public class JwtFilter extends OncePerRequestFilter
         if (token != null && jwtService.validateToken(token))
         {
             // 2. 꺼낸 토큰에서 유저 정보 추출
-            String username = jwtService.parseToken(request);
-            String role = jwtService.parseRole(request);
+            String username = jwtService.getUserName(token);
+            String role = jwtService.getRole(token);
 
             // 3. 추출된 유저 정보로 Authentication 을 만들어서 SecurityContext에 set
-            if(username != null)
+            if (username != null && role != null)
             {
-                // 4. 권한 부여 (핵심!)
-                // role이 null이면 기본값 "USER", 있으면 "ROLE_" 접두사 붙이기
-                // (스프링 시큐리티는 ROLE_ 접두사를 좋아합니다)
-                String roleName = (role != null) ? "ROLE_" + role : "ROLE_USER";
-                Authentication authentication =
+                // role이 확실히 있을 때만 실행
+                String roleName = "ROLE_" + role;
+
+                Authentication authToken =
                         new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority(roleName)));
 
                 // 5. 인증 정보 저장
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
                 log.debug("인증 완료: {}, 권한: {}", username, roleName);
+            }
+            else
+            {
+                log.warn("토큰에 권한 정보가 없습니다. 접근을 차단합니다. ID: {}", username);
             }
         }
         // 마지막에 다음 필터를 호출
