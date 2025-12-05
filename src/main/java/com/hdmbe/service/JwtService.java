@@ -1,14 +1,13 @@
 package com.hdmbe.service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -23,21 +22,29 @@ public class JwtService
     // 서버와 클라이언트가 주고 받는 토근 ==> HTTP Header 내 Authorization 헤더값에 저장
     // 예) Authorization Bearer <토큰값>
     static final String PREFIX = "Bearer ";
-    static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24L;    //86,400,000 시간 => 하루
+
+    @Value("${jwt.expiration_time}")
+    private long EXPIRATION_TIME;    //86,400,000 시간 => 하루
 
     // ✅ [수정 1] 랜덤 키(Keys.secretKeyFor) 대신, 고정된 '비밀번호'를 씁니다.
     // (서버 껐다 켜도 로그인이 유지되게 하기 위함)
     // 32글자 이상 아무거나 길게 적으시면 됩니다.
     //static final Key SIGNING_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    static final String SECRET_STRING = "hdm_project_secret_key_must_be_very_long_and_secure";
-    static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
+    @Value("${jwt.secret.key}")
+    private String SECRET_STRING;
+
+    private Key SIGNING_KEY;
+
+    @PostConstruct
+    public void init(){
+        this.SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
+    }
 
     // loginId(ID)를 받아서 JWT 생성
-    public String generateToken(String userName, String role)
+    public String generateToken(String userName)
     {
         return Jwts.builder()
                 .setSubject(userName)
-                .claim("role", role)    //권한 정보 추가
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
                 .compact();

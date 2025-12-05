@@ -11,6 +11,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,7 +25,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter
 {
     private final JwtService jwtService;
-//    private final Servlet servlet;
+    private final UserDetailsService userDetailsService;  // DB 조회용
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
@@ -38,24 +40,22 @@ public class JwtFilter extends OncePerRequestFilter
         {
             // 2. 꺼낸 토큰에서 유저 정보 추출
             String username = jwtService.getUserName(token);
-            String role = jwtService.getRole(token);
 
             // 3. 추출된 유저 정보로 Authentication 을 만들어서 SecurityContext에 set
-            if (username != null && role != null)
+            if (username != null)
             {
-                // role이 확실히 있을 때만 실행
-                String roleName = "ROLE_" + role;
+                // DB에서 최신 회원 정보(권한 포함) 조회
+                // (UserDetailsServiceImpl의 loadUserByUsername이 실행됨)
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+                // 인증 객체 생성
+                // (userDetails.getAuthorities() 안에 DB에서 가져온 권한이 이미 들어있음!)
                 Authentication authToken =
-                        new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority(roleName)));
+                        new UsernamePasswordAuthenticationToken(userDetails,null, userDetails.getAuthorities());
 
                 // 5. 인증 정보 저장
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.debug("인증 완료: {}, 권한: {}", username, roleName);
-            }
-            else
-            {
-                log.warn("토큰에 권한 정보가 없습니다. 접근을 차단합니다. ID: {}", username);
+                log.debug("인증 완료: {}, 권한: {}", username, userDetails.getAuthorities());
             }
         }
         // 마지막에 다음 필터를 호출

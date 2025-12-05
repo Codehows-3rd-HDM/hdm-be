@@ -20,7 +20,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity(prePostEnabled = true)   //메서드 보안 활성화 (컨트롤러에 붙은 보안 딱지를 인식해라)
+// @EnableMethodSecurity(prePostEnabled = true)   //메서드 보안 활성화 (컨트롤러에 붙은 보안 딱지를 인식해라)
 public class SecurityConfig {
     private final AuthEntryPoint authEntryPoint;
     private final JwtFilter jwtFilter;
@@ -40,8 +40,12 @@ public class SecurityConfig {
 
                 // 4. URL별 접근 권한 관리
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/superadmin/create", "/api/user/login", "/api/user/logout")
-                        .permitAll()
+                        // [SUPERADMIN]
+                        .requestMatchers("/superadmin/**").hasAnyRole("SUPERADMIN")
+                        // [SUPERADMIN, ADMIN]
+                        .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
+                        // [ALL]
+                        .requestMatchers("/login", "/logout").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)

@@ -36,20 +36,14 @@ public class UserAccountService
         }
     }
 
-    public UserAccount login(LoginDto loginDto)
+    @Transactional
+    public void updateLastLogin(String userName)
     {
-        UserAccount userAccount = userAccountRepository.findByUserName(loginDto.getUserName())
+        // 아이디로 회원 찾기
+        UserAccount user = userAccountRepository.findByUserName(userName)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
-        if (userAccount.getPassword().equals(loginDto.getPassword()))
-        {
-            userAccount.setLastLogin(LocalDateTime.now());
 
-            return userAccount;
-        }
-        else
-        {
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
-        }
-
+        // 2. 시간 갱신
+        user.setLastLogin(LocalDateTime.now());
     }
 }
