@@ -4,6 +4,7 @@ import com.hdmbe.constant.Role;
 import com.hdmbe.dto.UserAccountDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -34,12 +35,12 @@ public class UserAccount extends BaseTimeEntity {
     @Column(name = "last_login", columnDefinition = "DATETIME(0)")
     private LocalDateTime lastLogin;
 
-    public static UserAccount createUserAccount(UserAccountDto dto)
+    public static UserAccount createUserAccount(UserAccountDto dto, PasswordEncoder passwordEncoder)
     {
         return  UserAccount
                 .builder()
                 .userName(dto.getUserName())
-                .password(dto.getPassword())
+                .password(passwordEncoder.encode(dto.getPassword()))
                 .role(dto.getRole())
                 .build();
     }
