@@ -1,6 +1,6 @@
 package com.hdmbe.carbonEmission.entity;
 
-import com.hdmbe.constant.FuelType;
+import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;

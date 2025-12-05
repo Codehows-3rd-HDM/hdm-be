@@ -2,7 +2,7 @@ package com.hdmbe.carModel.repository;
 
 
 import com.hdmbe.carModel.entity.CarModel;
-import com.hdmbe.constant.FuelType;
+import com.hdmbe.commonModule.constant.FuelType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,6 +1,6 @@
 package com.hdmbe.vehicle.dto;
 
-import com.hdmbe.constant.FuelType;
+import com.hdmbe.commonModule.constant.FuelType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
