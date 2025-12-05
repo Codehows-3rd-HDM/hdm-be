@@ -1,6 +1,6 @@
 package com.hdmbe.carModel.dto;
 
-import com.hdmbe.constant.FuelType;
+import com.hdmbe.commonModule.constant.FuelType;
 import lombok.*;
 
 import java.math.BigDecimal;

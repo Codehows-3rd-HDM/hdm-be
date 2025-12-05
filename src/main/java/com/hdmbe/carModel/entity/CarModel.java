@@ -1,7 +1,7 @@
 package com.hdmbe.carModel.entity;
 
 import com.hdmbe.carCategory.entity.CarCategory;
-import com.hdmbe.constant.FuelType;
+import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
