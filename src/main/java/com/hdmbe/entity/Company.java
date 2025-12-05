@@ -22,7 +22,7 @@ public class Company extends BaseCreatedEntity {
     @Column(name = "company_name", length = 50, nullable = false, unique = true)
     private String companyName;
 
-    // 업체명
+    // 편도거리
     @Column(name = "one_way_distance", precision = 10, scale = 2)
     private BigDecimal oneWayDistance;
 

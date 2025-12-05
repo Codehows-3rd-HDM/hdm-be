@@ -21,6 +21,5 @@ public class OperationPurpose extends BaseCreatedEntity {
     private String purposeName;
 
     // 기준 Scope
-    @Column(name = "default_scope")
-    private Integer defaultScope;
+
 }

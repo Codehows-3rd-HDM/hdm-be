@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "CARBON_EMISSION_DAILY_LOG")
@@ -21,13 +23,18 @@ public class CarbonEmissionDailyLog extends BaseCreatedEntity {
     @Column(name = "emission_log_id")
     private Long id;
 
-    // 차량 ID
-    @Column(name = "car_id", nullable = false)
-    private Long carId;
+
+//    @Column(name = "car_id", nullable = false)
+//    private Long carId;
+
+    // ✅ [수정] 객체(Entity)와 직접 연결!
+    @ManyToOne(fetch = FetchType.LAZY) // 필요할 때만 조회 (성능 최적화)
+    @JoinColumn(name = "car_id", nullable = false) // 실제 DB 컬럼명 지정
+    private Vehicle vehicle;
 
     // 운행일자
     @Column(name = "operation_date", nullable = false)
-    private Date operationDate;
+    private LocalDate operationDate;
 
     // 일별배출량
     @Column(name = "daily_calculated_emission", precision = 10, scale = 3)

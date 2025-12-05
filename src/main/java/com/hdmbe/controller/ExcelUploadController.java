@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/log")
+@RequestMapping("/excel")
 @RequiredArgsConstructor
 public class ExcelUploadController {
 
@@ -25,8 +25,7 @@ public class ExcelUploadController {
 
     // ✅ [보안 설정] SUPERADMIN 또는 ADMIN만 실행 가능
     // (VIEWER가 시도하면 403 Forbidden 에러가 자동으로 뜹니다)
-    @PreAuthorize("hasAnyRole('SUPERADMIN', 'ADMIN')")
-    @PostMapping("/nicepark/upload")
+    @PostMapping("/nicepark/excel/upload/")
     public ResponseEntity<?> uploadNiceParkLog(
             @RequestParam("file") MultipartFile file,
             @RequestParam("year") int year,
@@ -62,8 +61,7 @@ public class ExcelUploadController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN', 'ADMIN')")
-    @PostMapping("/s1/upload")
+    @PostMapping("/s1/excel/upload")
     public ResponseEntity<?> uploadS1Log(
             @RequestParam("file") MultipartFile file,
             @RequestParam("year") int year,
