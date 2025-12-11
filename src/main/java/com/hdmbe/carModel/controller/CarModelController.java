@@ -42,10 +42,10 @@ public class CarModelController {
         return carModelService.updateOne(id, dto);
     }
     // 페이지 전체 수정
-    @PatchMapping("/bulk")
-    public List<CarModelResponseDto> updateBulk(@RequestBody List<CarModelRequestDto> dto) {
-        return carModelService.updateBulk(dto);
-    }
+//    @PatchMapping("/bulk")
+//    public List<CarModelResponseDto> updateBulk(@RequestBody List<CarModelRequestDto> dto) {
+//        return carModelService.updateBulk(dto);
+//    }
     // 삭제
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {

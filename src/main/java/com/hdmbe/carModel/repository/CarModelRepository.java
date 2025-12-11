@@ -40,6 +40,30 @@ public interface CarModelRepository
             @Param("fuelType") FuelType fuelType,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT m
+        FROM carCategory m
+        WHERE 
+            (:parent_id IS NULL)
+        AND (:category_name = :LIKE %:keyword%)
+    """)
+
+    @Query("""
+        SELECT m
+        FROM carCategory m
+        WHERE 
+            (:parent_id IS NOT NULL)
+        AND (:category_name = :LIKE %:keyword%)
+    """)
+
+    @Query("""
+        SELECT m
+        FROM carCategory m
+        WHERE 
+        (:category_name = :LIKE %:keyword%)
+    """)
+
 }
 
 
