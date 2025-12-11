@@ -1,4 +1,4 @@
-package com.hdmbe.productClass.dto;
+package com.hdmbe.SupplyCustomer.dto;
 
 import lombok.*;
 
@@ -7,14 +7,14 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductClassRequestDto {
+public class SupplyCustomerRequestDto {
 
     private Long id;
 
     // 등록용
-    private String className;
+    private String customerName;
     private String remark;
 
     // 검색용
-    private String classNameFilter;
+    private String customerNameFilter;
 }

@@ -1,4 +1,4 @@
-package com.hdmbe.productClass.entity;
+package com.hdmbe.SupplyCustomer.entity;
 
 import com.hdmbe.company.entity.Company;
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
@@ -9,28 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "PRODUCT_CLASS")
+@Table(name = "Supply_Customer")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductClass extends BaseTimeEntity {
+public class SupplyCustomer extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     // 분류 ID
-    @Column(name = "class_id", columnDefinition = "BIGINT")
+    @Column(name = "customer_id", columnDefinition = "BIGINT")
     private Long id;
 
     // 분류 이름
-    @Column(name = "class_name", length = 20, nullable = false)
-    private String className;
+    @Column(name = "Customer_name", length = 20, nullable = false)
+    private String customerName;
 
     // 비고
     @Column(name = "remark", nullable = false, unique = true)
     private String remark;
 
-    @OneToMany(mappedBy = "productClass", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "supplyCustomer", cascade = CascadeType.ALL)
     private List<Company> companies = new ArrayList<>();
 }

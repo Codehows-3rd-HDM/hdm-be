@@ -3,6 +3,8 @@ package com.hdmbe.carModel.repository;
 
 import com.hdmbe.carModel.entity.CarModel;
 import com.hdmbe.commonModule.constant.FuelType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,22 +20,27 @@ public interface CarModelRepository
     List<CarModel> findByFuelType(FuelType fuelType);
 
     @Query("""
-            SELECT m 
-            FROM CarModel m 
-            JOIN m.carCategory c 
-            WHERE c.categoryName LIKE %:categoryName%
-            """)
-    List<CarModel> findByCategoryNameLike(@Param("categoryName") String categoryName);
-
-
-    @Query("""
-    SELECT m FROM CarModel m
-    JOIN m.carCategory c
-    WHERE c.categoryName LIKE %:keyword%
-       OR CAST(m.fuelType AS string) LIKE %:keyword%
-           """)
-    List<CarModel> searchByKeyword(@Param("keyword") String keyword);
-
+        SELECT m
+        FROM CarModel m
+        JOIN m.carCategory c
+        LEFT JOIN c.parentCategory p
+        WHERE 
+            (:keyword IS NULL OR :keyword = '' OR 
+                p.categoryName LIKE %:keyword% OR
+                c.categoryName LIKE %:keyword% OR 
+                CAST(m.fuelType AS string) LIKE %:keyword%)
+        AND (:parentCategoryName IS NULL OR p.categoryName LIKE %:parentCategoryName%)
+        AND (:childCategoryName IS NULL OR c.categoryName LIKE %:childCategoryName%)
+        AND (:fuelType IS NULL OR m.fuelType = :fuelType)
+    """)
+    Page<CarModel> search(
+            @Param("keyword") String keyword,
+            @Param("parentCategoryName") String parentCategoryName,
+            @Param("childCategoryName") String childCategoryName,
+            @Param("fuelType") FuelType fuelType,
+            Pageable pageable
+    );
 }
+
 
 

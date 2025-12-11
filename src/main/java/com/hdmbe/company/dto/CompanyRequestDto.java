@@ -17,14 +17,14 @@ public class CompanyRequestDto {
     private String companyName;
     private BigDecimal oneWayDistance;
     private String address;
-    private Long processId;      // ProcessEntity 연관
-    private Long productClassId; // ProductClass 연관
+    private Long customerId;      // customerEntity 연관
+    private Long supplyTypeId; // supplyType 연관
     private String remark;
 
     // 검색용
     private String keyword; // all
     private String companyNameFilter; // 업체명
-    private Long processIdFilter;     // 공정
-    private Long productClassIdFilter; // 납품구분
+    private Long customerIdFilter;     // 공정
+    private Long supplyTypeIdFilter; // 납품구분
     private String addressFilter;      // 주소
 }

@@ -3,11 +3,11 @@ package com.hdmbe.company.service;
 import com.hdmbe.company.dto.CompanyRequestDto;
 import com.hdmbe.company.dto.CompanyResponseDto;
 import com.hdmbe.company.entity.Company;
-import com.hdmbe.process.entity.ProcessEntity;
-import com.hdmbe.productClass.entity.ProductClass;
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.company.repository.CompanyRepository;
-import com.hdmbe.process.repository.ProcessRepository;
-import com.hdmbe.productClass.repository.ProductClassRepository;
+import com.hdmbe.supplyType.repository.SupplyTypeRepository;
+import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +19,17 @@ import java.util.List;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final ProcessRepository processRepository;
-    private final ProductClassRepository productClassRepository;
+    private final SupplyTypeRepository supplyTypeRepository;
+    private final SupplyCustomerRepository supplyCustomerRepository;
 
     // 등록
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto dto) {
 
-        ProcessEntity process = processRepository.findById(dto.getProcessId())
+        SupplyType supplyType = supplyTypeRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("생산공정을 찾을 수 없습니다"));
 
-        ProductClass productClass = productClassRepository.findById(dto.getProductClassId())
+        SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getSupplyTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("생산품목을 찾을 수 없습니다"));
 
         Company saved = companyRepository.save(
@@ -37,8 +37,8 @@ public class CompanyService {
                         .companyName(dto.getCompanyName())
                         .oneWayDistance(dto.getOneWayDistance())
                         .address(dto.getAddress())
-                        .process(process)
-                        .productClass(productClass)
+                        .supplyCustomer(supplyCustomer)
+                        .supplyType(supplyType)
                         .remark(dto.getRemark())
                         .build()
         );
@@ -64,10 +64,10 @@ public class CompanyService {
             result = companyRepository.findByCompanyNameContaining(dto.getCompanyNameFilter());
         } else if (dto.getAddressFilter() != null && !dto.getAddressFilter().isEmpty()) {
             result = companyRepository.findByAddressContaining(dto.getAddressFilter());
-        } else if (dto.getProcessIdFilter() != null) {
-            result = companyRepository.findByProcessId(dto.getProcessIdFilter());
-        } else if (dto.getProductClassIdFilter() != null) {
-            result = companyRepository.findByProductClassId(dto.getProductClassIdFilter());
+        } else if (dto.getCustomerIdFilter() != null) {
+            result = companyRepository.findBySupplyCustomerId(dto.getCustomerId());
+        } else if (dto.getSupplyTypeIdFilter() != null) {
+            result = companyRepository.findBySupplyTypeId(dto.getSupplyTypeIdFilter());
         } else if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) {
             result = companyRepository.searchByKeyword(dto.getKeyword());
         } else {

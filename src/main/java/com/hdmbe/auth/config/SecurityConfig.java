@@ -44,14 +44,15 @@ public class SecurityConfig {
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
-                        .requestMatchers("/login", "/logout").permitAll()
+                        .requestMatchers("/login", "/logout","/admin/**").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 6. 예외 처리 (인증 실패 시 처리)
-                .exceptionHandling((ex) -> ex.authenticationEntryPoint(authEntryPoint));
+                .exceptionHandling((ex) -> ex.authenticationEntryPoint(authEntryPoint)
+                );
         return http.build();
     }
 

@@ -30,15 +30,15 @@ public class CompanyController {
     public ResponseEntity<List<CompanyResponseDto>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String companyName,
-            @RequestParam(required = false) Long processId,
-            @RequestParam(required = false) Long productClassId,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long supplyTypeId,
             @RequestParam(required = false) String address
     ) {
         CompanyRequestDto dto = CompanyRequestDto.builder()
                 .keyword(keyword)
                 .companyNameFilter(companyName)
-                .processIdFilter(processId)
-                .productClassIdFilter(productClassId)
+                .customerIdFilter(customerId)
+                .supplyTypeIdFilter(supplyTypeId)
                 .addressFilter(address)
                 .build();
 
