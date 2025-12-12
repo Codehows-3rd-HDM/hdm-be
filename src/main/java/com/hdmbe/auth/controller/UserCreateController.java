@@ -1,7 +1,7 @@
 package com.hdmbe.auth.controller;
 
 import com.hdmbe.auth.service.UserAccountService;
-import com.hdmbe.auth.userAccount.dto.UserAccountDto;
+import com.hdmbe.auth.dto.UserAccountDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

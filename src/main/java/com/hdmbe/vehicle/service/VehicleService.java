@@ -27,17 +27,35 @@ public class VehicleService {
     @Transactional
     public VehicleResponseDto create(VehicleRequestDto dto) {
 
+        // --- 1. 필수 ID null 체크 ---
+        if (dto.getCarModelId() == null) {
+            throw new IllegalArgumentException("차종 ID(carModelId)는 필수값입니다.");
+        }
+        if (dto.getCompanyId() == null) {
+            throw new IllegalArgumentException("업체 ID(companyId)는 필수값입니다.");
+        }
+        if (dto.getOperationPurposeId() == null) {
+            throw new IllegalArgumentException("운행목적 ID(operationPurposeId)는 필수값입니다.");
+        }
+
+        // --- 2. 엔티티 생성 ---
         Vehicle saved = vehicleRepository.save(
                 Vehicle.builder()
                         .carNumber(dto.getCarNumber())
                         .carName(dto.getCarName())
-                        .carModel(carModelRepository.findById(dto.getCarModelId())
-                                .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다.")))
+                        .carModel(
+                                carModelRepository.findById(dto.getCarModelId())
+                                        .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."))
+                        )
                         .driverMemberId(dto.getDriverMemberId())
-                        .company(companyRepository.findById(dto.getCompanyId())
-                                .orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 없습니다.")))
-                        .operationPurpose(operationPurposeRepository.findById(dto.getOperationPurposeId())
-                                .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다.")))
+                        .company(
+                                companyRepository.findById(dto.getCompanyId())
+                                        .orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 없습니다."))
+                        )
+                        .operationPurpose(
+                                operationPurposeRepository.findById(dto.getOperationPurposeId())
+                                        .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다."))
+                        )
                         .operationDistance(dto.getOperationDistance())
                         .remark(dto.getRemark())
                         .build()
@@ -45,6 +63,7 @@ public class VehicleService {
 
         return VehicleResponseDto.fromEntity(saved);
     }
+
 
     // 전체 조회
     @Transactional(readOnly = true)
