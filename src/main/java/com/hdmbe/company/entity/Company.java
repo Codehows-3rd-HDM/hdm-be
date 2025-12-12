@@ -1,8 +1,8 @@
 package com.hdmbe.company.entity;
 
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
-import com.hdmbe.process.entity.ProcessEntity;
-import com.hdmbe.productClass.entity.ProductClass;
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,13 +38,13 @@ public class Company extends BaseTimeEntity {
 
     // 공정 ID
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "process_id", nullable = false)
-    private ProcessEntity process;
+    @JoinColumn(name = "customer_id", nullable = false)
+    private SupplyType supplyType;
 
     // 제품 분류 ID
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id", nullable = false)
-    private ProductClass productClass;
+    @JoinColumn(name = "supply_Type_id", nullable = false)
+    private SupplyCustomer supplyCustomer;
 
     // 비고
     @Column(name = "remark", nullable = false)

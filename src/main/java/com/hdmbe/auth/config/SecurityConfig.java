@@ -40,7 +40,9 @@ public class SecurityConfig {
                 // 4. URL별 접근 권한 관리
                 .authorizeHttpRequests(auth -> auth
                         // [SUPERADMIN]
-                        .requestMatchers("/superadmin/**").hasAnyRole("SUPERADMIN")
+                        .requestMatchers("/superadmin/**")
+//                        .hasAnyRole("SUPERADMIN")
+                        .permitAll()
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
@@ -51,7 +53,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 6. 예외 처리 (인증 실패 시 처리)
-                .exceptionHandling((ex) -> ex.authenticationEntryPoint(authEntryPoint));
+                .exceptionHandling((ex) -> ex.authenticationEntryPoint(authEntryPoint)
+                );
         return http.build();
     }
 

@@ -11,20 +11,20 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     List<Company> findByCompanyNameContaining(String companyName);
 
-    List<Company> findByProcessId(Long processId);
+    List<Company> findBySupplyCustomerId(Long processId);
 
-    List<Company> findByProductClassId(Long productClassId);
+    List<Company> findBySupplyTypeId(Long productClassId);
 
     List<Company> findByAddressContaining(String address);
 
     @Query("""
         SELECT c FROM Company c
-        JOIN c.process p
-        JOIN c.productClass pc
+        JOIN c.supplyCustomer s
+        JOIN c.supplyType st
         WHERE c.companyName LIKE %:keyword%
            OR c.address LIKE %:keyword%
-           OR p.processName LIKE %:keyword%
-           OR pc.className LIKE %:keyword%
+           OR s.customerName LIKE %:keyword%
+           OR st.supplyTypeName LIKE %:keyword%
     """)
     List<Company> searchByKeyword(@Param("keyword") String keyword);
 }

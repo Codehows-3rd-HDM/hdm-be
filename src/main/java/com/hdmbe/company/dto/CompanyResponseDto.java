@@ -12,8 +12,8 @@ public class CompanyResponseDto {
     private String companyName;
     private BigDecimal oneWayDistance;
     private String address;
-    private String processName;
-    private String productClassName;
+    private String customerName;
+    private String supplyTypeName;
     private String remark;
 
     public static CompanyResponseDto fromEntity(Company company) {
@@ -22,8 +22,8 @@ public class CompanyResponseDto {
                 .companyName(company.getCompanyName())
                 .oneWayDistance(company.getOneWayDistance())
                 .address(company.getAddress())
-                .processName(company.getProcess().getProcessName())
-                .productClassName(company.getProductClass().getClassName())
+                .customerName(company.getSupplyCustomer().getCustomerName())
+                .supplyTypeName(company.getSupplyType().getSupplyTypeName())
                 .remark(company.getRemark())
                 .build();
     }
