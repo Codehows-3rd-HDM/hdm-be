@@ -28,7 +28,7 @@ public class CarModelService {
     @Transactional
     public CarModelResponseDto create(CarModelRequestDto dto) {
 
-        CarCategory category = carCategoryRepository.findById(dto.getCategoryId())
+        CarCategory category = carCategoryRepository.findByCategoryName(dto.getChildCategoryName())
                 .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
 
         CarModel saved = carModelRepository.save(

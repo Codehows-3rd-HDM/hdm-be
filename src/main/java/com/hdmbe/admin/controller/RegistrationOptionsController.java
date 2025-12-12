@@ -38,8 +38,11 @@ public class RegistrationOptionsController {
      * "REGION_OPTIONS": ["서울특별시", "부산광역시", ...] }
      */
     @GetMapping
-    public ResponseEntity<Map<String, List<String>>> getRegistrationOptions() {
-        Map<String, List<String>> options = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> getRegistrationOptions() {
+        Map<String, Object> options = new HashMap<>();
+
+        // fetch car categories once
+        List<com.hdmbe.carCategory.dto.CarCategoryResponseDto> carCategories = carCategoryService.getAll();
 
         // 1. 운행목적 (PURPOSE_OPTIONS)
         options.put("PURPOSE_OPTIONS",
@@ -55,23 +58,41 @@ public class RegistrationOptionsController {
                         .collect(Collectors.toList())
         );
 
-        // 3. 차종 대분류 (CAT_LARGE_OPTIONS) - CarCategory에서 parentCategory가 없는 것들
-        options.put("CAT_LARGE_OPTIONS",
-                carCategoryService.getAll().stream()
-                        .filter(dto -> dto.getParentId() == null)
-                        .map(dto -> dto.getCategoryName())
-                        .distinct()
-                        .collect(Collectors.toList())
-        );
+        // 3. 차종 대분류 (CAT_LARGE_OPTIONS) - 부모 카테고리
+        List<String> catLarge = carCategories.stream()
+                .filter(dto -> dto.getParentId() == null)
+                .map(dto -> dto.getCategoryName())
+                .distinct()
+                .collect(Collectors.toList());
+        options.put("CAT_LARGE_OPTIONS", catLarge);
 
-        // 4. 차종 소분류 (CAT_SMALL_OPTIONS) - CarCategory에서 parentCategory가 있는 것들
-        options.put("CAT_SMALL_OPTIONS",
-                carCategoryService.getAll().stream()
-                        .filter(dto -> dto.getParentId() != null)
-                        .map(dto -> dto.getCategoryName())
-                        .distinct()
-                        .collect(Collectors.toList())
-        );
+        // 4. 차종 소분류 (CAT_SMALL_OPTIONS) - 모든 자식 카테고리
+        List<String> catSmall = carCategories.stream()
+                .filter(dto -> dto.getParentId() != null)
+                .map(dto -> dto.getCategoryName())
+                .distinct()
+                .collect(Collectors.toList());
+        options.put("CAT_SMALL_OPTIONS", catSmall);
+
+        // Build a parent->children map for frontend convenience
+        Map<String, List<String>> carCategoryMap = new HashMap<>();
+        // map parent id to name
+        Map<Long, String> parentNames = carCategories.stream()
+                .filter(dto -> dto.getParentId() == null)
+                .collect(Collectors.toMap(dto -> dto.getId(), dto -> dto.getCategoryName()));
+
+        carCategories.stream()
+                .filter(dto -> dto.getParentId() != null)
+                .forEach(dto -> {
+                    Long pid = dto.getParentId();
+                    String parentName = parentNames.get(pid);
+                    if (parentName == null) {
+                        return;
+                    }
+                    carCategoryMap.computeIfAbsent(parentName, k -> new java.util.ArrayList<>()).add(dto.getCategoryName());
+                });
+
+        options.put("CAR_CATEGORY_MAP", carCategoryMap);
 
         // 5. 연료 종류 (FUEL_OPTIONS) - FuelType Enum의 모든 값
         options.put("FUEL_OPTIONS", List.of(
