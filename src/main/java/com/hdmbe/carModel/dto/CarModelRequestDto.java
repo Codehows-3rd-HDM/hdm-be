@@ -19,7 +19,7 @@ public class CarModelRequestDto {
     private BigDecimal customEfficiency;
 
     // 상위 카테고리명 검색
-    private String CategoryName;
+    private String parentCategoryName;
 
     // 하위 카테고리명 검색
     private String childCategoryName;

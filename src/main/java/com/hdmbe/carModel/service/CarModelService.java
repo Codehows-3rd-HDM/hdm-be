@@ -82,37 +82,37 @@ public class CarModelService {
         return CarModelResponseDto.fromEntity(model);
     }
     // 전체 수정
-//    @Transactional
-//    public List<CarModelResponseDto> updateBulk(List<CarModelRequestDto> requestList) {
-//
-//        List<CarModelResponseDto> responses = new ArrayList<>();
-//
-//        for (CarModelRequestDto req : requestList) {
-//
-//            CarModel model = carModelRepository.findById(req.getId())
-//                    .orElseThrow(() -> new EntityNotFoundException("없는 carModel ID: " + req.getId()));
-//
-//            // --- 🔥 중요: null-safe set 로직 시작 ---
-//            if (req.getFuelType() != null) {
-//                model.setFuelType(req.getFuelType());
-//            }
-//
-//            if (req.getCustomEfficiency() != null) {
-//                model.setCustomEfficiency(req.getCustomEfficiency());
-//            }
-//
-//            if (req.getChildCategoryId() != null) {
-//                CarCategory newChild = categoryRepository.findById(req.getChildCategoryId())
-//                        .orElseThrow(() -> new EntityNotFoundException("없는 카테고리 ID: " + req.getChildCategoryId()));
-//                model.setCarCategory(newChild);
-//            }
-//            // --- 🔥 null-safe set 로직 끝 ---
-//
-//            responses.add(CarModelResponseDto.fromEntity(model));
-//        }
-//
-//        return responses;
-//    }
+    @Transactional
+    public List<CarModelResponseDto> updateBulk(List<CarModelUpdateRequestDto> requestList) {
+
+        List<CarModelResponseDto> responses = new ArrayList<>();
+
+        for (CarModelUpdateRequestDto req : requestList) {
+
+            CarModel model = carModelRepository.findById(req.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("없는 carModel ID: " + req.getId()));
+
+            // --- 🔥 중요: null-safe set 로직 시작 ---
+            if (req.getFuelType() != null) {
+                model.setFuelType(req.getFuelType());
+            }
+
+            if (req.getCustomEfficiency() != null) {
+                model.setCustomEfficiency(req.getCustomEfficiency());
+            }
+
+            if (req.getChildCategoryId() != null) {
+                CarCategory newChild = categoryRepository.findById(req.getChildCategoryId())
+                        .orElseThrow(() -> new EntityNotFoundException("없는 카테고리 ID: " + req.getChildCategoryId()));
+                model.setCarCategory(newChild);
+            }
+            // --- 🔥 null-safe set 로직 끝 ---
+
+            responses.add(CarModelResponseDto.fromEntity(model));
+        }
+
+        return responses;
+    }
 
     // 삭제
     @Transactional
