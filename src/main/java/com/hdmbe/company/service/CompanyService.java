@@ -26,11 +26,35 @@ public class CompanyService {
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto dto) {
 
-        SupplyType supplyType = supplyTypeRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new IllegalArgumentException("생산공정을 찾을 수 없습니다"));
+        // SupplyType 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
+        SupplyType supplyType;
+        if (dto.getSupplyTypeId() != null) {
+            supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다"));
+        } else if (dto.getSupplyTypeName() != null && !dto.getSupplyTypeName().isEmpty()) {
+            List<SupplyType> types = supplyTypeRepository.findAll();
+            supplyType = types.stream()
+                    .filter(t -> t.getSupplyTypeName().equals(dto.getSupplyTypeName()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다: " + dto.getSupplyTypeName()));
+        } else {
+            throw new IllegalArgumentException("공급 유형 ID 또는 이름이 필요합니다");
+        }
 
-        SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getSupplyTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("생산품목을 찾을 수 없습니다"));
+        // SupplyCustomer 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
+        SupplyCustomer supplyCustomer;
+        if (dto.getCustomerId() != null) {
+            supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
+                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다"));
+        } else if (dto.getCustomerName() != null && !dto.getCustomerName().isEmpty()) {
+            List<SupplyCustomer> customers = supplyCustomerRepository.findAll();
+            supplyCustomer = customers.stream()
+                    .filter(c -> c.getCustomerName().equals(dto.getCustomerName()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다: " + dto.getCustomerName()));
+        } else {
+            throw new IllegalArgumentException("공급 고객 ID 또는 이름이 필요합니다");
+        }
 
         Company saved = companyRepository.save(
                 Company.builder()

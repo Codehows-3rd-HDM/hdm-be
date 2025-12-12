@@ -28,6 +28,10 @@ public class VehicleRequestDto {
     private FuelType fuelType;
     private String remark;
 
+    // 등록용 (이름 기반) - 프론트엔드에서 이름으로 보낼 때 사용
+    private String operationPurposeName; // 운행목적 이름
+    private String companyNameForCreation; // 업체 이름 (생성용)
+
     // 검색용
     private String keyword;              // 통합검색
     private String carNumberFilter;      // 차량번호 검색
