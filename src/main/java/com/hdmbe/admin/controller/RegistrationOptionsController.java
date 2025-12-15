@@ -47,35 +47,33 @@ public class RegistrationOptionsController {
         // 1. 운행목적 (PURPOSE_OPTIONS)
         options.put("PURPOSE_OPTIONS",
                 operationPurposeService.getAll().stream()
-                        .map(dto -> dto.getPurposeName())
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
                         .collect(Collectors.toList())
         );
 
         // 2. 협력사/업체 (COMPANY_OPTIONS)
         options.put("COMPANY_OPTIONS",
                 companyService.getAll().stream()
-                        .map(dto -> dto.getCompanyName())
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCompanyName()))
                         .collect(Collectors.toList())
         );
 
         // 3. 차종 대분류 (CAT_LARGE_OPTIONS) - 부모 카테고리
-        List<String> catLarge = carCategories.stream()
+        List<Map<String, Object>> catLarge = carCategories.stream()
                 .filter(dto -> dto.getParentId() == null)
-                .map(dto -> dto.getCategoryName())
-                .distinct()
+                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()))
                 .collect(Collectors.toList());
         options.put("CAT_LARGE_OPTIONS", catLarge);
 
         // 4. 차종 소분류 (CAT_SMALL_OPTIONS) - 모든 자식 카테고리
-        List<String> catSmall = carCategories.stream()
+        List<Map<String, Object>> catSmall = carCategories.stream()
                 .filter(dto -> dto.getParentId() != null)
-                .map(dto -> dto.getCategoryName())
-                .distinct()
+                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()))
                 .collect(Collectors.toList());
         options.put("CAT_SMALL_OPTIONS", catSmall);
 
         // Build a parent->children map for frontend convenience
-        Map<String, List<String>> carCategoryMap = new HashMap<>();
+        Map<String, List<Map<String, Object>>> carCategoryMap = new HashMap<>();
         // map parent id to name
         Map<Long, String> parentNames = carCategories.stream()
                 .filter(dto -> dto.getParentId() == null)
@@ -89,30 +87,43 @@ public class RegistrationOptionsController {
                     if (parentName == null) {
                         return;
                     }
-                    carCategoryMap.computeIfAbsent(parentName, k -> new java.util.ArrayList<>()).add(dto.getCategoryName());
+                    carCategoryMap.computeIfAbsent(parentName, k -> new java.util.ArrayList<>())
+                            .add(Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()));
                 });
 
         options.put("CAR_CATEGORY_MAP", carCategoryMap);
 
         // 5. 연료 종류 (FUEL_OPTIONS) - FuelType Enum의 모든 값
         options.put("FUEL_OPTIONS", List.of(
-                "가솔린", "디젤", "LPG", "CNG", "전기", "수소", "중유", "등유", "도시가스"
+                Map.<String, Object>of("id", 1, "name", "가솔린"),
+                Map.<String, Object>of("id", 2, "name", "디젤"),
+                Map.<String, Object>of("id", 3, "name", "LPG"),
+                Map.<String, Object>of("id", 4, "name", "CNG"),
+                Map.<String, Object>of("id", 5, "name", "전기"),
+                Map.<String, Object>of("id", 6, "name", "수소"),
+                Map.<String, Object>of("id", 7, "name", "중유"),
+                Map.<String, Object>of("id", 8, "name", "등유"),
+                Map.<String, Object>of("id", 9, "name", "도시가스")
         ));
 
         // 6. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
         options.put("SUPPLY_CUSTOMER_OPTIONS",
                 supplyCustomerService.getAll().stream()
-                        .map(dto -> dto.getCustomerName())
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
                         .collect(Collectors.toList())
         );
 
         // 7. Scope (SCOPE_OPTIONS)
-        options.put("SCOPE_OPTIONS", List.of("1", "3", "4"));
+        options.put("SCOPE_OPTIONS", List.of(
+                Map.<String, Object>of("id", 1, "name", "Scope1"),
+                Map.<String, Object>of("id", 2, "name", "Scope3"),
+                Map.<String, Object>of("id", 3, "name", "기타")
+        ));
 
         // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
         options.put("SUPPLY_TYPE_OPTIONS",
                 supplyTypeService.getAll().stream()
-                        .map(dto -> dto.getSupplyTypeName())
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
                         .collect(Collectors.toList())
         );
 

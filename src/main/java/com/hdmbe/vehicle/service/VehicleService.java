@@ -51,23 +51,26 @@ public class VehicleService {
         if (dto.getOperationPurposeId() != null) {
             operationPurpose = operationPurposeRepository.findById(dto.getOperationPurposeId())
                     .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다."));
-        } else if (dto.getOperationPurposeName() != null && !dto.getOperationPurposeName().isEmpty()) {
+        } else if (dto.getPurposeName() != null && !dto.getPurposeName().isEmpty()) {
             List<OperationPurpose> purposes = operationPurposeRepository.findAll();
             operationPurpose = purposes.stream()
-                    .filter(p -> p.getPurposeName().equals(dto.getOperationPurposeName()))
+                    .filter(p -> p.getPurposeName().equals(dto.getPurposeName()))
                     .findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다: " + dto.getOperationPurposeName()));
+                    .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다: " + dto.getPurposeName()));
         } else {
             throw new EntityNotFoundException("운행목적 ID 또는 이름이 필요합니다.");
         }
 
         // CarModel 찾기
         CarModel carModel;
-        if (dto.getCarModelId() != null) {
+        if (dto.getChildCategoryId() != null && dto.getFuelType() != null) {
+            carModel = carModelRepository.findByCarCategoryIdAndFuelType(dto.getChildCategoryId(), dto.getFuelType())
+                    .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."));
+        } else if (dto.getCarModelId() != null) {
             carModel = carModelRepository.findById(dto.getCarModelId())
                     .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."));
         } else {
-            throw new EntityNotFoundException("차종 ID가 필요합니다.");
+            throw new EntityNotFoundException("차종 ID 또는 카테고리 ID와 연료 타입이 필요합니다.");
         }
 
         Vehicle saved = vehicleRepository.save(
