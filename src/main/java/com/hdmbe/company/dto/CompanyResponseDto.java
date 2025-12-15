@@ -10,20 +10,24 @@ import java.math.BigDecimal;
 public class CompanyResponseDto {
     private Long id;
     private String companyName;
-    private BigDecimal oneWayDistance;
-    private String address;
-    private String customerName;
+    private Long supplyTypeId;
     private String supplyTypeName;
+    private BigDecimal oneWayDistance;
+    private Long supplyCustomerId;
+    private String supplyCustomerName;
+    private String address;
     private String remark;
 
     public static CompanyResponseDto fromEntity(Company company) {
         return CompanyResponseDto.builder()
                 .id(company.getId())
                 .companyName(company.getCompanyName())
-                .oneWayDistance(company.getOneWayDistance())
-                .address(company.getAddress())
-                .customerName(company.getSupplyCustomer().getCustomerName())
+                .supplyTypeId(company.getSupplyType().getId())
                 .supplyTypeName(company.getSupplyType().getSupplyTypeName())
+                .oneWayDistance(company.getOneWayDistance())
+                .supplyCustomerId(company.getSupplyCustomer().getId())
+                .supplyCustomerName(company.getSupplyCustomer().getCustomerName())
+                .address(company.getAddress())
                 .remark(company.getRemark())
                 .build();
     }

@@ -1,8 +1,8 @@
 package com.hdmbe.commonModule.constant;
 
 public enum FuelType {
-    휘발유,
-    경유,
+    가솔린,
+    디젤,
     LPG,
     CNG,
     수소,

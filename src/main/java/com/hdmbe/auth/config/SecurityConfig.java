@@ -44,7 +44,7 @@ public class SecurityConfig {
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
-                        .requestMatchers("/login", "/logout","/admin/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/admin/**").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)

@@ -10,14 +10,17 @@ import lombok.*;
 @Builder
 public class CarCategoryResponseDto {
     private Long id;
-    private String categoryName;
+    private String categoryId;
     private Long parentId;
+    private String parentName;
 
     public static CarCategoryResponseDto fromEntity(CarCategory category) {
         return CarCategoryResponseDto.builder()
                 .id(category.getId())
-                .categoryName(category.getCategoryName())
+                .categoryId(category.getCategoryName())
                 .parentId(category.getParentCategory() != null ? category.getParentCategory().getId() : null)
+                .parentName(category.getParentCategory() != null ? category.getParentCategory().getCategoryName() : null)
                 .build();
+
     }
 }

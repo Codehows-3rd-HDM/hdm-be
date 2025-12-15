@@ -9,4 +9,5 @@ public interface SupplyTypeRepository extends JpaRepository<SupplyType, Long> {
 
     List<SupplyType> findBySupplyTypeNameContaining(String processName);
 
+
 }

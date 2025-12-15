@@ -13,18 +13,15 @@ public class CompanyRequestDto {
 
     private Long id;
 
-    // 등록용
+    // 등록, 수정
     private String companyName;
+    private Long supplyTypeId;
     private BigDecimal oneWayDistance;
+    private Long supplyCustomerId;
     private String address;
-    private Long customerId;      // customerEntity 연관
-    private Long supplyTypeId; // supplyType 연관
     private String remark;
 
     // 검색용
     private String keyword; // all
-    private String companyNameFilter; // 업체명
-    private Long customerIdFilter;     // 공정
-    private Long supplyTypeIdFilter; // 납품구분
-    private String addressFilter;      // 주소
+
 }

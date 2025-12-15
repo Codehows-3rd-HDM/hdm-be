@@ -1,126 +1,119 @@
-package com.hdmbe.carModel.service;
+    package com.hdmbe.carModel.service;
 
-import com.hdmbe.carCategory.entity.CarCategory;
-import com.hdmbe.carCategory.repository.CarCategoryRepository;
-import com.hdmbe.carModel.dto.CarModelRequestDto;
-import com.hdmbe.carModel.dto.CarModelResponseDto;
-import com.hdmbe.carModel.entity.CarModel;
-import com.hdmbe.carModel.repository.CarModelRepository;
-import com.hdmbe.commonModule.constant.FuelType;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+    import com.hdmbe.carCategory.entity.CarCategory;
+    import com.hdmbe.carCategory.repository.CarCategoryRepository;
+    import com.hdmbe.carModel.dto.CarModelRequestDto;
+    import com.hdmbe.carModel.dto.CarModelResponseDto;
+    import com.hdmbe.carModel.entity.CarModel;
+    import com.hdmbe.carModel.repository.CarModelRepository;
+    import com.hdmbe.commonModule.constant.FuelType;
+    import jakarta.persistence.EntityNotFoundException;
+    import lombok.RequiredArgsConstructor;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.PageRequest;
+    import org.springframework.data.domain.Pageable;
+    import org.springframework.data.domain.Sort;
+    import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+    import java.util.List;
+    import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-public class CarModelService {
+    @Service
+    @RequiredArgsConstructor
 
-    private final CarModelRepository carModelRepository;
-    private final CarCategoryRepository carCategoryRepository;
+    public class CarModelService {
 
-    // 등록
-    @Transactional
-    public CarModelResponseDto create(CarModelRequestDto dto) {
+        private final CarModelRepository carModelRepository;
+        private final CarCategoryRepository carCategoryRepository;
 
-        CarCategory category = carCategoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
+        // 등록
+        @Transactional
+        public CarModelResponseDto createCarModel(CarModelRequestDto dto) {
+            validateCreate(dto);
 
-        CarModel saved = carModelRepository.save(
-                CarModel.builder()
-                        .carCategory(category)
-                        .fuelType(dto.getFuelType())
-                        .customEfficiency(dto.getCustomEfficiency())
-                        .build()
-        );
+            CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("CarCategory not found id=" + dto.getCarCategoryId()));
 
-        return CarModelResponseDto.fromEntity(saved);
-    }
+            CarModel model = CarModel.builder()
+                    .carCategory(category)
+                    .fuelType(dto.getFuelType())
+                    .customEfficiency(dto.getCustomEfficiency())
+                    .build();
 
-    // 조회, 검색
-    @Transactional(readOnly = true)
-    public Page<CarModelResponseDto> findAll(CarModelRequestDto dto, Pageable pageable) {
-
-        Page<CarModel> page = carModelRepository.search(
-                dto.getKeyword(),
-                dto.getParentCategoryName(),
-                dto.getChildCategoryName(),
-                dto.getFuelType(),
-                pageable
-        );
-
-        return page.map(CarModelResponseDto::fromEntity);
-    }
-
-
-    // 단일 수정
-    @Transactional
-    public CarModelResponseDto updateOne(Long id, CarModelRequestDto dto) {
-
-        CarModel model = carModelRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("수정할 차량 모델을 찾을 수 없습니다."));
-
-        if (dto.getCategoryId() != null) {
-            CarCategory category = carCategoryRepository.findById(dto.getCategoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
-            model.setCarCategory(category);
+            carModelRepository.save(model);
+            return CarModelResponseDto.fromEntity(model);
         }
 
-        if (dto.getFuelType() != null) {
-            model.setFuelType(dto.getFuelType());
-        }
+        // 조회, 검색
+        @Transactional(readOnly = true)
+        public Page<CarModelResponseDto> searchCarModels(
+                Long carCategoryId,
+                String fuelTypeStr,
+                String keyword,
+                int page,
+                int size
+        ) {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        if (dto.getCustomEfficiency() != null) {
-            model.setCustomEfficiency(dto.getCustomEfficiency());
-        }
-
-        return CarModelResponseDto.fromEntity(model);
-    }
-    // 전체 수정
-    @Transactional
-    public List<CarModelResponseDto> updateBulk(List<CarModelUpdateRequestDto> requestList) {
-
-        List<CarModelResponseDto> responses = new ArrayList<>();
-
-        for (CarModelUpdateRequestDto req : requestList) {
-
-            CarModel model = carModelRepository.findById(req.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("없는 carModel ID: " + req.getId()));
-
-            // --- 🔥 중요: null-safe set 로직 시작 ---
-            if (req.getFuelType() != null) {
-                model.setFuelType(req.getFuelType());
+            FuelType fuelType = null;
+            if (fuelTypeStr != null && !fuelTypeStr.isBlank()) {
+                fuelType = FuelType.valueOf(fuelTypeStr);
             }
 
-            if (req.getCustomEfficiency() != null) {
-                model.setCustomEfficiency(req.getCustomEfficiency());
-            }
+            Page<CarModel> result = carModelRepository.search(
+                    carCategoryId,
+                    fuelType,
+                    (keyword == null || keyword.isBlank()) ? null : keyword,
+                    pageable
+            );
 
-            if (req.getChildCategoryId() != null) {
-                CarCategory newChild = categoryRepository.findById(req.getChildCategoryId())
-                        .orElseThrow(() -> new EntityNotFoundException("없는 카테고리 ID: " + req.getChildCategoryId()));
-                model.setCarCategory(newChild);
-            }
-            // --- 🔥 null-safe set 로직 끝 ---
-
-            responses.add(CarModelResponseDto.fromEntity(model));
+            return result.map(CarModelResponseDto::fromEntity);
         }
 
-        return responses;
-    }
+        // 단일 수정
+        @Transactional
+        public CarModelResponseDto updateSingle(Long id, CarModelRequestDto dto) {
+            validateUpdate(dto);
 
-    // 삭제
-    @Transactional
-    public void delete(Long id) {
-        if (!carModelRepository.existsById(id)) {
-            throw new EntityNotFoundException("삭제할 차량 모델을 찾을 수 없습니다.");
+            CarModel model = carModelRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("차종 id 없음 =" + id));
+
+            if (dto.getCarCategoryId() != null) {
+                CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
+                        .orElseThrow(() -> new EntityNotFoundException("카테고리 id 없음 =" + dto.getCarCategoryId()));
+                model.setCarCategory(category);
+            }
+
+            if (dto.getFuelType() != null) model.setFuelType(dto.getFuelType());
+            if (dto.getCustomEfficiency() != null) model.setCustomEfficiency(dto.getCustomEfficiency());
+
+            return CarModelResponseDto.fromEntity(model);
         }
-        carModelRepository.deleteById(id);
-    }
 
-}
+        // 전체 수정
+        @Transactional
+        public List<CarModelResponseDto> updateMultiple(List<CarModelRequestDto> dtoList) {
+            return dtoList.stream()
+                    .map(dto -> updateSingle(dto.getId(), dto))
+                    .collect(Collectors.toList());
+        }
+        // 삭제
+        @Transactional
+        public void deleteCarModel(Long id) {
+            CarModel model = carModelRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("차종 id 없음 =" + id));
+            carModelRepository.delete(model);
+        }
+        // 필수값 검증
+        private void validateCreate(CarModelRequestDto dto) {
+            if (dto.getCarCategoryId() == null) throw new IllegalArgumentException("카테고리Id 필수");
+            if (dto.getFuelType() == null) throw new IllegalArgumentException("연료종류 필수");
+            if (dto.getCustomEfficiency() == null) throw new IllegalArgumentException("연비 필수");
+        }
+
+        private void validateUpdate(CarModelRequestDto dto) {
+            if (dto.getCarCategoryId() != null && dto.getCarCategoryId() <= 0)
+                throw new IllegalArgumentException("카테고리Id 유효하지 않음");
+        }
+    }

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SupplyCustomerRequestDto {
+    public class SupplyCustomerRequestDto {
 
     private Long id;
 
