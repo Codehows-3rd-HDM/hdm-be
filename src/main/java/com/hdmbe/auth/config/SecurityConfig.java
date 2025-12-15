@@ -40,7 +40,9 @@ public class SecurityConfig {
                 // 4. URL별 접근 권한 관리
                 .authorizeHttpRequests(auth -> auth
                         // [SUPERADMIN]
-                        .requestMatchers("/superadmin/**").hasAnyRole("SUPERADMIN")
+                        .requestMatchers("/superadmin/**")
+//                        .hasAnyRole("SUPERADMIN")
+                        .permitAll()
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]

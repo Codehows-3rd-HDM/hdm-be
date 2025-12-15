@@ -26,23 +26,20 @@ public class CarModelController {
 
     // 조회 + 검색 (페이지네이션)
     @GetMapping("/search")
-    public  Page<CarModelResponseDto> search(
+    public Page<CarModelResponseDto> search(
             @RequestParam(required = false) Long carCategoryId,
             @RequestParam(required = false) String fuelType,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
-    ) {
+            @RequestParam(defaultValue = "15") int size) {
         return carModelService.searchCarModels(carCategoryId, fuelType, keyword, page, size);
     }
-
 
     // 단일 수정
     @PutMapping("/{id}")
     public CarModelResponseDto updateSingle(
             @PathVariable Long id,
-            @RequestBody CarModelRequestDto dto
-    ) {
+            @RequestBody CarModelRequestDto dto) {
         return carModelService.updateSingle(id, dto);
     }
 

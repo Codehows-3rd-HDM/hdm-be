@@ -12,6 +12,7 @@ public class OperationPurposeRequestDto {
     // 등록용
     private String purposeName;
     private Integer defaultScope;
+    private Integer defaultScopeId;
 
     // 검색용
     private String purposeNameFilter;
