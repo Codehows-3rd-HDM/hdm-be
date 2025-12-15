@@ -58,6 +58,17 @@ public class RegistrationOptionsController {
                         .collect(Collectors.toList())
         );
 
+        // 2-1. 협력사/업체 상세정보 (COMPANY_LIST - id, name, oneWayDistance)
+        options.put("COMPANY_LIST",
+                companyService.getAll().stream()
+                        .map(dto -> Map.<String, Object>of(
+                        "id", dto.getId(),
+                        "name", dto.getCompanyName(),
+                        "oneWayDistance", dto.getOneWayDistance() != null ? dto.getOneWayDistance() : 0
+                ))
+                        .collect(Collectors.toList())
+        );
+
         // 3. 차종 대분류 (CAT_LARGE_OPTIONS) - 부모 카테고리
         List<Map<String, Object>> catLarge = carCategories.stream()
                 .filter(dto -> dto.getParentId() == null)
@@ -116,8 +127,8 @@ public class RegistrationOptionsController {
         // 7. Scope (SCOPE_OPTIONS)
         options.put("SCOPE_OPTIONS", List.of(
                 Map.<String, Object>of("id", 1, "name", "Scope1"),
-                Map.<String, Object>of("id", 2, "name", "Scope3"),
-                Map.<String, Object>of("id", 3, "name", "기타")
+                Map.<String, Object>of("id", 3, "name", "Scope3"),
+                Map.<String, Object>of("id", 4, "name", "기타")
         ));
 
         // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
