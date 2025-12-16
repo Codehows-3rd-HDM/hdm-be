@@ -72,6 +72,7 @@ public class CarModelService {
         return result.map(CarModelResponseDto::fromEntity);
     }
 
+
     // 단일 수정
     @Transactional
     public CarModelResponseDto updateSingle(Long id, CarModelRequestDto dto) {

@@ -5,7 +5,7 @@ import com.hdmbe.carModel.dto.CarModelResponseDto;
 import com.hdmbe.carModel.service.CarModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +54,6 @@ public class CarModelController {
     public void delete(@PathVariable Long id) {
         carModelService.deleteCarModel(id);
     }
+
 
 }
