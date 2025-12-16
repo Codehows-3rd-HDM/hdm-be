@@ -31,27 +31,50 @@ public class CompanyService {
     // 등록
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto request) {
-            validateCreate(request);
+        validateCreate(request);
 
-            SupplyType supplyType = supplyTypeRepository.findById(request.getSupplyTypeId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음"));
+        // SupplyType 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
+        SupplyType supplyType;
+        if (dto.getSupplyTypeId() != null) {
+            supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다"));
+        } else if (dto.getSupplyTypeName() != null && !dto.getSupplyTypeName().isEmpty()) {
+            List<SupplyType> types = supplyTypeRepository.findAll();
+            supplyType = types.stream()
+                    .filter(t -> t.getSupplyTypeName().equals(dto.getSupplyTypeName()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다: " + dto.getSupplyTypeName()));
+        } else {
+            throw new IllegalArgumentException("공급 유형 ID 또는 이름이 필요합니다");
+        }
 
-            SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(request.getSupplyCustomerId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
+        // SupplyCustomer 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
+        SupplyCustomer supplyCustomer;
+        if (dto.getCustomerId() != null) {
+            supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
+                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다"));
+        } else if (dto.getCustomerName() != null && !dto.getCustomerName().isEmpty()) {
+            List<SupplyCustomer> customers = supplyCustomerRepository.findAll();
+            supplyCustomer = customers.stream()
+                    .filter(c -> c.getCustomerName().equals(dto.getCustomerName()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다: " + dto.getCustomerName()));
+        } else {
+            throw new IllegalArgumentException("공급 고객 ID 또는 이름이 필요합니다");
+        }
 
-            Company company = Company.builder()
-                    .companyName(request.getCompanyName())
-                    .supplyType(supplyType)
-                    .supplyCustomer(supplyCustomer)
-                    .oneWayDistance(request.getOneWayDistance())
-                    .address(request.getAddress())
-                    .remark(request.getRemark())
-                    .build();
+        Company company = Company.builder()
+                .companyName(request.getCompanyName())
+                .supplyType(supplyType)
+                .supplyCustomer(supplyCustomer)
+                .oneWayDistance(request.getOneWayDistance())
+                .address(request.getAddress())
+                .remark(request.getRemark())
+                .build();
 
         companyRepository.save(company);
         return CompanyResponseDto.fromEntity(company);
-        }
-
+    }
 
     // 전체 조회, 검색
     @Transactional(readOnly = true)
@@ -62,8 +85,7 @@ public class CompanyService {
             String address,
             String keyword,
             int page,
-            int size
-    ) {
+            int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         Page<Company> result = companyRepository.search(
@@ -72,8 +94,7 @@ public class CompanyService {
                 supplyCustomerId,
                 address,
                 keyword,
-                pageable
-        );
+                pageable);
 
         return result.map(CompanyResponseDto::fromEntity);
     }
@@ -115,6 +136,7 @@ public class CompanyService {
 
         return CompanyResponseDto.fromEntity(company);
     }
+
     // 전체 수정
     @Transactional
     public List<CompanyResponseDto> updateMultiple(List<CompanyRequestDto> requests) {
@@ -130,6 +152,7 @@ public class CompanyService {
                 .orElseThrow(() -> new EntityNotFoundException("협력사 id 없음 =" + id));
         companyRepository.delete(company);
     }
+
     private void validateCreate(CompanyRequestDto request) {
 
         if (request.getCompanyName() == null || request.getCompanyName().isBlank())
