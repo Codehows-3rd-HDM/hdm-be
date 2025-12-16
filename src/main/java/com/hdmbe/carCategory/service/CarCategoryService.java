@@ -28,7 +28,7 @@ public class CarCategoryService {
         }
 
         CarCategory category = CarCategory.builder()
-                .categoryName(requestDto.getCategoryName())
+                .categoryName(requestDto.getCategoryId())
                 .parentCategory(parent)
                 .build();
 

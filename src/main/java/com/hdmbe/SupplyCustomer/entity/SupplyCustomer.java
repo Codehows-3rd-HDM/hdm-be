@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class SupplyCustomer extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -32,5 +33,6 @@ public class SupplyCustomer extends BaseTimeEntity {
     private String remark;
 
     @OneToMany(mappedBy = "supplyCustomer", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Company> companies = new ArrayList<>();
 }

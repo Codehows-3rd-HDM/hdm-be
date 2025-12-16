@@ -13,10 +13,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "CAR_MODEL")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CarModel extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -40,5 +43,6 @@ public class CarModel extends BaseTimeEntity {
     //(NUMERIC) 타입을 안전한 소수계산을 위해 사용함
 
     @OneToMany(mappedBy = "carModel", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Vehicle> vehicles = new ArrayList<>();
 }

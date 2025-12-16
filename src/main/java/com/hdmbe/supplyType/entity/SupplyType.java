@@ -10,10 +10,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "SUPPLY_TYPE")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SupplyType extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -27,5 +30,6 @@ public class SupplyType extends BaseTimeEntity {
 
     // 업체명
     @OneToMany(mappedBy = "supplyType", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Company> companies = new ArrayList<>();
 }

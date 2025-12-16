@@ -10,10 +10,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "OPERATION_PURPOSE")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class OperationPurpose extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -30,5 +33,6 @@ public class OperationPurpose extends BaseTimeEntity {
     private Integer defaultScope;
 
     @OneToMany(mappedBy = "operationPurpose", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Vehicle> vehicles = new ArrayList<>();
 }

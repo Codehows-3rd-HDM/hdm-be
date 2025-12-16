@@ -13,10 +13,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "COMPANY")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Company extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -51,5 +54,6 @@ public class Company extends BaseTimeEntity {
     private String remark;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Vehicle> vehicles = new ArrayList<>();
 }
