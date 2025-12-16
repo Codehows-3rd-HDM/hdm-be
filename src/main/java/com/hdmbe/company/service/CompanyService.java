@@ -3,9 +3,13 @@ package com.hdmbe.company.service;
 import com.hdmbe.company.dto.CompanyRequestDto;
 import com.hdmbe.company.dto.CompanyResponseDto;
 import com.hdmbe.company.entity.Company;
+import com.hdmbe.company.entity.CompanySupplyTypeMap;
+import com.hdmbe.company.entity.CompanySupplyCustomerMap;
 import com.hdmbe.supplyType.entity.SupplyType;
 import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.company.repository.CompanyRepository;
+import com.hdmbe.company.repository.CompanySupplyTypeMapRepository;
+import com.hdmbe.company.repository.CompanySupplyCustomerMapRepository;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +29,8 @@ import java.util.stream.Collectors;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final CompanySupplyTypeMapRepository companySupplyTypeMapRepository;
+    private final CompanySupplyCustomerMapRepository companySupplyCustomerMapRepository;
     private final SupplyTypeRepository supplyTypeRepository;
     private final SupplyCustomerRepository supplyCustomerRepository;
 
@@ -65,14 +71,26 @@ public class CompanyService {
 
         Company company = Company.builder()
                 .companyName(request.getCompanyName())
-//                .supplyType(supplyType)
-//                .supplyCustomer(supplyCustomer)
                 .oneWayDistance(request.getOneWayDistance())
                 .address(request.getAddress())
                 .remark(request.getRemark())
                 .build();
 
         companyRepository.save(company);
+
+        // 매핑 데이터 생성
+        CompanySupplyTypeMap supplyTypeMap = CompanySupplyTypeMap.builder()
+                .company(company)
+                .supplyType(supplyType)
+                .build();
+        companySupplyTypeMapRepository.save(supplyTypeMap);
+
+        CompanySupplyCustomerMap supplyCustomerMap = CompanySupplyCustomerMap.builder()
+                .company(company)
+                .supplyCustomer(supplyCustomer)
+                .build();
+        companySupplyCustomerMapRepository.save(supplyCustomerMap);
+
         return CompanyResponseDto.fromEntity(company);
         }
 

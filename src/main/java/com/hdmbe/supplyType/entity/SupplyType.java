@@ -26,8 +26,4 @@ public class SupplyType extends BaseTimeEntity {
     @Column(name = "supply_type_name", length = 30, unique = true)
     private String supplyTypeName;
 
-    // 업체명
-    @OneToMany(mappedBy = "supplyType", cascade = CascadeType.ALL)
-    @Builder.Default
-    private List<Company> companies = new ArrayList<>();
 }

@@ -1,7 +1,8 @@
 package com.hdmbe.company.entity;
 
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
-
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,4 +46,30 @@ public class Company extends BaseTimeEntity {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Vehicle> vehicles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<CompanySupplyTypeMap> supplyTypeMaps = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<CompanySupplyCustomerMap> supplyCustomerMaps = new ArrayList<>();
+
+    // 현재 유효한 공급유형 조회
+    public SupplyType getCurrentSupplyType() {
+        return supplyTypeMaps.stream()
+                .filter(map -> map.getEndDate() == null || map.getEndDate().isAfter(java.time.LocalDate.now()))
+                .findFirst()
+                .map(CompanySupplyTypeMap::getSupplyType)
+                .orElse(null);
+    }
+
+    // 현재 유효한 공급고객 조회
+    public SupplyCustomer getCurrentSupplyCustomer() {
+        return supplyCustomerMaps.stream()
+                .filter(map -> map.getEndDate() == null || map.getEndDate().isAfter(java.time.LocalDate.now()))
+                .findFirst()
+                .map(CompanySupplyCustomerMap::getSupplyCustomer)
+                .orElse(null);
+    }
 }
