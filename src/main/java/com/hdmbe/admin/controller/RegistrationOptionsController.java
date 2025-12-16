@@ -72,14 +72,14 @@ public class RegistrationOptionsController {
         // 3. 차종 대분류 (CAT_LARGE_OPTIONS) - 부모 카테고리
         List<Map<String, Object>> catLarge = carCategories.stream()
                 .filter(dto -> dto.getParentId() == null)
-                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()))
+                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getParentCategoryName()))
                 .collect(Collectors.toList());
         options.put("CAT_LARGE_OPTIONS", catLarge);
 
         // 4. 차종 소분류 (CAT_SMALL_OPTIONS) - 모든 자식 카테고리
         List<Map<String, Object>> catSmall = carCategories.stream()
                 .filter(dto -> dto.getParentId() != null)
-                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()))
+                .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getChildCategoryName()))
                 .collect(Collectors.toList());
         options.put("CAT_SMALL_OPTIONS", catSmall);
 
@@ -88,7 +88,7 @@ public class RegistrationOptionsController {
         // map parent id to name
         Map<Long, String> parentNames = carCategories.stream()
                 .filter(dto -> dto.getParentId() == null)
-                .collect(Collectors.toMap(dto -> dto.getId(), dto -> dto.getCategoryName()));
+                .collect(Collectors.toMap(dto -> dto.getId(), dto -> dto.getParentCategoryName()));
 
         carCategories.stream()
                 .filter(dto -> dto.getParentId() != null)
@@ -99,7 +99,7 @@ public class RegistrationOptionsController {
                         return;
                     }
                     carCategoryMap.computeIfAbsent(parentName, k -> new java.util.ArrayList<>())
-                            .add(Map.<String, Object>of("id", dto.getId(), "name", dto.getCategoryName()));
+                            .add(Map.<String, Object>of("id", dto.getId(), "name", dto.getParentCategoryName()));
                 });
 
         options.put("CAR_CATEGORY_MAP", carCategoryMap);

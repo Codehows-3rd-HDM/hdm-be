@@ -29,6 +29,4 @@ public class OperationPurpose extends BaseTimeEntity {
     @Column(name = "default_scope")
     private Integer defaultScope;
 
-    @OneToMany(mappedBy = "operationPurpose", cascade = CascadeType.ALL)
-    private List<Vehicle> vehicles = new ArrayList<>();
 }

@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,38 +34,38 @@ public class CompanyService {
 
         // SupplyType 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         SupplyType supplyType;
-        if (dto.getSupplyTypeId() != null) {
-            supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
+        if (request.getSupplyTypeId() != null) {
+            supplyType = supplyTypeRepository.findById(request.getSupplyTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다"));
-        } else if (dto.getSupplyTypeName() != null && !dto.getSupplyTypeName().isEmpty()) {
+        } else if (request.getSupplyTypeName() != null && !request.getSupplyTypeName().isEmpty()) {
             List<SupplyType> types = supplyTypeRepository.findAll();
             supplyType = types.stream()
-                    .filter(t -> t.getSupplyTypeName().equals(dto.getSupplyTypeName()))
+                    .filter(t -> t.getSupplyTypeName().equals(request.getSupplyTypeName()))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다: " + dto.getSupplyTypeName()));
+                    .orElseThrow(() -> new IllegalArgumentException("공급 유형을 찾을 수 없습니다: " + request.getSupplyTypeName()));
         } else {
             throw new IllegalArgumentException("공급 유형 ID 또는 이름이 필요합니다");
         }
 
         // SupplyCustomer 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         SupplyCustomer supplyCustomer;
-        if (dto.getCustomerId() != null) {
-            supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
+        if (request.getCustomerId() != null) {
+            supplyCustomer = supplyCustomerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다"));
-        } else if (dto.getCustomerName() != null && !dto.getCustomerName().isEmpty()) {
+        } else if (request.getCustomerName() != null && !request.getCustomerName().isEmpty()) {
             List<SupplyCustomer> customers = supplyCustomerRepository.findAll();
             supplyCustomer = customers.stream()
-                    .filter(c -> c.getCustomerName().equals(dto.getCustomerName()))
+                    .filter(c -> c.getCustomerName().equals(request.getCustomerName()))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다: " + dto.getCustomerName()));
+                    .orElseThrow(() -> new IllegalArgumentException("공급 고객을 찾을 수 없습니다: " + request.getCustomerName()));
         } else {
             throw new IllegalArgumentException("공급 고객 ID 또는 이름이 필요합니다");
         }
 
         Company company = Company.builder()
                 .companyName(request.getCompanyName())
-                .supplyType(supplyType)
-                .supplyCustomer(supplyCustomer)
+//                .supplyType(supplyType)
+//                .supplyCustomer(supplyCustomer)
                 .oneWayDistance(request.getOneWayDistance())
                 .address(request.getAddress())
                 .remark(request.getRemark())
@@ -76,27 +75,34 @@ public class CompanyService {
         return CompanyResponseDto.fromEntity(company);
     }
 
-    // 전체 조회, 검색
+//    // 전체 조회, 검색
+//    @Transactional(readOnly = true)
+//    public Page<CompanyResponseDto> search(
+//            String companyName,
+//            String supplyTypeId,
+//            String supplyCustomerId,
+//            String address,
+//            String keyword,
+//            int page,
+//            int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+//
+//        Page<Company> result = companyRepository.search(
+//                companyName,
+//                supplyTypeId,
+//                supplyCustomerId,
+//                address,
+//                keyword,
+//                pageable);
+//
+//        return result.map(CompanyResponseDto::fromEntity);
+//    }
+    // 전체 조회(드롭다운용)
     @Transactional(readOnly = true)
-    public Page<CompanyResponseDto> search(
-            String companyName,
-            String supplyTypeId,
-            String supplyCustomerId,
-            String address,
-            String keyword,
-            int page,
-            int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-
-        Page<Company> result = companyRepository.search(
-                companyName,
-                supplyTypeId,
-                supplyCustomerId,
-                address,
-                keyword,
-                pageable);
-
-        return result.map(CompanyResponseDto::fromEntity);
+    public List<CompanyResponseDto> getAll() {
+        return companyRepository.findAll().stream()
+                .map(CompanyResponseDto::fromEntity)
+                .toList();
     }
 
     // 단일 수정
@@ -110,17 +116,17 @@ public class CompanyService {
             company.setCompanyName(dto.getCompanyName());
         }
 
-        if (dto.getSupplyTypeId() != null) {
-            SupplyType supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음"));
-            company.setSupplyType(supplyType);
-        }
-
-        if (dto.getSupplyCustomerId() != null) {
-            SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getSupplyCustomerId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
-            company.setSupplyCustomer(supplyCustomer);
-        }
+//        if (dto.getSupplyTypeId() != null) {
+//            SupplyType supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
+//                    .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음"));
+//            company.setSupplyType(supplyType);
+//        }
+//
+//        if (dto.getCustomerId() != null) {
+//            SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
+//                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
+//            company.setSupplyCustomer(supplyCustomer);
+//        }
 
         if (dto.getOneWayDistance() != null) {
             company.setOneWayDistance(dto.getOneWayDistance());
@@ -161,10 +167,10 @@ public class CompanyService {
         if (request.getSupplyTypeId() == null)
             throw new IllegalArgumentException("공급유형 필수");
 
-        if (request.getSupplyCustomerId() == null)
+        if (request.getCustomerId() == null)
             throw new IllegalArgumentException("공급고객 필수");
 
-        if (request.getOneWayDistance() == null)
+        if (request.getOneWayDistance() == null )
             throw new IllegalArgumentException("편도거리 필수");
 
         if (request.getAddress() == null || request.getAddress().isBlank())

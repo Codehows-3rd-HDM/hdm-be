@@ -1,8 +1,7 @@
 package com.hdmbe.company.entity;
 
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
-import com.hdmbe.supplyType.entity.SupplyType;
-import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
+
 import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,23 +27,13 @@ public class Company extends BaseTimeEntity {
     @Column(name = "company_name", length = 50, nullable = false, unique = true)
     private String companyName;
 
-    // 업체명
+    // 편도거리
     @Column(name = "one_way_distance", precision = 10, scale = 2)
     private BigDecimal oneWayDistance;
 
     // 주소
     @Column(name = "address", nullable = false)
     private String address;
-
-    // 공정 ID
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supply_Type_id", nullable = false)
-    private SupplyType supplyType;
-
-    // 제품 분류 ID
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private SupplyCustomer supplyCustomer;
 
     // 비고
     @Column(name = "remark")

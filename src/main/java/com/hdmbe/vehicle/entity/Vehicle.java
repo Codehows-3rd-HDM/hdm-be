@@ -47,11 +47,6 @@ public class Vehicle extends BaseTimeEntity {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    // 운행목적 ID
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purpose_id", nullable = false)
-    private OperationPurpose operationPurpose;
-
     // 운행거리
     @Column(name = "operation_distance", precision = 10, scale = 2, nullable = false)
     private BigDecimal operationDistance;

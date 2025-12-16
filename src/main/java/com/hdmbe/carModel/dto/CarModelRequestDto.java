@@ -15,12 +15,11 @@ public class CarModelRequestDto {
     private Long id;
 
     private Long carCategoryId;
+    private String childCategoryName;
     private FuelType fuelType;
     private BigDecimal customEfficiency;
 
     // 필터링 전체 검색 (All)
     private String keyword;
-
-
 
 }
