@@ -9,5 +9,6 @@ import lombok.*;
 @Builder
 public class CarCategoryRequestDto {
     private String categoryId;
+    private String categoryName;
     private Long parentId;
 }

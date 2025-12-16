@@ -31,7 +31,7 @@ public class CompanyService {
     // 등록
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto request) {
-        validateCreate(request);
+            validateCreate(request);
 
         // SupplyType 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         SupplyType supplyType;
@@ -65,8 +65,8 @@ public class CompanyService {
 
         Company company = Company.builder()
                 .companyName(request.getCompanyName())
-                .supplyType(supplyType)
-                .supplyCustomer(supplyCustomer)
+//                .supplyType(supplyType)
+//                .supplyCustomer(supplyCustomer)
                 .oneWayDistance(request.getOneWayDistance())
                 .address(request.getAddress())
                 .remark(request.getRemark())
@@ -74,9 +74,31 @@ public class CompanyService {
 
         companyRepository.save(company);
         return CompanyResponseDto.fromEntity(company);
-    }
+        }
 
-    // 전체 조회, 검색
+//    // 전체 조회, 검색
+//    @Transactional(readOnly = true)
+//    public Page<CompanyResponseDto> search(
+//            String companyName,
+//            String supplyTypeId,
+//            String supplyCustomerId,
+//            String address,
+//            String keyword,
+//            int page,
+//            int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+//
+//        Page<Company> result = companyRepository.search(
+//                companyName,
+//                supplyTypeId,
+//                supplyCustomerId,
+//                address,
+//                keyword,
+//                pageable);
+//
+//        return result.map(CompanyResponseDto::fromEntity);
+//    }
+    // 전체 조회(드롭다운용)
     @Transactional(readOnly = true)
     public Page<CompanyResponseDto> search(
             String companyName,
@@ -85,7 +107,8 @@ public class CompanyService {
             String address,
             String keyword,
             int page,
-            int size) {
+            int size
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         Page<Company> result = companyRepository.search(
@@ -94,7 +117,8 @@ public class CompanyService {
                 supplyCustomerId,
                 address,
                 keyword,
-                pageable);
+                pageable
+        );
 
         return result.map(CompanyResponseDto::fromEntity);
     }
@@ -118,17 +142,17 @@ public class CompanyService {
             company.setCompanyName(dto.getCompanyName());
         }
 
-        if (dto.getSupplyTypeId() != null) {
-            SupplyType supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음"));
-            company.setSupplyType(supplyType);
-        }
-
-        if (dto.getCustomerId() != null) {
-            SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
-                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
-            company.setSupplyCustomer(supplyCustomer);
-        }
+//        if (dto.getSupplyTypeId() != null) {
+//            SupplyType supplyType = supplyTypeRepository.findById(dto.getSupplyTypeId())
+//                    .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음"));
+//            company.setSupplyType(supplyType);
+//        }
+//
+//        if (dto.getCustomerId() != null) {
+//            SupplyCustomer supplyCustomer = supplyCustomerRepository.findById(dto.getCustomerId())
+//                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
+//            company.setSupplyCustomer(supplyCustomer);
+//        }
 
         if (dto.getOneWayDistance() != null) {
             company.setOneWayDistance(dto.getOneWayDistance());
@@ -179,9 +203,8 @@ public class CompanyService {
             throw new IllegalArgumentException("편도거리 필수");
         }
 
-        if (request.getAddress() == null || request.getAddress().isBlank()) {
+        if (request.getAddress() == null || request.getAddress().isBlank())
             throw new IllegalArgumentException("주소 필수");
-        }
     }
 
     private void validateUpdate(CompanyRequestDto request) {

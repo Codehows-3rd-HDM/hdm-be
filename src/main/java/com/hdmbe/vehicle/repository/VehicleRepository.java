@@ -13,16 +13,16 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     List<Vehicle> findByDriverMemberIdContaining(String driverMemberId);
 
-    @Query("""
-        SELECT v FROM Vehicle v
-        JOIN v.company c
-        JOIN v.carModel cm
-        JOIN v.operationPurpose op
-        WHERE v.carNumber LIKE %:keyword%
-           OR c.companyName LIKE %:keyword%
-           OR v.driverMemberId LIKE %:keyword%
-           OR v.carName LIKE %:keyword%
-           OR op.purposeName LIKE %:keyword%
-    """)
-    List<Vehicle> searchByKeyword(@Param("keyword") String keyword);
+//    @Query("""
+//        SELECT v FROM Vehicle v
+//        JOIN v.company c
+//        JOIN v.carModel cm
+//        JOIN v.operationPurpose op
+//        WHERE v.carNumber LIKE %:keyword%
+//           OR c.companyName LIKE %:keyword%
+//           OR v.driverMemberId LIKE %:keyword%
+//           OR v.carName LIKE %:keyword%
+//           OR op.purposeName LIKE %:keyword%
+//    """)
+//    List<Vehicle> searchByKeyword(@Param("keyword") String keyword);
 }

@@ -10,9 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "OPERATION_PURPOSE")
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class OperationPurpose extends BaseTimeEntity {

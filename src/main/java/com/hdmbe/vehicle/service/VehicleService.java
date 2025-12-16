@@ -80,7 +80,7 @@ public class VehicleService {
                         .carModel(carModel)
                         .driverMemberId(dto.getDriverMemberId())
                         .company(company)
-                        .operationPurpose(operationPurpose)
+//                        .operationPurpose(operationPurpose)
                         .operationDistance(dto.getOperationDistance())
                         .remark(dto.getRemark())
                         .build()
@@ -111,8 +111,8 @@ public class VehicleService {
             result = vehicleRepository.findAll().stream()
                     .filter(v -> v.getCompany().getCompanyName().contains(dto.getCompanyNameFilter()))
                     .toList();
-        } else if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) {
-            result = vehicleRepository.searchByKeyword(dto.getKeyword());
+//        } else if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) {
+//            result = vehicleRepository.searchByKeyword(dto.getKeyword());
         } else {
             throw new IllegalArgumentException("최소 하나의 검색 조건이 필요합니다.");
         }

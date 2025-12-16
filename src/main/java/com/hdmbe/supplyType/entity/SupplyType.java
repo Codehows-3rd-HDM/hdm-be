@@ -10,9 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "SUPPLY_TYPE")
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SupplyType extends BaseTimeEntity {
