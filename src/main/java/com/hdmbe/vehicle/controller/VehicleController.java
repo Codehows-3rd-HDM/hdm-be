@@ -4,6 +4,7 @@ import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
 import com.hdmbe.vehicle.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,32 +17,31 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    // 등록
-    @PostMapping
-    public ResponseEntity<VehicleResponseDto> create(@RequestBody VehicleRequestDto dto) {
-        return ResponseEntity.ok(vehicleService.create(dto));
-    }
+//    // 등록
+//    @PostMapping
+//    public ResponseEntity<VehicleResponseDto> create(@RequestBody VehicleRequestDto dto) {
+//        return ResponseEntity.ok(vehicleService.create(dto));
+//    }
 
-    // 전체 조회
-    @GetMapping
-    public ResponseEntity<List<VehicleResponseDto>> getAll() {
-        return ResponseEntity.ok(vehicleService.getAll());
-    }
-
-    // 검색
-    @GetMapping("/search")
-    public ResponseEntity<List<VehicleResponseDto>> search(
-            @RequestParam(required = false) String keyword,
+    // 전체 조회 + 검색
+    @GetMapping("search")
+    public Page<VehicleResponseDto> search(
             @RequestParam(required = false) String carNumber,
+            @RequestParam(required = false) Long purposeId,
             @RequestParam(required = false) String companyName,
-            @RequestParam(required = false) String driverMemberId
+            @RequestParam(required = false) String driverMemberId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
     ) {
-        VehicleRequestDto dto = VehicleRequestDto.builder()
-                .keyword(keyword)
-                .carNumberFilter(carNumber)
-                .companyNameFilter(companyName)
-                .driverMemberIdFilter(driverMemberId)
-                .build();
-        return ResponseEntity.ok(vehicleService.search(dto));
+        return vehicleService.search(
+                carNumber,
+                purposeId,
+                companyName,
+                driverMemberId,
+                keyword,
+                page,
+                size
+        );
     }
 }

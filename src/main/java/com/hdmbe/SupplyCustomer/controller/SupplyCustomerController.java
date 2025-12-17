@@ -23,22 +23,18 @@ public class SupplyCustomerController {
         return ResponseEntity.ok(supplyCustomerService.create(dto));
     }
 
-//    // 조회+검색 (페이지네이션)
-//    @GetMapping("/search")
-//    public Page<SupplyCustomerResponseDto> search(
-//            @RequestParam(required = false) String customerName,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "15") int size
-//    ) {
-//        return supplyCustomerService.search(
-//                customerName,
-//                page,
-//                size
-//        );
-//    }
-//    // 단일 수정
-//
-//    // 전체 수정
-//
-//    // 삭제
+   // 조회+검색 (페이지네이션)
+    @GetMapping("search")
+    public Page<SupplyCustomerResponseDto> search(
+        @RequestParam(required = false) String customerName,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "15") int size
+) {
+    return supplyCustomerService.search(
+            customerName,
+            page,
+            size
+    );
+}
+
 }

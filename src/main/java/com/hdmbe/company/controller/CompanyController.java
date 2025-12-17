@@ -24,26 +24,26 @@ public class CompanyController {
     }
 
 //    // 조회,검색
-//    @GetMapping("/search")
-//    public Page<CompanyResponseDto> search(
-//            @RequestParam(required = false) String companyName,
-//            @RequestParam(required = false) String supplyTypeName,
-//            @RequestParam(required = false) String supplyCustomerName,
-//            @RequestParam(required = false) String address,
-//            @RequestParam(required = false) String keyword,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "15") int size
-//    ) {
-//        return companyService.search(
-//                companyName,
-//                supplyTypeName,
-//                supplyCustomerName,
-//                address,
-//                keyword,
-//                page,
-//                size
-//        );
-//    }
+    @GetMapping("/search")
+    public Page<CompanyResponseDto> search(
+            @RequestParam(required = false) String companyName,
+            @RequestParam(required = false) String supplyTypeName,
+            @RequestParam(required = false) String supplyCustomerName,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return companyService.search(
+                companyName,
+                supplyTypeName,
+                supplyCustomerName,
+                address,
+                keyword,
+                page,
+                size
+        );
+    }
 
     // 단일 수정
     @PutMapping("/{id}")

@@ -3,6 +3,7 @@ package com.hdmbe.carModel.controller;
 import com.hdmbe.carModel.dto.CarModelRequestDto;
 import com.hdmbe.carModel.dto.CarModelResponseDto;
 import com.hdmbe.carModel.service.CarModelService;
+import com.hdmbe.commonModule.constant.FuelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +28,23 @@ public class CarModelController {
     // 조회 + 검색 (페이지네이션)
     @GetMapping("/search")
     public Page<CarModelResponseDto> search(
+            @RequestParam(required = false) Long parentCategoryId,
             @RequestParam(required = false) Long carCategoryId,
-            @RequestParam(required = false) String fuelType,
+            @RequestParam(required = false) FuelType fuelType,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size) {
-        return carModelService.searchCarModels(carCategoryId, fuelType, keyword, page, size);
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return carModelService.search(
+                parentCategoryId,
+                carCategoryId,
+                fuelType,
+                keyword,
+                page,
+                size
+        );
     }
+
 
     // 단일 수정
     @PutMapping("/{id}")

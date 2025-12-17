@@ -5,7 +5,6 @@ import com.hdmbe.carbonEmission.entity.CarbonEmissionDailyLog;
 import com.hdmbe.carbonEmission.entity.CarbonEmissionMonthlyLog;
 import com.hdmbe.company.entity.Company;
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
-import com.hdmbe.operationPurpose.entity.OperationPurpose;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;

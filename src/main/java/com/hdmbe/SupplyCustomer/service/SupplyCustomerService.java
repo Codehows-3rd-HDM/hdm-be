@@ -5,6 +5,10 @@ import com.hdmbe.SupplyCustomer.dto.SupplyCustomerResponseDto;
 import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,26 +38,19 @@ public class SupplyCustomerService {
         return SupplyCustomerResponseDto.fromEntity(saved);
     }
 
-    // 전체 조회
+    // 전체 조회 + 검색
     @Transactional(readOnly = true)
-    public List<SupplyCustomerResponseDto> getAll() {
-        return supplyCustomerRepository.findAll().stream()
-                .map(SupplyCustomerResponseDto::fromEntity)
-                .toList();
+    public Page<SupplyCustomerResponseDto> search(
+            String customerName,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+
+        return supplyCustomerRepository.search(
+                        customerName,
+                        pageable
+                )
+                .map(SupplyCustomerResponseDto::fromEntity);
     }
-
-    // 검색
-    @Transactional(readOnly = true)
-    public List<SupplyCustomerResponseDto> search(SupplyCustomerRequestDto dto) {
-        List<SupplyCustomer> result;
-
-        if (dto.getCustomerNameFilter() != null && !dto.getCustomerNameFilter().isEmpty()) {
-            result = supplyCustomerRepository.findByCustomerNameContaining(dto.getCustomerNameFilter());
-        } else {
-            throw new IllegalArgumentException("검색 조건이 필요합니다.");
-        }
-
-        return result.stream().map(SupplyCustomerResponseDto::fromEntity).toList();
-    }
-
 }

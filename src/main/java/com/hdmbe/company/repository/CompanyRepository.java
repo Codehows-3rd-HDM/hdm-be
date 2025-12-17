@@ -11,27 +11,38 @@ import java.util.List;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
-//    @Query("""
-//        SELECT c FROM Company c
-//        WHERE
-//            (:companyName IS NULL OR c.companyName LIKE %:companyName%)
-//            AND (:supplyTypeId IS NULL OR c.supplyType.id = :supplyTypeId)
-//            AND (:supplyCustomerId IS NULL OR c.supplyCustomer.id = :supplyCustomerId)
-//            AND (:keyword IS NULL OR (
-//                c.companyName LIKE %:keyword%
-//                OR c.address LIKE %:keyword%
-//                OR c.supplyType.supplyTypeName LIKE %:keyword%
-//               OR c.supplyCustomer.customerName LIKE %:keyword%
-//            )
-//        )
-//    """)
-//    Page<Company> search(
-//            @Param("companyName") String companyName,
-//            @Param("supplyTypeId") String supplyTypeId,
-//            @Param("supplyCustomerId") String supplyCustomerId,
-//            @Param("address") String address,
-//            @Param("keyword") String keyword,
-//            Pageable pageable
-//    );
+    @Query("""
+    SELECT DISTINCT c
+    FROM Company c
+    LEFT JOIN CompanySupplyTypeMap cstm
+        ON cstm.company = c
+        AND cstm.endDate IS NULL
+    LEFT JOIN cstm.supplyType st
+    LEFT JOIN CompanySupplyCustomerMap cscm
+        ON cscm.company = c
+        AND cscm.endDate IS NULL
+    LEFT JOIN cscm.supplyCustomer sc
+    WHERE
+        (:companyName IS NULL OR c.companyName LIKE %:companyName%)
+    AND (:supplyTypeName IS NULL OR st.supplyTypeName LIKE %:supplyTypeName%)
+    AND (:supplyCustomerName IS NULL OR sc.customerName LIKE %:supplyCustomerName%)
+    AND (:address IS NULL OR c.address LIKE %:address%)
+    AND (
+        :keyword IS NULL OR
+        c.companyName LIKE %:keyword%
+        OR c.address LIKE %:keyword%
+        OR st.supplyTypeName LIKE %:keyword%
+        OR sc.customerName LIKE %:keyword%
+    )
+""")
+    Page<Company> search(
+            @Param("companyName") String companyName,
+            @Param("supplyTypeName") String supplyTypeName,
+            @Param("supplyCustomerName") String supplyCustomerName,
+            @Param("address") String address,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
 }
 

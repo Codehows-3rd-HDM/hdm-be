@@ -5,6 +5,10 @@ import com.hdmbe.supplyType.dto.SupplyTypeResponseDto;
 import com.hdmbe.supplyType.entity.SupplyType;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,25 +33,18 @@ public class SupplyTypeService {
 
     // 전체 조회
     @Transactional(readOnly = true)
-    public List<SupplyTypeResponseDto> getAll() {
-        return supplyTypeRepository.findAll()
-                .stream()
-                .map(SupplyTypeResponseDto::fromEntity)
-                .toList();
-    }
+    public Page<SupplyTypeResponseDto> search(
+            String supplyTypeName,
+            int page,
+            int size
+    ) {
 
-    // 검색
-    @Transactional(readOnly = true)
-    public List<SupplyTypeResponseDto> search(SupplyTypeRequestDto dto) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        if (dto.getSupplyTypeNameFilter() == null || dto.getSupplyTypeNameFilter().isEmpty()) {
-            throw new IllegalArgumentException("검색 조건을 입력하세요.");
-        }
-
-        return supplyTypeRepository
-                .findBySupplyTypeNameContaining(dto.getSupplyTypeNameFilter())
-                .stream()
-                .map(SupplyTypeResponseDto::fromEntity)
-                .toList();
+        return supplyTypeRepository.search(
+                        supplyTypeName,
+                        pageable
+                )
+                .map(SupplyTypeResponseDto::fromEntity);
     }
 }

@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class OperationPurposeRequestDto {
 
+    private String id;
     // 등록용
     private String purposeName;
     private Integer defaultScope;
