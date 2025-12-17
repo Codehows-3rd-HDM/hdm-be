@@ -120,13 +120,13 @@ public class CompanyService {
         return result.map(CompanyResponseDto::fromEntity);
     }
 
-    // 전체 조회(드롭다운용)
+    // 전체 조회 (드롭다운용)
     @Transactional(readOnly = true)
     public List<CompanyResponseDto> getAll() {
         return companyRepository.findAll().stream()
                 .map(CompanyResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
+                .collect(java.util.stream.Collectors.toList()
+                    }
 
     // 단일 수정
     public CompanyResponseDto updateSingle(Long id, CompanyRequestDto dto) {

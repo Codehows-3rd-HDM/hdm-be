@@ -31,6 +31,14 @@ public class SupplyTypeService {
         return SupplyTypeResponseDto.fromEntity(saved);
     }
 
+    // 전체 조회 (드롭다운용)
+    @Transactional(readOnly = true)
+    public List<SupplyTypeResponseDto> getAll() {
+        return supplyTypeRepository.findAll().stream()
+                .map(SupplyTypeResponseDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     // 전체 조회
     @Transactional(readOnly = true)
     public Page<SupplyTypeResponseDto> search(
@@ -42,9 +50,9 @@ public class SupplyTypeService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         return supplyTypeRepository.search(
-                        supplyTypeName,
-                        pageable
-                )
+                supplyTypeName,
+                pageable
+        )
                 .map(SupplyTypeResponseDto::fromEntity);
     }
 }

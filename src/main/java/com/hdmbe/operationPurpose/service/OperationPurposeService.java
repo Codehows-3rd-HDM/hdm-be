@@ -34,6 +34,14 @@ public class OperationPurposeService {
         return OperationPurposeResponseDto.fromEntity(saved);
     }
 
+    // 전체 조회 (드롭다운용)
+    @Transactional(readOnly = true)
+    public List<OperationPurposeResponseDto> getAll() {
+        return operationPurposeRepository.findAll().stream()
+                .map(OperationPurposeResponseDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     // 전체 조회+ 검색
     @Transactional(readOnly = true)
     public Page<OperationPurposeResponseDto> search(
@@ -51,8 +59,8 @@ public class OperationPurposeService {
                 Sort.by("id").ascending()
         );
 
-        Page<OperationPurpose> result =
-                operationPurposeRepository.search(
+        Page<OperationPurpose> result
+                = operationPurposeRepository.search(
                         purposeName,
                         scope,
                         keyword,

@@ -38,6 +38,14 @@ public class SupplyCustomerService {
         return SupplyCustomerResponseDto.fromEntity(saved);
     }
 
+    // 전체 조회 (드롭다운용)
+    @Transactional(readOnly = true)
+    public List<SupplyCustomerResponseDto> getAll() {
+        return supplyCustomerRepository.findAll().stream()
+                .map(SupplyCustomerResponseDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     // 전체 조회 + 검색
     @Transactional(readOnly = true)
     public Page<SupplyCustomerResponseDto> search(
@@ -48,9 +56,9 @@ public class SupplyCustomerService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         return supplyCustomerRepository.search(
-                        customerName,
-                        pageable
-                )
+                customerName,
+                pageable
+        )
                 .map(SupplyCustomerResponseDto::fromEntity);
     }
 }
