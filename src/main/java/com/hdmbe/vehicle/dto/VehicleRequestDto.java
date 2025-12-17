@@ -17,16 +17,23 @@ public class VehicleRequestDto {
 
     private Long id;
 
-    // 등록용
+    // 차량번호
     private String carNumber;
+    // 운행목적 ID
     private Long operationPurposeId;
+    // 협력사 ID
     private Long companyId;
+    // 사원번호
     private String driverMemberId;
-    private BigDecimal operationDistance;
+    // 차종 대분류 ID
+    private Long parentCategoryId;
+    // 차종 소분류 ID
     private Long carCategoryId;
-    private Long carModelId;
+    // 차량 모델명
     private String carName;
+    // 연료 종류
     private FuelType fuelType;
+    // 비고
     private String remark;
 
     // 등록용 (이름 기반) - 프론트엔드에서 이름으로 보낼 때 사용

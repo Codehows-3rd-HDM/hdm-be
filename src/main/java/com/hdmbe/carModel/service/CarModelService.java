@@ -31,7 +31,7 @@ public class CarModelService {
     @Transactional
     public CarModelResponseDto createCarModel(CarModelRequestDto dto) {
         validateCreate(dto);
-        CarCategory category = carCategoryRepository.findByCategoryName(dto.getChildCategoryName())
+        CarCategory category = carCategoryRepository.findByCategoryName(dto.getCarCategoryName())
                 .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
 
         // CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
@@ -50,26 +50,24 @@ public class CarModelService {
 
     // 조회, 검색
     @Transactional(readOnly = true)
-    public Page<CarModelResponseDto> searchCarModels(
+    public Page<CarModelResponseDto> search(
+            Long parentCategoryId,
             Long carCategoryId,
-            String fuelTypeStr,
+            FuelType fuelType,
             String keyword,
             int page,
-            int size) {
+            int size
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        FuelType fuelType = null;
-        if (fuelTypeStr != null && !fuelTypeStr.isBlank()) {
-            fuelType = FuelType.valueOf(fuelTypeStr);
-        }
-
-        Page<CarModel> result = carModelRepository.search(
-                carCategoryId,
-                fuelType,
-                (keyword == null || keyword.isBlank()) ? null : keyword,
-                pageable);
-
-        return result.map(CarModelResponseDto::fromEntity);
+        return carModelRepository.search(
+                        parentCategoryId,
+                        carCategoryId,
+                        fuelType,
+                        keyword,
+                        pageable
+                )
+                .map(CarModelResponseDto::fromEntity);
     }
 
     // 단일 수정

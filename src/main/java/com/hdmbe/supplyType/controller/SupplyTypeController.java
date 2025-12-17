@@ -4,6 +4,7 @@ import com.hdmbe.supplyType.dto.SupplyTypeRequestDto;
 import com.hdmbe.supplyType.dto.SupplyTypeResponseDto;
 import com.hdmbe.supplyType.service.SupplyTypeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,21 +24,16 @@ public class SupplyTypeController {
     }
 
     // 전체 조회
-    @GetMapping
-    public List<SupplyTypeResponseDto> getAll() {
-        return supplyTypeService.getAll();
-    }
-
-    // 검색
-    @GetMapping("/search")
-    public ResponseEntity<List<SupplyTypeResponseDto>> search(
-            @RequestParam(required = false) String supplyTypeName
+    @GetMapping("search")
+    public Page<SupplyTypeResponseDto> search(
+            @RequestParam(required = false) String supplyTypeName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
     ) {
-
-        SupplyTypeRequestDto dto = SupplyTypeRequestDto.builder()
-                .supplyTypeNameFilter(supplyTypeName)
-                .build();
-
-        return ResponseEntity.ok(supplyTypeService.search(dto));
+        return supplyTypeService.search(
+                supplyTypeName,
+                page,
+                size
+        );
     }
 }

@@ -4,7 +4,12 @@ import com.hdmbe.operationPurpose.dto.OperationPurposeRequestDto;
 import com.hdmbe.operationPurpose.dto.OperationPurposeResponseDto;
 import com.hdmbe.operationPurpose.entity.OperationPurpose;
 import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,33 +34,32 @@ public class OperationPurposeService {
         return OperationPurposeResponseDto.fromEntity(saved);
     }
 
-    // 전체 조회
+    // 전체 조회+ 검색
     @Transactional(readOnly = true)
-    public List<OperationPurposeResponseDto> getAll() {
-        return operationPurposeRepository.findAll().stream()
-                .map(OperationPurposeResponseDto::fromEntity)
-                .toList();
-    }
+    public Page<OperationPurposeResponseDto> search(
+            String purposeName,
+            Integer scope,
+            String keyword,
+            int page,
+            int size
+    ) {
+        int pageSize = Math.min(size, 50);
 
-    // 검색
-    @Transactional(readOnly = true)
-    public List<OperationPurposeResponseDto> search(OperationPurposeRequestDto dto) {
+        Pageable pageable = PageRequest.of(
+                page,
+                pageSize,
+                Sort.by("id").ascending()
+        );
 
-        List<OperationPurpose> result;
+        Page<OperationPurpose> result =
+                operationPurposeRepository.search(
+                        purposeName,
+                        scope,
+                        keyword,
+                        pageable
+                );
 
-        if (dto.getPurposeNameFilter() != null && !dto.getPurposeNameFilter().isEmpty()) {
-            result = operationPurposeRepository.findByPurposeNameContaining(dto.getPurposeNameFilter());
-        }
-        else if (dto.getScopeFilter() != null) {
-            result = operationPurposeRepository.findByDefaultScope(dto.getScopeFilter());
-        }
-        else {
-            throw new IllegalArgumentException("검색 조건을 입력하세요.");
-        }
-
-        return result.stream()
-                .map(OperationPurposeResponseDto::fromEntity)
-                .toList();
+        return result.map(OperationPurposeResponseDto::fromEntity);
     }
 
 }

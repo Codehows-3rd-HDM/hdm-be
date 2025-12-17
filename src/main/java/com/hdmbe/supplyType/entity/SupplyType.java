@@ -1,12 +1,8 @@
 package com.hdmbe.supplyType.entity;
 
-import com.hdmbe.company.entity.Company;
 import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "SUPPLY_TYPE")

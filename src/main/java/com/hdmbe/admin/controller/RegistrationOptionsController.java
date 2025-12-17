@@ -44,12 +44,12 @@ public class RegistrationOptionsController {
         // fetch car categories once
         List<com.hdmbe.carCategory.dto.CarCategoryResponseDto> carCategories = carCategoryService.getAll();
 
-        // 1. 운행목적 (PURPOSE_OPTIONS)
-        options.put("PURPOSE_OPTIONS",
-                operationPurposeService.getAll().stream()
-                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
-                        .collect(Collectors.toList())
-        );
+//        // 1. 운행목적 (PURPOSE_OPTIONS)
+//        options.put("PURPOSE_OPTIONS",
+//                operationPurposeService.getAll().stream()
+//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
+//                        .collect(Collectors.toList())
+//        );
 
         // 2. 협력사/업체 (COMPANY_OPTIONS)
         options.put("COMPANY_OPTIONS",
@@ -117,12 +117,12 @@ public class RegistrationOptionsController {
                 Map.<String, Object>of("id", 9, "name", "도시가스")
         ));
 
-        // 6. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
-        options.put("SUPPLY_CUSTOMER_OPTIONS",
-                supplyCustomerService.getAll().stream()
-                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
-                        .collect(Collectors.toList())
-        );
+//        // 6. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
+//        options.put("SUPPLY_CUSTOMER_OPTIONS",
+//                supplyCustomerService.getAll().stream()
+//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
+//                        .collect(Collectors.toList())
+//        );
 
         // 7. Scope (SCOPE_OPTIONS)
         options.put("SCOPE_OPTIONS", List.of(
@@ -131,12 +131,12 @@ public class RegistrationOptionsController {
                 Map.<String, Object>of("id", 4, "name", "기타")
         ));
 
-        // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
-        options.put("SUPPLY_TYPE_OPTIONS",
-                supplyTypeService.getAll().stream()
-                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
-                        .collect(Collectors.toList())
-        );
+//        // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
+//        options.put("SUPPLY_TYPE_OPTIONS",
+//                supplyTypeService.getAll().stream()
+//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
+//                        .collect(Collectors.toList())
+//        );
 
         // 9. 지역 (REGION_OPTIONS)
         options.put("REGION_OPTIONS", List.of(

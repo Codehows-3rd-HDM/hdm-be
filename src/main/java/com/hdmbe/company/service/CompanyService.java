@@ -75,28 +75,29 @@ public class CompanyService {
         return CompanyResponseDto.fromEntity(company);
     }
 
-//    // 전체 조회, 검색
-//    @Transactional(readOnly = true)
-//    public Page<CompanyResponseDto> search(
-//            String companyName,
-//            String supplyTypeId,
-//            String supplyCustomerId,
-//            String address,
-//            String keyword,
-//            int page,
-//            int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-//
-//        Page<Company> result = companyRepository.search(
-//                companyName,
-//                supplyTypeId,
-//                supplyCustomerId,
-//                address,
-//                keyword,
-//                pageable);
-//
-//        return result.map(CompanyResponseDto::fromEntity);
-//    }
+    // 전체 조회, 검색
+    @Transactional(readOnly = true)
+    public Page<CompanyResponseDto> search(
+            String companyName,
+            String supplyTypeName,
+            String supplyCustomerName,
+            String address,
+            String keyword,
+            int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+
+        Page<Company> result = companyRepository.search(
+                companyName,
+                supplyTypeName,
+                supplyCustomerName,
+                address,
+                keyword,
+                pageable
+        );
+
+        return result.map(CompanyResponseDto::fromEntity);
+    }
     // 전체 조회(드롭다운용)
     @Transactional(readOnly = true)
     public List<CompanyResponseDto> getAll() {
