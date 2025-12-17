@@ -53,12 +53,19 @@ public class SupplyCustomerService {
             int page,
             int size
     ) {
+        System.out.println("[SupplyCustomerService] 공급고객 검색 요청 - customerName: " + customerName
+                + ", page: " + page + ", size: " + size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return supplyCustomerRepository.search(
+        Page<SupplyCustomer> result = supplyCustomerRepository.search(
                 customerName,
                 pageable
-        )
-                .map(SupplyCustomerResponseDto::fromEntity);
+        );
+
+        System.out.println("[SupplyCustomerService] 공급고객 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(SupplyCustomerResponseDto::fromEntity);
     }
 }

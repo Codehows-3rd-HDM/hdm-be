@@ -106,6 +106,13 @@ public class CompanyService {
             String keyword,
             int page,
             int size) {
+        System.out.println("[CompanyService] 협력사 검색 요청 - companyName: " + companyName
+                + ", supplyTypeName: " + supplyTypeName
+                + ", supplyCustomerName: " + supplyCustomerName
+                + ", address: " + address
+                + ", keyword: " + keyword
+                + ", page: " + page + ", size: " + size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         Page<Company> result = companyRepository.search(
@@ -117,6 +124,9 @@ public class CompanyService {
                 pageable
         );
 
+        System.out.println("[CompanyService] 협력사 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
         return result.map(CompanyResponseDto::fromEntity);
     }
 
@@ -125,8 +135,8 @@ public class CompanyService {
     public List<CompanyResponseDto> getAll() {
         return companyRepository.findAll().stream()
                 .map(CompanyResponseDto::fromEntity)
-                .collect(java.util.stream.Collectors.toList()
-                    }
+                .collect(java.util.stream.Collectors.toList());
+    }
 
     // 단일 수정
     public CompanyResponseDto updateSingle(Long id, CompanyRequestDto dto) {

@@ -54,16 +54,24 @@ public class CarModelService {
             int page,
             int size
     ) {
+        System.out.println("[CarModelService] 차종 검색 요청 - parentCategoryId: " + parentCategoryId
+                + ", carCategoryId: " + carCategoryId + ", fuelType: " + fuelType
+                + ", keyword: " + keyword + ", page: " + page + ", size: " + size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return carModelRepository.search(
+        Page<CarModel> result = carModelRepository.search(
                 parentCategoryId,
                 carCategoryId,
                 fuelType,
                 keyword,
                 pageable
-        )
-                .map(CarModelResponseDto::fromEntity);
+        );
+
+        System.out.println("[CarModelService] 차종 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(CarModelResponseDto::fromEntity);
     }
 
     // 단일 수정

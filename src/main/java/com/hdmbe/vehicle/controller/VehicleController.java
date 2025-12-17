@@ -17,11 +17,11 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-//    // 등록
-//    @PostMapping
-//    public ResponseEntity<VehicleResponseDto> create(@RequestBody VehicleRequestDto dto) {
-//        return ResponseEntity.ok(vehicleService.create(dto));
-//    }
+    // 등록
+    @PostMapping
+    public ResponseEntity<VehicleResponseDto> create(@RequestBody VehicleRequestDto dto) {
+        return ResponseEntity.ok(vehicleService.create(dto));
+    }
 
     // 전체 조회 + 검색
     @GetMapping("search")

@@ -46,13 +46,19 @@ public class SupplyTypeService {
             int page,
             int size
     ) {
+        System.out.println("[SupplyTypeService] 공급유형 검색 요청 - supplyTypeName: " + supplyTypeName
+                + ", page: " + page + ", size: " + size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return supplyTypeRepository.search(
+        Page<SupplyType> result = supplyTypeRepository.search(
                 supplyTypeName,
                 pageable
-        )
-                .map(SupplyTypeResponseDto::fromEntity);
+        );
+
+        System.out.println("[SupplyTypeService] 공급유형 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(SupplyTypeResponseDto::fromEntity);
     }
 }

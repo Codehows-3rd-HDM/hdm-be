@@ -51,6 +51,10 @@ public class OperationPurposeService {
             int page,
             int size
     ) {
+        System.out.println("[OperationPurposeService] 운행목적 검색 요청 - purposeName: " + purposeName
+                + ", scope: " + scope + ", keyword: " + keyword
+                + ", page: " + page + ", size: " + size);
+
         int pageSize = Math.min(size, 50);
 
         Pageable pageable = PageRequest.of(
@@ -66,6 +70,9 @@ public class OperationPurposeService {
                         keyword,
                         pageable
                 );
+
+        System.out.println("[OperationPurposeService] 운행목적 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
 
         return result.map(OperationPurposeResponseDto::fromEntity);
     }

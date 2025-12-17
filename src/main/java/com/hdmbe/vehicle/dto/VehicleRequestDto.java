@@ -42,6 +42,8 @@ public class VehicleRequestDto {
 
     // 등록용 (ID 기반)
     private Long childCategoryId; // 소분류 카테고리 ID
+    private BigDecimal operationDistance; // 편도거리
+    private Long carModelId; // 차종 모델 ID (선택사항)
 
     // 검색용
     private String keyword;              // 통합검색
