@@ -4,10 +4,13 @@ package com.hdmbe.excelUpNiceS1.service;
 import com.hdmbe.carbonEmission.repository.EmissionDailyRepository;
 import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.carbonEmission.service.NiceParkEmissionService;
+import com.hdmbe.excelUpNiceS1.dto.NiceExcelCheckDto;
 import com.hdmbe.excelUpNiceS1.dto.NiceExcelUpDto;
 
 import com.hdmbe.excelUpNiceS1.entity.NiceparkLog;
 import com.hdmbe.excelUpNiceS1.repository.NiceparkLogRepository;
+import com.hdmbe.vehicle.entity.Vehicle;
+import com.hdmbe.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +24,9 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,7 +37,7 @@ public class NiceExcelUpService
     private final NiceParkEmissionService niceParkEmissionService; // 계산 서비스 주입!
     private final EmissionDailyRepository emissionDailyRepository;
     private final EmissionMonthlyRepository emissionMonthlyRepository;
-
+    private final VehicleRepository vehicleRepository;
 
     // 메인 로직
     @Transactional      // 중간에 에러 나면 삭제된 것도 롤백되어야 함
@@ -41,8 +46,11 @@ public class NiceExcelUpService
         // (1) [삭제] 해당 연/월의 기존 데이터 삭제
         deleteExistingData(year, month);
 
+        // [수정-최적화] DB에 등록된 모든 차량 번호를 한번에 가져와서 Set 으로 만듬 (null 제외)
+        Set<String> validCarNumbers = new HashSet<>(vehicleRepository.findAllCarNumbers());
+
         // 2. [검증 및 변환] DTO 리스트 -> Entity 리스트
-        List<NiceparkLog> logList = convertAndValidate(dtoList, year, month);
+        List<NiceparkLog> logList = convertAndValidate(dtoList, year, month,  validCarNumbers);
 
         // ✅ [추가] 데이터가 하나도 없으면 에러 발생시키기!
         if (logList.isEmpty()) {
@@ -106,10 +114,10 @@ public class NiceExcelUpService
     }
 
     // 내부 메서드 2: DTO -> Entity 변환 및 날짜 검증 (POI 제거됨!)
-    private List<NiceparkLog> convertAndValidate(List<NiceExcelUpDto> dtoList, int targetYear, int targetMonth)
+    private List<NiceparkLog> convertAndValidate(List<NiceExcelUpDto> dtoList, int targetYear, int targetMonth, Set<?> validCarNumbers)
     {
         List<NiceparkLog> resultList = new ArrayList<>();
-        int rowIndex = 0; // 에러 메시지용 줄 번호
+        List<String> errorList = new ArrayList<>();
 
         for (int i = 0; i < dtoList.size(); i++) {
             NiceExcelUpDto dto = dtoList.get(i);
@@ -117,33 +125,60 @@ public class NiceExcelUpService
                 // 필수값 체크 (데이터가 비어있으면 건너뜀)
                 if (dto.getCarNumber() == null || dto.getAccessDate() == null || dto.getAccessTime() == null) continue;
 
-                // 날짜와 시간을 합쳐서 LocalDateTime 으로 변환
-                // (DTO를 거쳐서 Entity로 만드는 게 정석이지만, 로직이 간단해서 바로 만듦)
-                LocalDateTime accessTime = parseDateTime(dto.getAccessDate(), dto.getAccessTime());
+                try {
+                    // 1. [검증] 날짜, 시간 확인
+                    LocalDateTime accessTime = validateDateTime(dto.getAccessDate(), dto.getAccessTime(), targetYear, targetMonth, i);
 
-                // 1. 연도는 무조건 일치해야 함.
-                boolean isYearMatch = (accessTime.getYear() == targetYear);
+                    // 2. [검문] 차량번호 조회
+                   // validateVehicleByCarNumber(dto.getCarNumber());
+                    if (!validCarNumbers.contains(dto.getCarNumber())) {
+                        log.warn("미등록 차량 데이터 제외됨: {}", dto.getCarNumber());
+                        continue;
+                    }
 
-                // 2. 월은 targetMonth가 0이면(전체) 무조건 통과, 아니면 일치해야 함.
-                boolean isMonthMatch = (targetMonth == 0) || (accessTime.getMonthValue() == targetMonth);
+                    // 3. Entity 생성
+                    NiceparkLog entity = NiceparkLog.builder()
+                            .accessTime(accessTime)     // 합쳐진 시간
+                            .carNumber(dto.getCarNumber())
+                            .build();
 
-                // 엑셀 날짜의 연도나 월이, 사용자가 선택한 것과 다르면? -> 에러 뻥!
-                if (!isYearMatch || !isMonthMatch) {
-                    // 에러 메시지도 상황에 따라 다르게
-                    String errorMsg = (targetMonth == 0)
-                            ? String.format("선택한 %d년 데이터가 아닙니다.", targetYear)
-                            : String.format("선택한 %d년 %d월 데이터가 아닙니다.", targetYear, targetMonth);
-
-                    throw new IllegalArgumentException(
-                            String.format("%d번째 줄 오류: %s (엑셀 날짜: %s)", rowIndex, errorMsg, dto.getAccessDate())
-                    );
+                    resultList.add(entity);
                 }
-                // 4. Entity로 변환해서 리스트에 추가 (DTO의 toEntity 활용)
-                resultList.add(dto.toEntity(accessTime));
+                catch (IllegalArgumentException e)
+                {
+                    log.error(e.getMessage());
+                    errorList.add(e.getMessage());
+                    throw e;    // 에러 발생 시 즉시 중단
+                }
         }
         return resultList;
     }
 
+    private LocalDateTime validateDateTime(String dateStr, String timeStr, int targetYear, int targetMonth, int rowIndex)
+    {
+        // 날짜와 시간을 합쳐서 LocalDateTime 으로 변환
+        // (DTO를 거쳐서 Entity로 만드는 게 정석이지만, 로직이 간단해서 바로 만듦)
+        LocalDateTime accessTime = parseDateTime(dateStr, timeStr);
+
+        // 1. 연도는 무조건 일치해야 함.
+        boolean isYearMatch = (accessTime.getYear() == targetYear);
+
+        // 2. 월은 targetMonth가 0이면(전체) 무조건 통과, 아니면 일치해야 함.
+        boolean isMonthMatch = (targetMonth == 0) || (accessTime.getMonthValue() == targetMonth);
+
+        // 엑셀 날짜의 연도나 월이, 사용자가 선택한 것과 다르면? -> 에러 뻥!
+        if (!isYearMatch || !isMonthMatch) {
+            // 에러 메시지도 상황에 따라 다르게
+            String errorMsg = (targetMonth == 0)
+                    ? String.format("선택한 %d년 데이터가 아닙니다.", targetYear)
+                    : String.format("선택한 %d년 %d월 데이터가 아닙니다.", targetYear, targetMonth);
+
+            throw new IllegalArgumentException(
+                    String.format("%d번째 줄 오류: %s (엑셀 날짜: %s)", rowIndex + 1, errorMsg, dateStr)
+            );
+        }
+        return accessTime;
+    }
 
 
     // 유틸: 날짜(String) + 시간(String) -> LocalDateTime 변환
@@ -175,4 +210,19 @@ public class NiceExcelUpService
         }
     }
 
+//    private void validateVehicleByCarNumber(String carNumber)
+//    {
+//        vehicleRepository.findByCarNumber(carNumber)
+//                .orElseThrow(() -> new IllegalArgumentException(
+//                        "미등록 차량입니다. 기준정보를 먼저 업로드하세요. (차량번호: " + carNumber + ")\n" +
+//                        "※ 차량 관리 메뉴에서 해당 차량을 먼저 등록해주세요."
+//                ));
+//    }
+
+    public List<NiceExcelCheckDto> getInvalidLogList(List<NiceExcelCheckDto> dtoList) {
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        return dtoList.stream().filter((e) ->
+            vehicles.stream().noneMatch(v -> v.getCarNumber().equals(e.getCarNumber()))
+        ).toList();
+    }
 }

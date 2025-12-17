@@ -46,11 +46,13 @@ public class NiceParkEmissionService {
             if (vehicle == null) continue;
 
             // 2. 계산에 필요한 값 준비
-            BigDecimal oneWay = vehicle.getCompany().getOneWayDistance();
+            BigDecimal oneWay = vehicle.getOperationDistance();
             BigDecimal distance = oneWay.multiply(new BigDecimal("2")); // ✅ 왕복 계산!
             BigDecimal efficiency = vehicle.getCarModel().getCustomEfficiency(); // 연비
             FuelType fuelType = vehicle.getCarModel().getFuelType();
-            BigDecimal factor = factorRepository.findByFuelType(fuelType).getEmissionFactor(); // (캐싱 권장)
+            BigDecimal factor = factorRepository.findByFuelType(fuelType)
+                    .orElseThrow(() -> new IllegalArgumentException("배출계수 데이터 누락: " + fuelType))
+                    .getEmissionFactor(); // (캐싱 권장)
 
             // 3. 계산기 호출!
             BigDecimal emission = calculator.calculate(distance, efficiency, factor);

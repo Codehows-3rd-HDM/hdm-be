@@ -1,0 +1,89 @@
+package com.hdmbe.excelUpBaseInfo.service;
+
+
+import com.hdmbe.carModel.entity.CarModel;
+import com.hdmbe.carModel.service.CarModelExcelService;
+import com.hdmbe.carbonEmission.service.CarbonEmissionFactorService;
+import com.hdmbe.company.entity.Company;
+import com.hdmbe.company.repository.CompanyRepository;
+import com.hdmbe.company.service.CompanyExcelService;
+import com.hdmbe.excelUpBaseInfo.dto.ExcelUpBaseInfoDto;
+import com.hdmbe.operationPurpose.entity.OperationPurpose;
+import com.hdmbe.operationPurpose.service.OperationPurposeService;
+import com.hdmbe.vehicle.service.VehicleExcelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ExcelUpBaseInfoService {
+    // 우리가 만든 어벤져스 서비스들 총출동
+    private final OperationPurposeService purposeService;
+    private final CarbonEmissionFactorService factorService;
+    private final CompanyExcelService companyExcelService;
+    private final CarModelExcelService carModelExcelService;
+    private final VehicleExcelService vehicleExcelService;
+    private final CompanyRepository companyRepository;
+
+    @Transactional
+    public void uploadMasterData(List<ExcelUpBaseInfoDto> dtoList) {
+
+        for (ExcelUpBaseInfoDto dto : dtoList) {
+            try {
+                // 1. [기초] 운행 목적 & 배출 계수 확보
+                OperationPurpose purpose = purposeService.getOrCreate(dto.getPurposeName(), dto.getScope());
+                factorService.getOrCreate(dto.getFuelName(), dto.getEmissionFactor()); // 계수 업데이트
+
+                // 거리 계산 로직 (서비스 호출 전에 미리 결정!)
+                BigDecimal finalCompanyDistance;
+
+                // 현대정밀이면 0, 아니면 엑셀값 그대로
+                if ("현대정밀".equals(dto.getCompanyName())) {
+                    finalCompanyDistance = BigDecimal.ZERO;
+                } else {
+                    finalCompanyDistance = dto.getDistanceInput();
+                }
+
+                // 2. [중간] 업체 저장 (부모인 유형, 고객은 안에서 처리함)
+                Company company = companyExcelService.getOrCreate(
+                        dto.getCompanyName(),
+                        dto.getAddress(),
+                        dto.getSupplyTypeName(),
+                        dto.getSupplyCustomerName(),
+                        finalCompanyDistance,
+                        "" // 비고 (엑셀에 없으면 공백)
+                );
+
+                // 3. [중간] 차종 스펙 저장 (부모인 카테고리는 안에서 처리함)
+                CarModel carModel = carModelExcelService.getOrCreate(
+                        dto.getBigCategory(),
+                        dto.getSmallCategory(),
+                        dto.getFuelName(),
+                        dto.getEfficiency()
+                );
+
+                // 4. [최종] 차량 저장 (주인공)
+                vehicleExcelService.createOrUpdate(
+                        dto.getCarNumber(),    // 차량번호
+                        dto.getCarModelName(), // 차종명 (소나타) -> DTO에 필드 있는지 확인!
+                        dto.getDriverMemberId(),     // 사원번호
+                        dto.getDistanceInput(), // 운행거리
+                        "",                    // 비고
+                        company,               // 위에서 만든 업체
+                        carModel,              // 위에서 만든 차종
+                        purpose                // 위에서 만든 목적
+                );
+
+            } catch (Exception e) {
+                // 한 줄 에러 나도 멈추지 말고 로그 찍고 계속 갈지, 멈출지 결정
+                // (일단은 에러 터뜨려서 트랜잭션 롤백 시키는 게 안전함)
+                throw new RuntimeException("엑셀 업로드 중 오류 발생 (차량번호: " + dto.getCarNumber() + ") - " + e.getMessage(), e);
+            }
+        }
+    }
+
+}

@@ -1,5 +1,6 @@
 package com.hdmbe.excelUpNiceS1.entity;
 
+import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,4 +30,5 @@ public class S1Log {
     // 출근 날짜
     @Column(name = "access_date", nullable = false, columnDefinition = "DATE")
     private LocalDate accessDate;
+
 }

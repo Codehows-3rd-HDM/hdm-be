@@ -33,4 +33,15 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
            OR op.purposeName LIKE %:keyword%
     """)
     List<Vehicle> searchByKeyword(@Param("keyword") String keyword);
+
+    // 사번 목록만 가볍게 조회하는 쿼리 (최적화)
+    // 설명: Vehicle 전체를 가져오는 게 아니라 'driverMemberId' 문자열만 가져옴!
+    @Query("SELECT v.driverMemberId FROM Vehicle v WHERE v.driverMemberId IS NOT NULL")
+    List<String> findAllDriverMemberIds();
+
+    // 차량 번호만 가볍게 조회하는 쿼리 (최적화)
+    // 설명: Vehicle 전체를 가져오는 게 아니라 'carNumber' 문자열만 가져옴!
+    @Query("SELECT v.carNumber FROM Vehicle v WHERE v.carNumber IS NOT NULL")
+    List<String> findAllCarNumbers();
 }
+

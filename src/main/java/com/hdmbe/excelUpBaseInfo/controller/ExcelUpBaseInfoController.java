@@ -1,0 +1,31 @@
+package com.hdmbe.excelUpBaseInfo.controller;
+
+import com.hdmbe.excelUpBaseInfo.dto.ExcelUpBaseInfoDto;
+import com.hdmbe.excelUpBaseInfo.service.ExcelUpBaseInfoService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping ("/admin/excel/upload/base-info")
+@RequiredArgsConstructor
+public class ExcelUpBaseInfoController {
+    private final ExcelUpBaseInfoService excelUpBaseInfoService;
+
+    @PostMapping
+    public ResponseEntity<String> uploadBaseInfo(@RequestBody List<ExcelUpBaseInfoDto> dataList) {
+
+        if (dataList == null || dataList.isEmpty()) {
+            return ResponseEntity.badRequest().body("업로드할 데이터가 없습니다.");
+        }
+
+        excelUpBaseInfoService.uploadMasterData(dataList);
+
+        return ResponseEntity.ok("기준정보 업로드 완료! (" + dataList.size() + "건)");
+    }
+}

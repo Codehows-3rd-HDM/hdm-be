@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
@@ -27,5 +28,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
            OR st.supplyTypeName LIKE %:keyword%
     """)
     List<Company> searchByKeyword(@Param("keyword") String keyword);
+
+    Optional<Company> findByCompanyName(String companyName);
 }
 

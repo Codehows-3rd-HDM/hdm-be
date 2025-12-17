@@ -56,4 +56,12 @@ public class SupplyCustomerService {
         return result.stream().map(SupplyCustomerResponseDto::fromEntity).toList();
     }
 
+    @Transactional
+    public SupplyCustomer getOrCreate(String name) {
+        return supplyCustomerRepository.findByCustomerName(name)
+                .orElseGet(() -> supplyCustomerRepository.save(
+                        SupplyCustomer.builder().customerName(name).build()
+                ));
+    }
+
 }

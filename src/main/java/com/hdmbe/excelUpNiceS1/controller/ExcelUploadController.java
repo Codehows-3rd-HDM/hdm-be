@@ -1,6 +1,8 @@
 package com.hdmbe.excelUpNiceS1.controller;
 
+import com.hdmbe.excelUpNiceS1.dto.NiceExcelCheckDto;
 import com.hdmbe.excelUpNiceS1.dto.NiceExcelUpDto;
+import com.hdmbe.excelUpNiceS1.dto.S1ExcelCheckDto;
 import com.hdmbe.excelUpNiceS1.service.LogCheckService;
 import com.hdmbe.excelUpNiceS1.service.NiceExcelUpService;
 import com.hdmbe.excelUpNiceS1.dto.S1ExcelUpDto;
@@ -59,6 +61,12 @@ public class ExcelUploadController {
         }
     }
 
+    @PostMapping("/is-valid/nicepark")
+    public ResponseEntity<List<NiceExcelCheckDto>> isValidNiceParkLog(@RequestBody List<NiceExcelCheckDto> dtoList) {
+        List<NiceExcelCheckDto> result = niceExcelUpService.getInvalidLogList(dtoList);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/upload/s1")
     public ResponseEntity<?> uploadS1Log(
             @RequestParam("year") int year,
@@ -75,7 +83,7 @@ public class ExcelUploadController {
             // 2. 서비스 호출 (삭제 -> 파싱&필터링 -> 저장)
             s1ExcelUpService.uploadS1Log(dtoList, year, month);
 
-            return ResponseEntity.ok("에스원 데이터(출근 기준) 업로드가 성공적으로 완료되었습니다.");
+            return ResponseEntity.ok("S1 데이터 업로드가 성공적으로 완료되었습니다.");
         }
         catch (Exception e)
         {
@@ -83,6 +91,12 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("에스원 업로드 실패: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/is-valid/s1")
+    public ResponseEntity<List<S1ExcelCheckDto>> isValidS1Log(@RequestBody List<S1ExcelCheckDto> dtoList) {
+        List<S1ExcelCheckDto> result = s1ExcelUpService.getInvalidLogList(dtoList);
+        return ResponseEntity.ok(result);
     }
 
     // GET /api/log/check?year=2025&month=0

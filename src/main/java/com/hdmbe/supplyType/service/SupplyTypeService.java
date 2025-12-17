@@ -50,4 +50,12 @@ public class SupplyTypeService {
                 .map(SupplyTypeResponseDto::fromEntity)
                 .toList();
     }
+
+    @Transactional
+    public SupplyType getOrCreate(String name) {
+        return supplyTypeRepository.findBySupplyTypeName(name)
+                .orElseGet(() -> supplyTypeRepository.save(
+                        SupplyType.builder().supplyTypeName(name).build()
+                ));
+    }
 }

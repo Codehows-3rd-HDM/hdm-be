@@ -28,7 +28,7 @@ public class SupplyCustomer extends BaseTimeEntity {
     private String customerName;
 
     // 비고
-    @Column(name = "remark", nullable = false, unique = true)
+    @Column(name = "remark", unique = true)
     private String remark;
 
     @OneToMany(mappedBy = "supplyCustomer", cascade = CascadeType.ALL)

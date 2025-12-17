@@ -46,12 +46,13 @@ public class S1EmissionService {
 
             // 2. 계산 값 준비
             // (주의: 직원 통근은 보통 편도 거리가 저장되어 있다면 x2 왕복 처리가 필요할 수 있음. 확인 필요!)
-            // 여기서는 Company에 저장된 거리를 왕복 거리라고 가정하고 그대로 씁니다.
-            BigDecimal oneWay = vehicle.getCompany().getOneWayDistance();
+            BigDecimal oneWay = vehicle.getOperationDistance();
             BigDecimal distance = oneWay.multiply(new BigDecimal("2")); // ✅ 왕복 계산!
             BigDecimal efficiency = vehicle.getCarModel().getCustomEfficiency();
             FuelType fuelType = vehicle.getCarModel().getFuelType();
-            BigDecimal factor = factorRepository.findByFuelType(fuelType).getEmissionFactor();
+            BigDecimal factor = factorRepository.findByFuelType(fuelType)
+                    .orElseThrow(() -> new IllegalArgumentException("배출계수 데이터 누락: " + fuelType))
+                    .getEmissionFactor();
 
             // 3. 계산기 호출
             BigDecimal emission = calculator.calculate(distance, efficiency, factor);

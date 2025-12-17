@@ -38,16 +38,16 @@ public class Company extends BaseTimeEntity {
 
     // 공정 ID
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "supply_Type_id", nullable = false)
     private SupplyType supplyType;
 
     // 제품 분류 ID
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supply_Type_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private SupplyCustomer supplyCustomer;
 
     // 비고
-    @Column(name = "remark", nullable = false)
+    @Column(name = "remark")
     private String remark;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)

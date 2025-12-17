@@ -26,10 +26,13 @@ public class CarbonEmissionFactor extends BaseTimeEntity {
     private FuelType fuelType;
 
     // 배출 계수
-    @Column(name = "emission_factor", precision = 6, scale = 2, nullable = false)
+    @Column(name = "emission_factor", precision = 5, scale = 3, nullable = false)
     private BigDecimal emissionFactor;
 
     // 배출 계수 단위 타입
     @Column(name = "unit_type", length = 10, nullable = false)
     private String unitType;
+
+    @Column(name = "remark")
+    private String remark;
 }
