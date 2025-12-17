@@ -1,15 +1,17 @@
 package com.hdmbe.carCategory.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hdmbe.carCategory.dto.CarCategoryRequestDto;
 import com.hdmbe.carCategory.dto.CarCategoryResponseDto;
 import com.hdmbe.carCategory.entity.CarCategory;
 import com.hdmbe.carCategory.repository.CarCategoryRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class CarCategoryService {
         }
 
         CarCategory category = CarCategory.builder()
-                .categoryName(requestDto.getCategoryName())
+                .categoryName(requestDto.getCategoryId())
                 .parentCategory(parent)
                 .build();
 
@@ -37,6 +39,10 @@ public class CarCategoryService {
         return carCategoryRepository.findAll().stream()
                 .map(CarCategoryResponseDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public List<CarCategoryResponseDto> getAll() {
+        return findAll();
     }
 
     public CarCategoryResponseDto findById(Long id) {

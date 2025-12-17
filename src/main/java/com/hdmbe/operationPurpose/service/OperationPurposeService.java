@@ -22,7 +22,7 @@ public class OperationPurposeService {
         OperationPurpose saved = operationPurposeRepository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
-                        .defaultScope(dto.getDefaultScope())
+                        .defaultScope(dto.getDefaultScopeId())
                         .build()
         );
 

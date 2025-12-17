@@ -1,6 +1,8 @@
 package com.hdmbe.company.dto;
 
 import com.hdmbe.company.entity.Company;
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -10,20 +12,28 @@ import java.math.BigDecimal;
 public class CompanyResponseDto {
     private Long id;
     private String companyName;
-    private BigDecimal oneWayDistance;
-    private String address;
-    private String customerName;
+    private Long supplyTypeId;
     private String supplyTypeName;
+    private BigDecimal oneWayDistance;
+    private Long supplyCustomerId;
+    private String supplyCustomerName;
+    private String address;
     private String remark;
 
     public static CompanyResponseDto fromEntity(Company company) {
+        // 현재 유효한 공급유형 매핑 조회 (endDate가 null이거나 미래인 것)
+        SupplyType currentSupplyType = company.getCurrentSupplyType();
+        SupplyCustomer currentSupplyCustomer = company.getCurrentSupplyCustomer();
+
         return CompanyResponseDto.builder()
                 .id(company.getId())
                 .companyName(company.getCompanyName())
+                .supplyTypeId(currentSupplyType != null ? currentSupplyType.getId() : null)
+                .supplyTypeName(currentSupplyType != null ? currentSupplyType.getSupplyTypeName() : null)
                 .oneWayDistance(company.getOneWayDistance())
+                .supplyCustomerId(currentSupplyCustomer != null ? currentSupplyCustomer.getId() : null)
+                .supplyCustomerName(currentSupplyCustomer != null ? currentSupplyCustomer.getCustomerName() : null)
                 .address(company.getAddress())
-                .customerName(company.getSupplyCustomer().getCustomerName())
-                .supplyTypeName(company.getSupplyType().getSupplyTypeName())
                 .remark(company.getRemark())
                 .build();
     }

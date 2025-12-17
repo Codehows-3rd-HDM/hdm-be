@@ -40,11 +40,13 @@ public class SecurityConfig {
                 // 4. URL별 접근 권한 관리
                 .authorizeHttpRequests(auth -> auth
                         // [SUPERADMIN]
-                      //  .requestMatchers("/superadmin/**").hasAnyRole("SUPERADMIN")
+                        .requestMatchers("/superadmin/**")
+//                        .hasAnyRole("SUPERADMIN")
+                        .permitAll()
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/admin/excel/upload/**").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
-                        .requestMatchers("/login", "/logout", "/superadmin/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/admin/**").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)

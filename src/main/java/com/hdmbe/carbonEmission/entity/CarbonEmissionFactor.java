@@ -33,6 +33,7 @@ public class CarbonEmissionFactor extends BaseTimeEntity {
     @Column(name = "unit_type", length = 10, nullable = false)
     private String unitType;
 
+    // 비고
     @Column(name = "remark")
     private String remark;
 }

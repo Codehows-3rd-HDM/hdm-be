@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OperationPurpose extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -28,7 +29,4 @@ public class OperationPurpose extends BaseTimeEntity {
     // 기준 Scope
     @Column(name = "default_scope")
     private Integer defaultScope;
-
-    @OneToMany(mappedBy = "operationPurpose", cascade = CascadeType.ALL)
-    private List<Vehicle> vehicles = new ArrayList<>();
 }

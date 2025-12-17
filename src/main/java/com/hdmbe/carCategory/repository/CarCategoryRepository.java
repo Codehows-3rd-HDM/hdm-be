@@ -4,10 +4,13 @@ import com.hdmbe.carCategory.entity.CarCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 
 public interface CarCategoryRepository extends JpaRepository<CarCategory, Long> {
+
+    // 카테고리 이름으로 조회 (선택 사항)
     Optional<CarCategory> findByCategoryName(String categoryName);
 
     Optional<CarCategory> findByCategoryNameAndParentCategoryIsNull(String categoryName);
@@ -15,4 +18,7 @@ public interface CarCategoryRepository extends JpaRepository<CarCategory, Long> 
     Optional<CarCategory> findByCategoryNameAndParentCategory(String categoryName, CarCategory parentCategory);
 
     CarCategory parentCategory(CarCategory parentCategory);
+    // 상위 카테고리가 없는 루트 카테고리만 조회 (필요 시)
+    List<CarCategory> findByParentCategoryIsNull();
+
 }

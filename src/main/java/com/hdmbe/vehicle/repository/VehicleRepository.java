@@ -21,18 +21,18 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     List<Vehicle> findByDriverMemberIdContaining(String driverMemberId);
 
-    @Query("""
-        SELECT v FROM Vehicle v
-        JOIN v.company c
-        JOIN v.carModel cm
-        JOIN v.operationPurpose op
-        WHERE v.carNumber LIKE %:keyword%
-           OR c.companyName LIKE %:keyword%
-           OR v.driverMemberId LIKE %:keyword%
-           OR v.carName LIKE %:keyword%
-           OR op.purposeName LIKE %:keyword%
-    """)
-    List<Vehicle> searchByKeyword(@Param("keyword") String keyword);
+    // @Query("""
+    //     SELECT v FROM Vehicle v
+    //     JOIN v.company c
+    //     JOIN v.carModel cm
+    //     JOIN v.operationPurpose op
+    //     WHERE v.carNumber LIKE %:keyword%
+    //        OR c.companyName LIKE %:keyword%
+    //        OR v.driverMemberId LIKE %:keyword%
+    //        OR v.carName LIKE %:keyword%
+    //        OR op.purposeName LIKE %:keyword%
+    // """)
+    //List<Vehicle> searchByKeyword(@Param("keyword") String keyword);
 
     // 사번 목록만 가볍게 조회하는 쿼리 (최적화)
     // 설명: Vehicle 전체를 가져오는 게 아니라 'driverMemberId' 문자열만 가져옴!

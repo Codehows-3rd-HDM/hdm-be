@@ -17,37 +17,31 @@ import java.util.Optional;
 public interface CarModelRepository
         extends JpaRepository<CarModel, Long> {
 
-    List<CarModel> findByCarCategoryId(Long categoryId);
-
-    List<CarModel> findByFuelType(FuelType fuelType);
+    Optional<CarModel> findByCarCategoryIdAndFuelType(Long categoryId, FuelType fuelType);
 
     @Query("""
-        SELECT m
-        FROM CarModel m
-        JOIN m.carCategory c
-        LEFT JOIN c.parentCategory p
-        WHERE 
-            (:keyword IS NULL OR :keyword = '' OR 
-                p.categoryName LIKE %:keyword% OR
-                c.categoryName LIKE %:keyword% OR 
-                CAST(m.fuelType AS string) LIKE %:keyword%)
-        AND (:parentCategoryName IS NULL OR p.categoryName LIKE %:parentCategoryName%)
-        AND (:childCategoryName IS NULL OR c.categoryName LIKE %:childCategoryName%)
-        AND (:fuelType IS NULL OR m.fuelType = :fuelType)
-    """)
+                select cm
+                from CarModel cm
+                join cm.carCategory cc
+                left join cc.parentCategory pc
+                where (:categoryId is null or cc.id = :categoryId)
+                  and (:fuelType is null or cm.fuelType = :fuelType)
+                  and (
+                      :keyword is null
+                           or cc.categoryName like %:keyword%
+                           or cast(cm.fuelType as string) like %:keyword%
+                           or pc.categoryName like %:keyword%)
+            """)
     Page<CarModel> search(
-            @Param("keyword") String keyword,
-            @Param("parentCategoryName") String parentCategoryName,
-            @Param("childCategoryName") String childCategoryName,
+            @Param("categoryId") Long categoryId,
             @Param("fuelType") FuelType fuelType,
+            @Param("keyword") String keyword,
             Pageable pageable
     );
 
     Optional<CarModel> findByCarCategoryAndFuelType(
         CarCategory carCategory,
         FuelType fuelType
-    );
+    );           
+         
 }
-
-
-
