@@ -1,28 +1,26 @@
 package com.hdmbe.company.service;
 
-import com.hdmbe.company.dto.CompanyRequestDto;
-import com.hdmbe.company.dto.CompanyResponseDto;
-import com.hdmbe.company.entity.Company;
-import com.hdmbe.company.entity.CompanySupplyTypeMap;
-import com.hdmbe.company.entity.CompanySupplyCustomerMap;
-import com.hdmbe.supplyType.entity.SupplyType;
-import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
-import com.hdmbe.company.repository.CompanyRepository;
-import com.hdmbe.company.repository.CompanySupplyTypeMapRepository;
-import com.hdmbe.company.repository.CompanySupplyCustomerMapRepository;
-import com.hdmbe.supplyType.repository.SupplyTypeRepository;
-import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
+import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
+import com.hdmbe.company.dto.CompanyRequestDto;
+import com.hdmbe.company.dto.CompanyResponseDto;
+import com.hdmbe.company.entity.Company;
+import com.hdmbe.company.entity.CompanySupplyCustomerMap;
+import com.hdmbe.company.entity.CompanySupplyTypeMap;
+import com.hdmbe.company.repository.CompanyRepository;
+import com.hdmbe.company.repository.CompanySupplyCustomerMapRepository;
+import com.hdmbe.company.repository.CompanySupplyTypeMapRepository;
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.supplyType.repository.SupplyTypeRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +35,7 @@ public class CompanyService {
     // 등록
     @Transactional
     public CompanyResponseDto create(CompanyRequestDto request) {
-            validateCreate(request);
+        validateCreate(request);
 
         // SupplyType 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         SupplyType supplyType;
@@ -92,7 +90,7 @@ public class CompanyService {
         companySupplyCustomerMapRepository.save(supplyCustomerMap);
 
         return CompanyResponseDto.fromEntity(company);
-        }
+    }
 
 //    // 전체 조회, 검색
 //    @Transactional(readOnly = true)
@@ -116,7 +114,6 @@ public class CompanyService {
 //
 //        return result.map(CompanyResponseDto::fromEntity);
 //    }
-
     // 전체 조회 (드롭다운용)
     @Transactional(readOnly = true)
     public List<CompanyResponseDto> getAll() {
@@ -147,7 +144,6 @@ public class CompanyService {
 //                    .orElseThrow(() -> new EntityNotFoundException("공급 고객 없음"));
 //            company.setSupplyCustomer(supplyCustomer);
 //        }
-
         if (dto.getOneWayDistance() != null) {
             company.setOneWayDistance(dto.getOneWayDistance());
         }
@@ -197,8 +193,9 @@ public class CompanyService {
             throw new IllegalArgumentException("편도거리 필수");
         }
 
-        if (request.getAddress() == null || request.getAddress().isBlank())
+        if (request.getAddress() == null || request.getAddress().isBlank()) {
             throw new IllegalArgumentException("주소 필수");
+        }
     }
 
     private void validateUpdate(CompanyRequestDto request) {

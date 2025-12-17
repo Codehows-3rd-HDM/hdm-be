@@ -1,15 +1,24 @@
 package com.hdmbe.company.dto;
 
-import com.hdmbe.company.entity.Company;
-import com.hdmbe.supplyType.entity.SupplyType;
-import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
-import lombok.*;
-
 import java.math.BigDecimal;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
+import com.hdmbe.company.entity.Company;
+import com.hdmbe.supplyType.entity.SupplyType;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CompanyResponseDto {
+
     private Long id;
     private String companyName;
     private Long supplyTypeId;
