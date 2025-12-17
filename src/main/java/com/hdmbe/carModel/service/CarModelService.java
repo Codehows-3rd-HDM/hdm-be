@@ -33,10 +33,7 @@ public class CarModelService {
         validateCreate(dto);
         CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
-
-        // CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
-        // .orElseThrow(() -> new EntityNotFoundException("CarCategory not found id=" +
-        // dto.getCarCategoryId()));
+        
         CarModel model = CarModel.builder()
                 .carCategory(category)
                 .fuelType(dto.getFuelType())
