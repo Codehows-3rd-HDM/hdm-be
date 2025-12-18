@@ -24,7 +24,7 @@ public class OperationPurposeController {
     }
 
     // 조회+검색
-    @GetMapping("search")
+    @GetMapping("/search")
     public Page<OperationPurposeResponseDto> search(
             @RequestParam(required = false) String purposeName,
             @RequestParam(required = false) Integer defaultScope,
