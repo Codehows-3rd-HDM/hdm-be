@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: HDM-be
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/hdm
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    show-sql: true
+    hibernate:
+      #     ddl-auto: create
+      ddl-auto: update
+jwt:
+  secret.key: hdm_project_secret_key_must_be_very_long_and_secure
+  expiration_time: 86400000
