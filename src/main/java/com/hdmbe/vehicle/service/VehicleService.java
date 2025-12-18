@@ -241,6 +241,10 @@ public class VehicleService {
     // 다중 삭제
     @Transactional
     public void deleteMultiple(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
         for (Long id : ids) {
             deleteSingle(id);
         }

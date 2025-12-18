@@ -13,7 +13,5 @@ public class SupplyTypeRequestDto {
     private Long id;
     private String supplyTypeName;
 
-    // 검색용
-    private String supplyTypeNameFilter;
 
 }

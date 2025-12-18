@@ -244,7 +244,13 @@ public class CompanyService {
     // 다중 삭제
     @Transactional
     public void deleteMultiple(List<Long> ids) {
-        ids.forEach(this::deleteSingle);
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
+        for (Long id : ids) {
+            deleteSingle(id);
+        }
     }
 
     private void validateCreate(CompanyRequestDto request) {
