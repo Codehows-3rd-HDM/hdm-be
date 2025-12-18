@@ -118,32 +118,38 @@ public class RegistrationOptionsController {
                 Map.<String, Object>of("id", 10, "name", "하이브리드")
         ));
 
-        // 6. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
-        options.put("SUPPLY_CUSTOMER_OPTIONS",
-                supplyCustomerService.getAll().stream()
-                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
-                        .collect(Collectors.toList())
-        );
-
-        // 7. Scope (SCOPE_OPTIONS)
-        options.put("SCOPE_OPTIONS", List.of(
-                Map.<String, Object>of("id", 1, "name", "Scope1"),
-                Map.<String, Object>of("id", 3, "name", "Scope3"),
-                Map.<String, Object>of("id", 4, "name", "기타")
-        ));
-
-        // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
+        // 6. 공급 유형 (SUPPLY_TYPE_OPTIONS)
         options.put("SUPPLY_TYPE_OPTIONS",
                 supplyTypeService.getAll().stream()
                         .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
                         .collect(Collectors.toList())
         );
 
+        // 7. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
+        options.put("SUPPLY_CUSTOMER_OPTIONS",
+                supplyCustomerService.getAll().stream()
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
+                        .collect(Collectors.toList())
+        );
+
+        // 8. Scope (SCOPE_OPTIONS)
+        options.put("SCOPE_OPTIONS", List.of(
+                Map.<String, Object>of("id", 1, "name", "Scope1"),
+                Map.<String, Object>of("id", 3, "name", "Scope3"),
+                Map.<String, Object>of("id", 4, "name", "기타")
+        ));
+
+//        // 8. 공급 유형 (SUPPLY_TYPE_OPTIONS)
+//        options.put("SUPPLY_TYPE_OPTIONS",
+//                supplyTypeService.getAll().stream()
+//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
+//                        .collect(Collectors.toList())
+//        );
         // 9. 지역 (REGION_OPTIONS)
         options.put("REGION_OPTIONS", List.of(
                 "강원특별자치도", "경기도", "경상남도", "경상북도", "광주광역시", "대구광역시",
                 "대전광역시", "부산광역시", "서울특별시", "세종특별자치시", "울산광역시",
-                "인천광역시", "전라남도", "전북특별자치도", "제주특별자치도", "충청남도", "충청북도"
+                "인천광역시", "전라남도", "전북특별자치도", "제주특별자치도", "충청남도", "충청북도", "해외"
         ));
 
         return ResponseEntity.ok(options);

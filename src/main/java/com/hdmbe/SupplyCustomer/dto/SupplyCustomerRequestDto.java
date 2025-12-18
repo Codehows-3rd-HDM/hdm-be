@@ -14,7 +14,4 @@ import lombok.*;
     // 등록용
     private String customerName;
     private String remark;
-
-    // 검색용
-    private String customerNameFilter;
 }

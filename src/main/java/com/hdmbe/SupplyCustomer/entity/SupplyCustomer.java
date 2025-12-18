@@ -20,11 +20,11 @@ public class SupplyCustomer extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    // 분류 ID
+    // 공급 고객 ID
     @Column(name = "customer_id", columnDefinition = "BIGINT")
     private Long id;
 
-    // 분류 이름
+    // 공급 고객 이름
     @Column(name = "Customer_name", length = 20, nullable = false)
     private String customerName;
 

@@ -2,22 +2,15 @@ package com.hdmbe.company.repository;
 
 import com.hdmbe.company.entity.Company;
 import com.hdmbe.company.entity.CompanySupplyCustomerMap;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.Optional;
 
-@Repository
-public interface CompanySupplyCustomerMapRepository extends JpaRepository<CompanySupplyCustomerMap, Long> {
+public interface CompanySupplyCustomerMapRepository
+        extends JpaRepository<CompanySupplyCustomerMap, Long> {
 
-    @Query("SELECT m FROM CompanySupplyCustomerMap m WHERE m.company.id = :companyId AND m.endDate IS NULL")
-    Optional<CompanySupplyCustomerMap> findCurrentByCompanyId(@Param("companyId") Long companyId);
-
-    @Query("SELECT m FROM CompanySupplyCustomerMap m WHERE m.company.id = :companyId AND m.endDate IS NULL")
-    List<CompanySupplyCustomerMap> findAllCurrentByCompanyId(@Param("companyId") Long companyId);
+    Optional<CompanySupplyCustomerMap> findByCompanyAndEndDateIsNull(Company company);
 
     @Query("SELECT m FROM CompanySupplyCustomerMap m WHERE m.supplyCustomer.id = :supplyCustomerId AND m.endDate IS NULL")
     List<CompanySupplyCustomerMap> findAllCurrentBySupplyCustomerId(@Param("supplyCustomerId") Long supplyCustomerId);

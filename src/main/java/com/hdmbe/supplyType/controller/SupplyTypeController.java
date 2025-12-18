@@ -4,6 +4,7 @@ import com.hdmbe.supplyType.dto.SupplyTypeRequestDto;
 import com.hdmbe.supplyType.dto.SupplyTypeResponseDto;
 import com.hdmbe.supplyType.service.SupplyTypeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,21 +24,44 @@ public class SupplyTypeController {
     }
 
     // 전체 조회
-    @GetMapping
-    public List<SupplyTypeResponseDto> getAll() {
-        return supplyTypeService.getAll();
+    @GetMapping("search")
+    public Page<SupplyTypeResponseDto> search(
+            @RequestParam(required = false) String supplyTypeName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return supplyTypeService.search(
+                supplyTypeName,
+                page,
+                size
+        );
+    }
+    // 단일 수정
+    @PutMapping("/{id}")
+    public SupplyTypeResponseDto updateSingle(
+            @PathVariable Long id,
+            @RequestBody SupplyTypeRequestDto dto
+    ) {
+        return supplyTypeService.updateSingle(id, dto);
     }
 
-    // 검색
-    @GetMapping("/search")
-    public ResponseEntity<List<SupplyTypeResponseDto>> search(
-            @RequestParam(required = false) String supplyTypeName
+    // 다중 수정
+    @PatchMapping("/bulk")
+    public List<SupplyTypeResponseDto> updateMultiple(
+            @RequestBody List<SupplyTypeRequestDto> dtoList
     ) {
+        return supplyTypeService.updateMultiple(dtoList);
+    }
 
-        SupplyTypeRequestDto dto = SupplyTypeRequestDto.builder()
-                .supplyTypeNameFilter(supplyTypeName)
-                .build();
+    // 단일 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSingle(@PathVariable Long id) {
+        supplyTypeService.deleteSingle(id);
+    }
 
-        return ResponseEntity.ok(supplyTypeService.search(dto));
+    // 다중 삭제
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        supplyTypeService.deleteMultiple(ids);
     }
 }

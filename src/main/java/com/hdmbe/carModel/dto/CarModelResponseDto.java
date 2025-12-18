@@ -19,21 +19,26 @@ public class CarModelResponseDto {
     private FuelType fuelType;
     private BigDecimal customEfficiency;
 
-    public static CarModelResponseDto fromEntity(CarModel model) {
-       CarModelResponseDto dto = CarModelResponseDto.builder()
-                .id(model.getId())
-                .carCategoryId(model.getCarCategory().getId())
-                .carCategoryName(model.getCarCategory().getCategoryName())
-                .fuelType(model.getFuelType())
-                .customEfficiency(model.getCustomEfficiency())
+    public static CarModelResponseDto fromEntity(CarModel carModel) {
+        return CarModelResponseDto.builder()
+                .id(carModel.getId())
+
+                .parentCategoryId(
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getId()
+                                : null
+                )
+                .parentCategoryName(
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getCategoryName()
+                                : null
+                )
+
+                .carCategoryId(carModel.getCarCategory().getId())
+                .carCategoryName(carModel.getCarCategory().getCategoryName())
+
+                .fuelType(carModel.getFuelType())
+                .customEfficiency(carModel.getCustomEfficiency())
                 .build();
-
-        if (model.getCarCategory().getParentCategory() != null) {
-            dto.setParentCategoryId(model.getCarCategory().getParentCategory().getId());
-            dto.setParentCategoryName(model.getCarCategory().getParentCategory().getCategoryName());
-        }
-
-        return dto;
     }
-
 }

@@ -24,16 +24,19 @@ public interface CarModelRepository
                 from CarModel cm
                 join cm.carCategory cc
                 left join cc.parentCategory pc
-                where (:categoryId is null or cc.id = :categoryId)
-                  and (:fuelType is null or cm.fuelType = :fuelType)
-                  and (
-                      :keyword is null
-                           or cc.categoryName like %:keyword%
-                           or cast(cm.fuelType as string) like %:keyword%
-                           or pc.categoryName like %:keyword%)
-            """)
+                WHERE
+            (:parentCategoryId IS NULL OR pc.id = :parentCategoryId)
+        AND (:carCategoryId IS NULL OR cc.id = :carCategoryId)
+        AND (:fuelType IS NULL OR cm.fuelType = :fuelType)
+        AND (
+            :keyword IS NULL OR
+            cc.categoryName LIKE %:keyword% OR
+            pc.categoryName LIKE %:keyword%
+        )
+    """)
     Page<CarModel> search(
-            @Param("categoryId") Long categoryId,
+            @Param("parentCategoryId") Long parentCategoryId,
+            @Param("carCategoryId") Long carCategoryId,
             @Param("fuelType") FuelType fuelType,
             @Param("keyword") String keyword,
             Pageable pageable

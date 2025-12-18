@@ -15,7 +15,7 @@ public class CarModelRequestDto {
     private Long id;
 
     private Long carCategoryId;
-    private String childCategoryName;
+    private String carCategoryName;
     private FuelType fuelType;
     private BigDecimal customEfficiency;
 
