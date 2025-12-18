@@ -1,5 +1,6 @@
 package com.hdmbe.vehicle.repository;
 
+import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,9 @@ public interface VehicleOperationPurposeMapRepository extends JpaRepository<Vehi
 
     @Query("SELECT m FROM VehicleOperationPurposeMap m WHERE m.operationPurpose.id = :operationPurposeId AND m.endDate IS NULL")
     List<VehicleOperationPurposeMap> findAllCurrentByOperationPurposeId(@Param("operationPurposeId") Long operationPurposeId);
+
+    // 현재 적용 중인(EndDate가 null) 목적 조회
+    Optional<VehicleOperationPurposeMap> findFirstByVehicleAndEndDateIsNull(Vehicle vehicle);
+
+    Optional<VehicleOperationPurposeMap> findByVehicleAndEndDateIsNull(Vehicle vehicle);
 }

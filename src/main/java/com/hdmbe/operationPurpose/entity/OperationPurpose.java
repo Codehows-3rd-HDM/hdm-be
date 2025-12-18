@@ -17,7 +17,6 @@ public class OperationPurpose extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     // 목적 ID
     @Column(name = "purpose_id", columnDefinition = "BIGINT")
     private Long id;

@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping ("/admin/excel/upload/base-info")
+@RequestMapping ("/admin/excel")
 @RequiredArgsConstructor
 public class ExcelUpBaseInfoController {
     private final ExcelUpBaseInfoService excelUpBaseInfoService;
 
-    @PostMapping
+    @PostMapping("/upload/base-info")
     public ResponseEntity<String> uploadBaseInfo(@RequestBody List<ExcelUpBaseInfoDto> dataList) {
 
         if (dataList == null || dataList.isEmpty()) {

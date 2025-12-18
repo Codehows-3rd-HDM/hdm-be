@@ -1,6 +1,8 @@
 package com.hdmbe.excelUpBaseInfo.service;
 
 
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
+import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
 import com.hdmbe.carModel.entity.CarModel;
 import com.hdmbe.carModel.service.CarModelExcelService;
 import com.hdmbe.carbonEmission.service.CarbonEmissionFactorService;
@@ -10,6 +12,8 @@ import com.hdmbe.company.service.CompanyExcelService;
 import com.hdmbe.excelUpBaseInfo.dto.ExcelUpBaseInfoDto;
 import com.hdmbe.operationPurpose.entity.OperationPurpose;
 import com.hdmbe.operationPurpose.service.OperationPurposeService;
+import com.hdmbe.supplyType.entity.SupplyType;
+import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.vehicle.service.VehicleExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,8 @@ public class ExcelUpBaseInfoService {
     private final CarModelExcelService carModelExcelService;
     private final VehicleExcelService vehicleExcelService;
     private final CompanyRepository companyRepository;
+    private final SupplyTypeRepository supplyTypeRepository;
+    private final SupplyCustomerRepository supplyCustomerRepository;
 
     @Transactional
     public void uploadMasterData(List<ExcelUpBaseInfoDto> dtoList) {
@@ -48,14 +54,47 @@ public class ExcelUpBaseInfoService {
                     finalCompanyDistance = dto.getDistanceInput();
                 }
 
+                // [수정 1] 엑셀에 적힌 글자("용접")로 실제 유형 Entity("용접"객체)를 찾아옴
+                // 공급유형: 값이 있을 때만 조회, 없으면 null
+                SupplyType typeEntity = null;
+                if (dto.getSupplyTypeName() != null && !dto.getSupplyTypeName().trim().isEmpty()) {
+                    String typeName = dto.getSupplyTypeName().trim();
+
+                    typeEntity = supplyTypeRepository.findBySupplyTypeName(typeName)
+                            .orElseGet(() -> {
+                                // DB에 없으면 에러 내지 말고, 여기서 바로 만들어서 저장!
+                                SupplyType newType = SupplyType.builder()
+                                        .supplyTypeName(typeName)
+                                        // .remark("") // 필요한 필드가 더 있으면 여기서 채우세요
+                                        .build();
+                                return supplyTypeRepository.save(newType);
+                            });
+                }
+                // [수정 2] 엑셀에 적힌 글자("현대")로 실제 고객 Entity("현대"객체)를 찾아옴
+                // 공급고객: 값이 있을 때만 조회, 없으면 null
+                SupplyCustomer customerEntity = null;
+                if (dto.getSupplyCustomerName() != null && !dto.getSupplyCustomerName().trim().isEmpty()) {
+                    String customerName = dto.getSupplyCustomerName().trim();
+
+                    customerEntity = supplyCustomerRepository.findByCustomerName(customerName)
+                            .orElseGet(() -> {
+                                // 💡 [핵심] DB에 없으면 바로 생성!
+                                SupplyCustomer newCustomer = SupplyCustomer.builder()
+                                        .customerName(customerName)
+                                        // .remark("")
+                                        .build();
+                                return supplyCustomerRepository.save(newCustomer);
+                            });
+                }
+
                 // 2. [중간] 업체 저장 (부모인 유형, 고객은 안에서 처리함)
                 Company company = companyExcelService.getOrCreate(
                         dto.getCompanyName(),
                         dto.getAddress(),
-                        dto.getSupplyTypeName(),
-                        dto.getSupplyCustomerName(),
                         finalCompanyDistance,
-                        "" // 비고 (엑셀에 없으면 공백)
+                        "",
+                        typeEntity,      // null 가능
+                        customerEntity   // null 가능
                 );
 
                 // 3. [중간] 차종 스펙 저장 (부모인 카테고리는 안에서 처리함)

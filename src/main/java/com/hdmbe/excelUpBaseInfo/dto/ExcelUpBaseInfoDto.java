@@ -12,6 +12,9 @@ import java.math.BigDecimal;
 @ToString
 public class ExcelUpBaseInfoDto {
 
+    // ✅ [추가] 프론트엔드에서 보낸 순번(idx)을 받기 위해 여기에 꼭 있어야 함!
+    private Integer idx;
+
     // 1. [기초] 운행 목적 & 배출 계수
     private String purposeName;       // 운행목적 (납품, 출퇴근)
     private String scope;             // Scope (1, 3) -> 서비스에서 숫자로 변환함
