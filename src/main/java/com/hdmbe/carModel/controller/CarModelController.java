@@ -59,10 +59,10 @@ public class CarModelController {
         return carModelService.updateMultiple(dtoList);
     }
 
-    // 삭제
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        carModelService.deleteCarModel(id);
-    }
+//    // 삭제
+//    @DeleteMapping("/{id}")
+//    public void delete(@PathVariable Long id) {
+//        carModelService.deleteCarModel(id);
+//    }
 
 }

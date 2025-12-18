@@ -49,8 +49,6 @@ public class CompanyService {
     private final CompanySupplyCustomerMapRepository companySupplyCustomerMapRepository;
     private final SupplyTypeRepository supplyTypeRepository;
     private final SupplyCustomerRepository supplyCustomerRepository;
-    private final CompanySupplyCustomerMapRepository companySupplyCustomerMapRepository;
-    private final CompanySupplyTypeMapRepository companySupplyTypeMapRepository;
 
     // 등록
     @Transactional
@@ -86,32 +84,33 @@ public class CompanyService {
         }
 
         // 주소
-        String address = (request.getRegion() != null ? request.getRegion() : "")
-                + (request.getDetailAddress() != null ? " " + request.getDetailAddress() : "");
+//        String address = (request.getRegion() != null ? request.getRegion() : "")
+//                + (request.getDetailAddress() != null ? " " + request.getDetailAddress() : "");
 
         Company company = Company.builder()
                 .companyName(request.getCompanyName())
                 .oneWayDistance(request.getOneWayDistance())
-                .address(address.trim())
+                .address(request.getAddress())
                 .remark(request.getRemark())
                 .build();
 
         companyRepository.save(company);
 
-        // 매핑 데이터 생성
-        CompanySupplyTypeMap supplyTypeMap = CompanySupplyTypeMap.builder()
+        // SupplyTypeMap 생성
+        CompanySupplyTypeMap typeMap = CompanySupplyTypeMap.builder()
                 .company(company)
                 .supplyType(supplyType)
                 .build();
-        companySupplyTypeMapRepository.save(supplyTypeMap);
+        companySupplyTypeMapRepository.save(typeMap);
 
-        CompanySupplyCustomerMap supplyCustomerMap = CompanySupplyCustomerMap.builder()
+        // SupplyCustomerMap 생성
+        CompanySupplyCustomerMap customerMap = CompanySupplyCustomerMap.builder()
                 .company(company)
                 .supplyCustomer(supplyCustomer)
                 .build();
-        companySupplyCustomerMapRepository.save(supplyCustomerMap);
+        companySupplyCustomerMapRepository.save(customerMap);
 
-        return CompanyResponseDto.fromEntity(company);
+        return CompanyResponseDto.fromEntity(company, typeMap, customerMap);
     }
 
     // 전체 조회, 검색
