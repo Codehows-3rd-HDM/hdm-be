@@ -1,33 +1,25 @@
 package com.hdmbe.carCategory.controller;
 
-import com.hdmbe.carCategory.dto.CarCategoryRequestDto;
+
 import com.hdmbe.carCategory.dto.CarCategoryResponseDto;
-import com.hdmbe.carCategory.service.CarCategoryService;
+import com.hdmbe.carCategory.repository.CarCategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/admin/category")
 @RequiredArgsConstructor
 public class CarCategoryController {
 
-    private final CarCategoryService carCategoryService;
+    private final CarCategoryRepository carCategoryRepository;
 
-    @PostMapping
-    public ResponseEntity<CarCategoryResponseDto> create(@RequestBody CarCategoryRequestDto requestDto) {
-        return ResponseEntity.ok(carCategoryService.create(requestDto));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<CarCategoryResponseDto>> getAll() {
-        return ResponseEntity.ok(carCategoryService.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<CarCategoryResponseDto> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(carCategoryService.findById(id));
+    @GetMapping("/all")
+    public List<CarCategoryResponseDto> getAllCategories() {
+        return carCategoryRepository.findAll().stream()
+                .map(CarCategoryResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 }

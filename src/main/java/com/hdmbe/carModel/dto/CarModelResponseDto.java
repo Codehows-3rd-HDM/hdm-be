@@ -1,6 +1,7 @@
 package com.hdmbe.carModel.dto;
 
 import com.hdmbe.carModel.entity.CarModel;
+import com.hdmbe.commonModule.constant.FuelType;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -10,17 +11,34 @@ import java.math.BigDecimal;
 public class CarModelResponseDto {
 
     private Long id;
-    private String categoryName;
-    private String fuelType;
+
+    private Long carCategoryId;
+    private String carCategoryName;
+    private Long parentCategoryId;
+    private String parentCategoryName;
+    private FuelType fuelType;
     private BigDecimal customEfficiency;
 
-    public static CarModelResponseDto fromEntity(CarModel model) {
+    public static CarModelResponseDto fromEntity(CarModel carModel) {
         return CarModelResponseDto.builder()
-                .id(model.getId())
-                .categoryName(model.getCarCategory().getCategoryName())
-                .fuelType(model.getFuelType().name())
-                .customEfficiency(model.getCustomEfficiency())
+                .id(carModel.getId())
+
+                .parentCategoryId(
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getId()
+                                : null
+                )
+                .parentCategoryName(
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getCategoryName()
+                                : null
+                )
+
+                .carCategoryId(carModel.getCarCategory().getId())
+                .carCategoryName(carModel.getCarCategory().getCategoryName())
+
+                .fuelType(carModel.getFuelType())
+                .customEfficiency(carModel.getCustomEfficiency())
                 .build();
     }
-
 }

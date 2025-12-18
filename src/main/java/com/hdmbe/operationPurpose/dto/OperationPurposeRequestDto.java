@@ -9,12 +9,9 @@ import lombok.*;
 @Builder
 public class OperationPurposeRequestDto {
 
+    private Long id;
     // 등록용
     private String purposeName;
     private Integer defaultScope;
-
-    // 검색용
-    private String purposeNameFilter;
-    private Integer scopeFilter;
 
 }
