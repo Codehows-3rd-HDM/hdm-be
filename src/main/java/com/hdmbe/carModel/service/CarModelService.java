@@ -100,14 +100,6 @@ public class CarModelService {
                 .collect(Collectors.toList());
     }
 
-    // 삭제
-    @Transactional
-    public void deleteCarModel(Long id) {
-        CarModel model = carModelRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("차종 id 없음 =" + id));
-        carModelRepository.delete(model);
-    }
-
     // 필수값 검증
     private void validateCreate(CarModelRequestDto dto) {
         if (dto.getCarCategoryId() == null)

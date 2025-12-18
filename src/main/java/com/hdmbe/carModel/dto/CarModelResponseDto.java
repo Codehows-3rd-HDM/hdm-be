@@ -19,26 +19,26 @@ public class CarModelResponseDto {
     private FuelType fuelType;
     private BigDecimal customEfficiency;
 
-    public static CarModelResponseDto fromEntity(CarModel cm) {
+    public static CarModelResponseDto fromEntity(CarModel carModel) {
         return CarModelResponseDto.builder()
-                .id(cm.getId())
+                .id(carModel.getId())
 
                 .parentCategoryId(
-                        cm.getCarCategory().getParentCategory() != null
-                                ? cm.getCarCategory().getParentCategory().getId()
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getId()
                                 : null
                 )
                 .parentCategoryName(
-                        cm.getCarCategory().getParentCategory() != null
-                                ? cm.getCarCategory().getParentCategory().getCategoryName()
+                        carModel.getCarCategory().getParentCategory() != null
+                                ? carModel.getCarCategory().getParentCategory().getCategoryName()
                                 : null
                 )
 
-                .carCategoryId(cm.getCarCategory().getId())
-                .carCategoryName(cm.getCarCategory().getCategoryName())
+                .carCategoryId(carModel.getCarCategory().getId())
+                .carCategoryName(carModel.getCarCategory().getCategoryName())
 
-                .fuelType(cm.getFuelType())
-                .customEfficiency(cm.getCustomEfficiency())
+                .fuelType(carModel.getFuelType())
+                .customEfficiency(carModel.getCustomEfficiency())
                 .build();
     }
 }

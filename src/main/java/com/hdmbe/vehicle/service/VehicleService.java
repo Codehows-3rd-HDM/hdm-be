@@ -1,10 +1,19 @@
 package com.hdmbe.vehicle.service;
 
+import com.hdmbe.carModel.entity.CarModel;
+import com.hdmbe.carModel.repository.CarModelRepository;
+import com.hdmbe.company.entity.Company;
+import com.hdmbe.company.repository.CompanyRepository;
+import com.hdmbe.operationPurpose.entity.OperationPurpose;
+import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
+import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
 
+import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +32,9 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleOperationPurposeMapRepository vehicleOperationPurposeMapRepository;
+    private final CarModelRepository carModelRepository;
+    private final OperationPurposeRepository operationPurposeRepository;
+    private final CompanyRepository companyRepository;
 
 
     // 등록
@@ -76,7 +91,8 @@ public class VehicleService {
 //                        .carModel(carModel)
 //                        .driverMemberId(dto.getDriverMemberId())
 //                        .company(company)
-////                        .operationPurpose(operationPurpose)
+
+    /// /                        .operationPurpose(operationPurpose)
 //                        .operationDistance(dto.getOperationDistance())
 //                        .remark(dto.getRemark())
 //                        .build()
@@ -117,4 +133,108 @@ public class VehicleService {
                 });
     }
 
+    // 단일 수정
+    @Transactional
+    public VehicleResponseDto updateSingle(Long id, VehicleRequestDto dto) {
+    validateUpdate(dto);
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("차량 id 없음 = " + id));
+
+        // 차량번호
+        if (dto.getCarNumber() != null)
+            vehicle.setCarNumber(dto.getCarNumber());
+
+        // 사원번호
+        if (dto.getDriverMemberId() != null)
+            vehicle.setDriverMemberId(dto.getDriverMemberId());
+
+        // 비고
+        if (dto.getRemark() != null)
+            vehicle.setRemark(dto.getRemark());
+
+        // 협력사 변경
+        if (dto.getCompanyId() != null) {
+            Company company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new EntityNotFoundException("협력사 없음"));
+            vehicle.setCompany(company);
+        }
+
+        // 차종 변경
+        if (dto.getCarModelId() != null) {
+            CarModel carModel = carModelRepository.findById(dto.getCarModelId())
+                    .orElseThrow(() -> new EntityNotFoundException("차종 없음"));
+            vehicle.setCarModel(carModel);
+        }
+
+        // 운행목적 변경
+        if (dto.getOperationPurposeId() != null) {
+
+            OperationPurpose purpose =
+                    operationPurposeRepository.findById(dto.getOperationPurposeId())
+                            .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
+
+            // 기존 목적 종료
+            vehicleOperationPurposeMapRepository
+                    .findByVehicleAndEndDateIsNull(vehicle)
+                    .ifPresent(map -> map.setEndDate(LocalDate.now()));
+
+            // 신규 목적 등록
+            vehicleOperationPurposeMapRepository.save(
+                    VehicleOperationPurposeMap.builder()
+                            .vehicle(vehicle)
+                            .operationPurpose(purpose)
+                            .build()
+            );
+        }
+
+        VehicleOperationPurposeMap currentMap =
+                vehicleOperationPurposeMapRepository
+                        .findByVehicleAndEndDateIsNull(vehicle)
+                        .orElse(null);
+
+        return VehicleResponseDto.fromEntity(vehicle, currentMap);
+    }
+
+    // 전체 수정
+    @Transactional
+    public List<VehicleResponseDto> updateMultiple(List<VehicleRequestDto> dtoList) {
+        return dtoList.stream()
+                .peek(this::validateUpdate)
+                .map(dto -> updateSingle(dto.getId(), dto))
+                .toList();
+    }
+
+    // 단일 삭제
+    @Transactional
+    public void deleteSingle(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("차량 id 없음 = " + id));
+
+        // 현재 운행목적 매핑 종료 (이력 관리)
+        vehicleOperationPurposeMapRepository.findByVehicleAndEndDateIsNull(vehicle)
+                .ifPresent(map -> map.setEndDate(LocalDate.now()));
+
+        vehicleRepository.delete(vehicle);
+    }
+
+    // 다중 삭제
+    @Transactional
+    public void deleteMultiple(List<Long> ids) {
+        for (Long id : ids) {
+            deleteSingle(id);
+        }
+    }
+    // 유효성 검사
+    private void validateUpdate(VehicleRequestDto dto) {
+
+        if (dto.getCompanyId() != null && dto.getCompanyId() <= 0)
+            throw new IllegalArgumentException("협력사 id 유효하지 않음");
+
+        if (dto.getCarModelId() != null && dto.getCarModelId() <= 0)
+            throw new IllegalArgumentException("차종 id 유효하지 않음");
+
+        if (dto.getOperationPurposeId() != null && dto.getOperationPurposeId() <= 0)
+            throw new IllegalArgumentException("운행목적 id 유효하지 않음");
+
+    }
 }

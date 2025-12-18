@@ -44,4 +44,29 @@ public class VehicleController {
                 size
         );
     }
+    // 단일 수정
+    @PutMapping("/{id}")
+    public VehicleResponseDto updateSingle(
+            @PathVariable Long id,
+            @RequestBody VehicleRequestDto dto
+    ) {
+        return vehicleService.updateSingle(id, dto);
+    }
+    // 전체 수정
+    @PatchMapping("/bulk")
+    public List<VehicleResponseDto> updateMultiple(
+            @RequestBody List<VehicleRequestDto> dto
+    ) {
+        return vehicleService.updateMultiple(dto);
+    }
+    // 단일 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSingle(@PathVariable Long id) {
+        vehicleService.deleteSingle(id);
+    }
+    // 멀티 삭제
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        vehicleService.deleteMultiple(ids);
+    }
 }
