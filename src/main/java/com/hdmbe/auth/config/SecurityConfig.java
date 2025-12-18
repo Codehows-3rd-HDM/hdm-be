@@ -78,7 +78,7 @@ public class SecurityConfig {
 
         // 프론트엔드 주소 허용 (React: 3000, Vite: 5173 등 사용하는 포트 적기)
         configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // 쿠키나 인증 헤더 허용
 

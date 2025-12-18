@@ -50,7 +50,7 @@ public class OperationPurposeController {
     }
 
     // 전체 수정
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-update")
     public List<OperationPurposeResponseDto> updateMultiple(
             @RequestBody List<OperationPurposeRequestDto> dtoList
     ) {

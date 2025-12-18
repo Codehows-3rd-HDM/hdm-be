@@ -53,7 +53,7 @@ public class VehicleController {
         return vehicleService.updateSingle(id, dto);
     }
     // 전체 수정
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-update")
     public List<VehicleResponseDto> updateMultiple(
             @RequestBody List<VehicleRequestDto> dto
     ) {

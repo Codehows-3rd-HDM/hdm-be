@@ -1,11 +1,7 @@
 package com.hdmbe.operationPurpose.service;
 
-import com.hdmbe.operationPurpose.dto.OperationPurposeRequestDto;
-import com.hdmbe.operationPurpose.dto.OperationPurposeResponseDto;
-import com.hdmbe.operationPurpose.entity.OperationPurpose;
-import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +9,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.hdmbe.operationPurpose.dto.OperationPurposeRequestDto;
+import com.hdmbe.operationPurpose.dto.OperationPurposeResponseDto;
+import com.hdmbe.operationPurpose.entity.OperationPurpose;
+import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class OperationPurposeService {
         OperationPurpose saved = operationPurposeRepository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
-                        .defaultScope(dto.getDefaultScopeId())
+                        .defaultScope(dto.getDefaultScope())
                         .build()
         );
 
@@ -57,34 +59,26 @@ public class OperationPurposeService {
 
         int pageSize = Math.min(size, 50);
 
-        Pageable pageable = PageRequest.of(
-                page,
-                pageSize,
-                Sort.by("id").ascending()
-        );
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        Page<OperationPurpose> result
-                = operationPurposeRepository.search(
-                        purposeName,
-                        scope,
-                        keyword,
-                        pageable
-                );
-
-        System.out.println("[OperationPurposeService] 운행목적 검색 결과 - 총 개수: " + result.getTotalElements()
-                + ", 현재 페이지 개수: " + result.getNumberOfElements());
-
-        return result.map(OperationPurposeResponseDto::fromEntity);
+        return operationPurposeRepository.search(
+                purposeName,
+                scope,
+                keyword,
+                pageable
+        )
+                .map(OperationPurposeResponseDto::fromEntity);
     }
+
     // 단일 수정
     @Transactional
     public OperationPurposeResponseDto updateSingle(Long id, OperationPurposeRequestDto dto) {
         validateUpdate(dto);
 
-        OperationPurpose purpose =
-                operationPurposeRepository.findById(id)
-                        .orElseThrow(() ->
-                                new EntityNotFoundException("운행목적 없음 id=" + id));
+        OperationPurpose purpose
+                = operationPurposeRepository.findById(id)
+                        .orElseThrow(()
+                                -> new EntityNotFoundException("운행목적 없음 id=" + id));
 
         if (dto.getPurposeName() != null) {
             purpose.setPurposeName(dto.getPurposeName());
@@ -110,10 +104,10 @@ public class OperationPurposeService {
     // 단일 삭제
     @Transactional
     public void deleteSingle(Long id) {
-        OperationPurpose purpose =
-                operationPurposeRepository.findById(id)
-                        .orElseThrow(() ->
-                                new EntityNotFoundException("운행목적 없음 id=" + id));
+        OperationPurpose purpose
+                = operationPurposeRepository.findById(id)
+                        .orElseThrow(()
+                                -> new EntityNotFoundException("운행목적 없음 id=" + id));
 
         operationPurposeRepository.delete(purpose);
     }
@@ -132,25 +126,30 @@ public class OperationPurposeService {
 
     // 유효성 검사
     private void validateCreate(OperationPurposeRequestDto dto) {
-        if (dto.getPurposeName() == null || dto.getPurposeName().isBlank())
+        if (dto.getPurposeName() == null || dto.getPurposeName().isBlank()) {
             throw new IllegalArgumentException("운행목적명 필수");
+        }
 
-        if (dto.getDefaultScope() == null)
+        if (dto.getDefaultScope() == null) {
             throw new IllegalArgumentException("Scope 필수");
+        }
 
         validateScope(dto.getDefaultScope());
     }
 
     private void validateUpdate(OperationPurposeRequestDto dto) {
-        if (dto.getPurposeName() != null && dto.getPurposeName().isBlank())
+        if (dto.getPurposeName() != null && dto.getPurposeName().isBlank()) {
             throw new IllegalArgumentException("운행목적명 공백 불가");
+        }
 
-        if (dto.getDefaultScope() != null)
+        if (dto.getDefaultScope() != null) {
             validateScope(dto.getDefaultScope());
+        }
     }
 
     private void validateScope(Integer scope) {
-        if (scope < 1 || scope > 3)
+        if (scope < 1 || scope > 3) {
             throw new IllegalArgumentException("Scope 값이 올바르지 않습니다.");
+        }
     }
 }
