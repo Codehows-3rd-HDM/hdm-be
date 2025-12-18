@@ -24,7 +24,7 @@ public class OperationPurposeController {
     }
 
     // 조회+검색
-    @GetMapping("search")
+    @GetMapping("/search")
     public Page<OperationPurposeResponseDto> search(
             @RequestParam(required = false) String purposeName,
             @RequestParam(required = false) Integer defaultScope,
@@ -50,7 +50,7 @@ public class OperationPurposeController {
     }
 
     // 전체 수정
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-update")
     public List<OperationPurposeResponseDto> updateMultiple(
             @RequestBody List<OperationPurposeRequestDto> dtoList
     ) {

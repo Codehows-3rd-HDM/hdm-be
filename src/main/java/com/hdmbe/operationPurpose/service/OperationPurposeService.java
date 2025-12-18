@@ -27,7 +27,7 @@ public class OperationPurposeService {
         OperationPurpose saved = operationPurposeRepository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
-                        .defaultScope(dto.getDefaultScopeId())
+                        .defaultScope(dto.getDefaultScope())
                         .build()
         );
 
@@ -43,24 +43,17 @@ public class OperationPurposeService {
             int page,
             int size
     ) {
-        int pageSize = Math.min(size, 50);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        Pageable pageable = PageRequest.of(
-                page,
-                pageSize,
-                Sort.by("id").ascending()
-        );
-
-        Page<OperationPurpose> result =
-                operationPurposeRepository.search(
+        return operationPurposeRepository.search(
                         purposeName,
                         scope,
                         keyword,
                         pageable
-                );
-
-        return result.map(OperationPurposeResponseDto::fromEntity);
+                )
+                .map(OperationPurposeResponseDto::fromEntity);
     }
+
     // 단일 수정
     @Transactional
     public OperationPurposeResponseDto updateSingle(Long id, OperationPurposeRequestDto dto) {
