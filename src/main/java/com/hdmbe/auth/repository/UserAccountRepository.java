@@ -1,6 +1,6 @@
 package com.hdmbe.auth.repository;
 
-import com.hdmbe.auth.userAccount.entity.UserAccount;
+import com.hdmbe.auth.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

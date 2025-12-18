@@ -92,7 +92,10 @@ public class VehicleService {
                 Vehicle.builder()
                         .carNumber(dto.getCarNumber())
                         .carName(dto.getCarName())
-                        .carModel(carModel)
+                        .carModel(
+                                carModelRepository.findById(dto.getCarModelId())
+                                        .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."))
+                        )
                         .driverMemberId(dto.getDriverMemberId())
                         .company(company)
                         .operationDistance(dto.getOperationDistance() != null ? dto.getOperationDistance() : BigDecimal.ZERO)
@@ -110,7 +113,8 @@ public class VehicleService {
         return VehicleResponseDto.fromEntity(saved, purposeMap);
     }
 
-//    // 전체 조회
+
+    // 전체 조회
     @Transactional(readOnly = true)
     public Page<VehicleResponseDto> search(
             String carNumber,

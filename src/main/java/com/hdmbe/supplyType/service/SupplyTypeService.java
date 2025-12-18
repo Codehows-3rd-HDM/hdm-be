@@ -131,3 +131,11 @@ public class SupplyTypeService {
         }
     }
 }
+    @Transactional
+    public SupplyType getOrCreate(String name) {
+        return supplyTypeRepository.findBySupplyTypeName(name)
+                .orElseGet(() -> supplyTypeRepository.save(
+                        SupplyType.builder().supplyTypeName(name).build()
+                ));
+    }
+}

@@ -127,4 +127,12 @@ public class SupplyCustomerService {
             throw new IllegalArgumentException("공급 고객명 공백 불가");
         }
     }
+    @Transactional
+    public SupplyCustomer getOrCreate(String name) {
+        return supplyCustomerRepository.findByCustomerName(name)
+                .orElseGet(() -> supplyCustomerRepository.save(
+                        SupplyCustomer.builder().customerName(name).build()
+                ));
+    }
+
 }

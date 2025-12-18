@@ -15,6 +15,7 @@ import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
+import com.hdmbe.supplyType.service.SupplyTypeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,6 +39,7 @@ import com.hdmbe.supplyType.entity.SupplyType;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service

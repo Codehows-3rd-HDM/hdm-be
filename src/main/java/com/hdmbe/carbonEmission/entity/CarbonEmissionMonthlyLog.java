@@ -20,9 +20,13 @@ public class CarbonEmissionMonthlyLog extends BaseTimeEntity {
     @Column(name = "monthly_id", columnDefinition = "BIGINT")
     private Long id;
 
-    // 차량 ID
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_id", nullable = false)
+
+//    @Column(name = "car_id", nullable = false)
+//    private Long carId;
+
+    // ✅ [수정] 객체(Entity)와 직접 연결!
+    @ManyToOne(fetch = FetchType.LAZY) // 필요할 때만 조회 (성능 최적화)
+    @JoinColumn(name = "car_id", nullable = false) // 실제 DB 컬럼명 지정
     private Vehicle vehicle;
 
     // 기준 연도

@@ -1,7 +1,7 @@
 package com.hdmbe.auth.service;
 
 import com.hdmbe.auth.repository.UserAccountRepository;
-import com.hdmbe.auth.userAccount.entity.UserAccount;
+import com.hdmbe.auth.entity.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
