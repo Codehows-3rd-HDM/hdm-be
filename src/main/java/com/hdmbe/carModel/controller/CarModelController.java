@@ -45,7 +45,6 @@ public class CarModelController {
         );
     }
 
-
     // 단일 수정
     @PutMapping("/{id}")
     public CarModelResponseDto updateSingle(
@@ -65,6 +64,5 @@ public class CarModelController {
     public void delete(@PathVariable Long id) {
         carModelService.deleteCarModel(id);
     }
-
 
 }

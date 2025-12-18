@@ -29,6 +29,8 @@ public class VehicleRequestDto {
     private Long parentCategoryId;
     // 차종 소분류 ID
     private Long carCategoryId;
+    // 차종 ID
+    private Long carModelId;
     // 차량 모델명
     private String carName;
     // 연료 종류
@@ -43,11 +45,5 @@ public class VehicleRequestDto {
     // 등록용 (ID 기반)
     private Long childCategoryId; // 소분류 카테고리 ID
     private BigDecimal operationDistance; // 편도거리
-    private Long carModelId; // 차종 모델 ID (선택사항)
 
-    // 검색용
-    private String keyword;              // 통합검색
-    private String carNumberFilter;      // 차량번호 검색
-    private String companyNameFilter;    // 업체명 검색
-    private String driverMemberIdFilter; // 사원번호 검색
 }

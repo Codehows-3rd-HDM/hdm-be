@@ -49,22 +49,28 @@ public class CompanyController {
     @PutMapping("/{id}")
     public CompanyResponseDto updateSingle(
             @PathVariable Long id,
-            @RequestBody CompanyRequestDto request
+            @RequestBody CompanyRequestDto dto
     ) {
-        return companyService.updateSingle(id, request);
+        return companyService.updateSingle(id, dto);
     }
 
     // 페이지 전체 수정
     @PatchMapping("/bulk")
     public List<CompanyResponseDto> updateMultiple(
-            @RequestBody List<CompanyRequestDto> requestList
+            @RequestBody List<CompanyRequestDto> dtoList
     ) {
-        return companyService.updateMultiple(requestList);
+        return companyService.updateMultiple(dtoList);
     }
 
-    // 삭제
+    // 단일 삭제
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        companyService.delete(id);
+    public void deleteSingle(@PathVariable Long id) {
+        companyService.deleteSingle(id);
     }
+    // 체크박스 삭제
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        companyService.deleteMultiple(ids);
+    }
+
 }
