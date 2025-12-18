@@ -36,5 +36,33 @@ public class SupplyCustomerController {
             size
     );
 }
+    // 단일 수정
+    @PutMapping("/{id}")
+    public SupplyCustomerResponseDto updateSingle(
+            @PathVariable Long id,
+            @RequestBody SupplyCustomerRequestDto dto
+    ) {
+        return supplyCustomerService.updateSingle(id, dto);
+    }
 
+    // 다중 수정
+    @PatchMapping("/bulk")
+    public List<SupplyCustomerResponseDto> updateMultiple(
+            @RequestBody List<SupplyCustomerRequestDto> dtoList
+    ) {
+        return supplyCustomerService.updateMultiple(dtoList);
+    }
+
+    // 단일 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSingle(@PathVariable Long id) {
+        supplyCustomerService.deleteSingle(id);
+    }
+
+    // 다중 삭제 (체크박스)
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        supplyCustomerService.deleteMultiple(ids);
+    }
 }
+

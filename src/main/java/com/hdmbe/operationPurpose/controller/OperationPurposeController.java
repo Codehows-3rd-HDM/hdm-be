@@ -40,6 +40,32 @@ public class OperationPurposeController {
                 size
         );
     }
+    // 단일 수정
+    @PutMapping("/{id}")
+    public OperationPurposeResponseDto updateSingle(
+            @PathVariable Long id,
+            @RequestBody OperationPurposeRequestDto dto
+    ) {
+        return operationPurposeService.updateSingle(id, dto);
+    }
 
+    // 전체 수정
+    @PatchMapping("/bulk")
+    public List<OperationPurposeResponseDto> updateMultiple(
+            @RequestBody List<OperationPurposeRequestDto> dtoList
+    ) {
+        return operationPurposeService.updateMultiple(dtoList);
+    }
 
+    // 단일 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSingle(@PathVariable Long id) {
+        operationPurposeService.deleteSingle(id);
+    }
+
+    // 다중 삭제
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        operationPurposeService.deleteMultiple(ids);
+    }
 }

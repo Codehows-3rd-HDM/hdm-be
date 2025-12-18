@@ -13,11 +13,11 @@ public class SupplyType extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    // 공정 ID
+    // 공급 유형 ID
     @Column(name = "supply_type_id", columnDefinition = "BIGINT")
     private Long id;
 
-    // 공정 이름
+    // 공급 유형 이름
     @Column(name = "supply_type_name", length = 30, unique = true)
     private String supplyTypeName;
 

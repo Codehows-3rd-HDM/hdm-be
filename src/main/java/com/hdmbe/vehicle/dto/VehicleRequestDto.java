@@ -25,6 +25,8 @@ public class VehicleRequestDto {
     private Long companyId;
     // 사원번호
     private String driverMemberId;
+    // 편도 거리
+    private BigDecimal operationDistance;
     // 차종 대분류 ID
     private Long parentCategoryId;
     // 차종 소분류 ID

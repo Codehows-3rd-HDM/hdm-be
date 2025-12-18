@@ -36,4 +36,32 @@ public class SupplyTypeController {
                 size
         );
     }
+    // 단일 수정
+    @PutMapping("/{id}")
+    public SupplyTypeResponseDto updateSingle(
+            @PathVariable Long id,
+            @RequestBody SupplyTypeRequestDto dto
+    ) {
+        return supplyTypeService.updateSingle(id, dto);
+    }
+
+    // 다중 수정
+    @PatchMapping("/bulk")
+    public List<SupplyTypeResponseDto> updateMultiple(
+            @RequestBody List<SupplyTypeRequestDto> dtoList
+    ) {
+        return supplyTypeService.updateMultiple(dtoList);
+    }
+
+    // 단일 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSingle(@PathVariable Long id) {
+        supplyTypeService.deleteSingle(id);
+    }
+
+    // 다중 삭제
+    @DeleteMapping
+    public void deleteMultiple(@RequestBody List<Long> ids) {
+        supplyTypeService.deleteMultiple(ids);
+    }
 }
