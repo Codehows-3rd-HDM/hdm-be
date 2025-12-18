@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface SupplyCustomerRepository extends JpaRepository<SupplyCustomer, Long> {
@@ -17,6 +18,8 @@ public interface SupplyCustomerRepository extends JpaRepository<SupplyCustomer, 
     boolean existsByCustomerName(String customerName);
 
     List<SupplyCustomer> findByCustomerNameContaining(String customerName);
+    
+    Optional<SupplyCustomer> findByCustomerName(String customerName);
 
     @Query("""
         SELECT sc

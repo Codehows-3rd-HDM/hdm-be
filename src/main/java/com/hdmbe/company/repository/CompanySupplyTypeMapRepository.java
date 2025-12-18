@@ -1,9 +1,12 @@
 package com.hdmbe.company.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.hdmbe.company.entity.Company;
 import com.hdmbe.company.entity.CompanySupplyTypeMap;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface CompanySupplyTypeMapRepository
         extends JpaRepository<CompanySupplyTypeMap, Long> {

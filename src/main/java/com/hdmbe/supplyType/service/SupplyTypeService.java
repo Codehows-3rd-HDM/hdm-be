@@ -130,7 +130,7 @@ public class SupplyTypeService {
             throw new IllegalArgumentException("공급 유형명 공백 불가");
         }
     }
-}
+
     @Transactional
     public SupplyType getOrCreate(String name) {
         return supplyTypeRepository.findBySupplyTypeName(name)
