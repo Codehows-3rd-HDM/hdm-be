@@ -1,12 +1,13 @@
 package com.hdmbe.vehicle.dto;
 
+import java.math.BigDecimal;
+
 import com.hdmbe.commonModule.constant.FuelType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
@@ -27,6 +28,13 @@ public class VehicleRequestDto {
     private String carName;
     private FuelType fuelType;
     private String remark;
+
+    // 등록용 (이름 기반) - 프론트엔드에서 이름으로 보낼 때 사용
+    private String purposeName; // 운행목적 이름
+    private String companyNameForCreation; // 업체 이름 (생성용)
+
+    // 등록용 (ID 기반)
+    private Long childCategoryId; // 소분류 카테고리 ID
 
     // 검색용
     private String keyword;              // 통합검색

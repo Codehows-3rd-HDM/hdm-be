@@ -12,17 +12,14 @@ import java.math.BigDecimal;
 @Builder
 public class CarModelRequestDto {
 
-    // CREATE / UPDATE / SEARCH 공통
     private Long id;
-    private Long categoryId;    // CarCategory 연관관계 위해 필요
-    private String categoryName;
-    private FuelType fuelType;
 
-    // CREATE / UPDATE 전용
+    private Long carCategoryId;
+    private String childCategoryName;
+    private FuelType fuelType;
     private BigDecimal customEfficiency;
 
+    // 필터링 전체 검색 (All)
     private String keyword;
-
-
 
 }

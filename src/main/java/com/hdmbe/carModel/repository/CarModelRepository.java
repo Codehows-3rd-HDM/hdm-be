@@ -1,39 +1,47 @@
 package com.hdmbe.carModel.repository;
 
 
+import com.hdmbe.carCategory.entity.CarCategory;
 import com.hdmbe.carModel.entity.CarModel;
 import com.hdmbe.commonModule.constant.FuelType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface CarModelRepository
         extends JpaRepository<CarModel, Long> {
 
-    List<CarModel> findByCarCategoryId(Long categoryId);
-
-    List<CarModel> findByFuelType(FuelType fuelType);
+    Optional<CarModel> findByCarCategoryIdAndFuelType(Long categoryId, FuelType fuelType);
 
     @Query("""
-            SELECT m 
-            FROM CarModel m 
-            JOIN m.carCategory c 
-            WHERE c.categoryName LIKE %:categoryName%
+                select cm
+                from CarModel cm
+                join cm.carCategory cc
+                left join cc.parentCategory pc
+                where (:categoryId is null or cc.id = :categoryId)
+                  and (:fuelType is null or cm.fuelType = :fuelType)
+                  and (
+                      :keyword is null
+                           or cc.categoryName like %:keyword%
+                           or cast(cm.fuelType as string) like %:keyword%
+                           or pc.categoryName like %:keyword%)
             """)
-    List<CarModel> findByCategoryNameLike(@Param("categoryName") String categoryName);
+    Page<CarModel> search(
+            @Param("categoryId") Long categoryId,
+            @Param("fuelType") FuelType fuelType,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 
-
-    @Query("""
-    SELECT m FROM CarModel m
-    JOIN m.carCategory c
-    WHERE c.categoryName LIKE %:keyword%
-       OR CAST(m.fuelType AS string) LIKE %:keyword%
-           """)
-    List<CarModel> searchByKeyword(@Param("keyword") String keyword);
-
+    Optional<CarModel> findByCarCategoryAndFuelType(
+        CarCategory carCategory,
+        FuelType fuelType
+    );           
+         
 }
-
-

@@ -14,10 +14,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "VEHICLE")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Vehicle extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -47,11 +50,6 @@ public class Vehicle extends BaseTimeEntity {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    // 운행목적 ID
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purpose_id", nullable = false)
-    private OperationPurpose operationPurpose;
-
     // 운행거리
     @Column(name = "operation_distance", precision = 10, scale = 2, nullable = false)
     private BigDecimal operationDistance;
@@ -62,8 +60,10 @@ public class Vehicle extends BaseTimeEntity {
     private String remark;
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<CarbonEmissionDailyLog> dailyLogs = new ArrayList<>();
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<CarbonEmissionMonthlyLog> monthlyLogs = new ArrayList<>();
 }
