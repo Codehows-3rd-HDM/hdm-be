@@ -266,11 +266,8 @@ public class CompanyService {
             throw new IllegalArgumentException("편도거리 필수");
         }
 
-        if (request.getRegion() == null || request.getRegion().isBlank())
-            throw new IllegalArgumentException("지역 필수");
-
-        if (request.getDetailAddress() == null || request.getDetailAddress().isBlank()) {
-            throw new IllegalArgumentException("상세주소 필수");
+        if (request.getAddress() == null || request.getAddress().isBlank()) {
+            throw new IllegalArgumentException("주소 필수");
         }
     }
 
