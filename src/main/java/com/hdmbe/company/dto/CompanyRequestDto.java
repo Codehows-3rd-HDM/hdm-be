@@ -18,6 +18,8 @@ public class CompanyRequestDto {
     private Long supplyTypeId; // supplyType 연관
     private BigDecimal oneWayDistance;
     private Long customerId; // customerEntity 연관
+    // 지역 + 상세주소
+    private String address;
     // 지역
     private String region;
     // 상세 주소
