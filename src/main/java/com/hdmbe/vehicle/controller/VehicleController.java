@@ -32,8 +32,7 @@ public class VehicleController {
             @RequestParam(required = false) String driverMemberId,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
-    ) {
+            @RequestParam(defaultValue = "15") int size) {
         return vehicleService.search(
                 carNumber,
                 purposeId,
@@ -41,29 +40,30 @@ public class VehicleController {
                 driverMemberId,
                 keyword,
                 page,
-                size
-        );
+                size);
     }
+
     // 단일 수정
     @PutMapping("/{id}")
     public VehicleResponseDto updateSingle(
             @PathVariable Long id,
-            @RequestBody VehicleRequestDto dto
-    ) {
+            @RequestBody VehicleRequestDto dto) {
         return vehicleService.updateSingle(id, dto);
     }
+
     // 전체 수정
     @PatchMapping("/bulk-update")
     public List<VehicleResponseDto> updateMultiple(
-            @RequestBody List<VehicleRequestDto> dto
-    ) {
+            @RequestBody List<VehicleRequestDto> dto) {
         return vehicleService.updateMultiple(dto);
     }
+
     // 단일 삭제
     @DeleteMapping("/{id}")
     public void deleteSingle(@PathVariable Long id) {
         vehicleService.deleteSingle(id);
     }
+
     // 멀티 삭제
     @DeleteMapping
     public void deleteMultiple(@RequestBody List<Long> ids) {

@@ -15,6 +15,8 @@ public interface CompanySupplyCustomerMapRepository
 
     Optional<CompanySupplyCustomerMap> findByCompanyAndEndDateIsNull(Company company);
 
+    void deleteByCompany(Company company);
+
     @Query("SELECT m FROM CompanySupplyCustomerMap m WHERE m.supplyCustomer.id = :supplyCustomerId AND m.endDate IS NULL")
     List<CompanySupplyCustomerMap> findAllCurrentBySupplyCustomerId(@Param("supplyCustomerId") Long supplyCustomerId);
 

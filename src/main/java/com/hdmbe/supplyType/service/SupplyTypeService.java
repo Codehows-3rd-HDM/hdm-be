@@ -30,8 +30,7 @@ public class SupplyTypeService {
         SupplyType saved = supplyTypeRepository.save(
                 SupplyType.builder()
                         .supplyTypeName(dto.getSupplyTypeName())
-                        .build()
-        );
+                        .build());
         return SupplyTypeResponseDto.fromEntity(saved);
     }
 
@@ -48,8 +47,7 @@ public class SupplyTypeService {
     public Page<SupplyTypeResponseDto> search(
             String supplyTypeName,
             int page,
-            int size
-    ) {
+            int size) {
         System.out.println("[SupplyTypeService] 공급유형 검색 요청 - supplyTypeName: " + supplyTypeName
                 + ", page: " + page + ", size: " + size);
 
@@ -57,8 +55,7 @@ public class SupplyTypeService {
 
         Page<SupplyType> result = supplyTypeRepository.search(
                 supplyTypeName,
-                pageable
-        );
+                pageable);
 
         System.out.println("[SupplyTypeService] 공급유형 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -95,9 +92,8 @@ public class SupplyTypeService {
         SupplyType supplyType = supplyTypeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음 id=" + id));
         // 사용 중인 ID 체크
-        boolean isUsed
-                = CompanySupplyTypeMapRepository
-                        .existsBySupplyTypeIdAndEndDateIsNull(id);
+        boolean isUsed = companySupplyTypeMapRepository
+                .existsBySupplyTypeIdAndEndDateIsNull(id);
 
         if (isUsed) {
             throw new IllegalStateException("사용 중인 공급 유형은 삭제할 수 없습니다.");
@@ -135,7 +131,6 @@ public class SupplyTypeService {
     public SupplyType getOrCreate(String name) {
         return supplyTypeRepository.findBySupplyTypeName(name)
                 .orElseGet(() -> supplyTypeRepository.save(
-                        SupplyType.builder().supplyTypeName(name).build()
-                ));
+                        SupplyType.builder().supplyTypeName(name).build()));
     }
 }
