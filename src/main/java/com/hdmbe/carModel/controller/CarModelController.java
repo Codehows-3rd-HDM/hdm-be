@@ -6,7 +6,7 @@ import com.hdmbe.carModel.service.CarModelService;
 import com.hdmbe.commonModule.constant.FuelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +45,6 @@ public class CarModelController {
         );
     }
 
-
     // 단일 수정
     @PutMapping("/{id}")
     public CarModelResponseDto updateSingle(
@@ -59,5 +58,11 @@ public class CarModelController {
     public List<CarModelResponseDto> updateMultiple(@RequestBody List<CarModelRequestDto> dtoList) {
         return carModelService.updateMultiple(dtoList);
     }
+
+//    // 삭제
+//    @DeleteMapping("/{id}")
+//    public void delete(@PathVariable Long id) {
+//        carModelService.deleteCarModel(id);
+//    }
 
 }

@@ -7,9 +7,23 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
+import com.hdmbe.company.entity.Company;
+import com.hdmbe.supplyType.entity.SupplyType;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CompanyResponseDto {
+
     private Long id;
     private String companyName;
     private Long supplyTypeId;
@@ -43,7 +57,6 @@ public class CompanyResponseDto {
         return CompanyResponseDto.builder()
                 .id(company.getId())
                 .companyName(company.getCompanyName())
-
                 // 공급 유형
                 .supplyTypeId(
                         supplyTypeMap != null
@@ -55,10 +68,8 @@ public class CompanyResponseDto {
                                 ? supplyTypeMap.getSupplyType().getSupplyTypeName()
                                 : null
                 )
-
                 // 편도 거리
                 .oneWayDistance(company.getOneWayDistance())
-
                 // 공급 고객
                 .supplyCustomerId(
                         supplyCustomerMap != null
@@ -70,7 +81,6 @@ public class CompanyResponseDto {
                                 ? supplyCustomerMap.getSupplyCustomer().getCustomerName()
                                 : null
                 )
-
                 // 주소 (표현용 분리)
                 .address(company.getAddress())
                 .region(region)

@@ -11,4 +11,6 @@ public enum FuelType {
     등유,
     도시가스,
     하이브리드
+
+
 }

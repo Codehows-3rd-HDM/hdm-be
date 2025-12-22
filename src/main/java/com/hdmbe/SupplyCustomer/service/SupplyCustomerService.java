@@ -40,6 +40,14 @@ public class SupplyCustomerService {
         return SupplyCustomerResponseDto.fromEntity(saved);
     }
 
+    // 전체 조회 (드롭다운용)
+    @Transactional(readOnly = true)
+    public List<SupplyCustomerResponseDto> getAll() {
+        return supplyCustomerRepository.findAll().stream()
+                .map(SupplyCustomerResponseDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     // 전체 조회 + 검색
     @Transactional(readOnly = true)
     public Page<SupplyCustomerResponseDto> search(
@@ -47,13 +55,20 @@ public class SupplyCustomerService {
             int page,
             int size
     ) {
+        System.out.println("[SupplyCustomerService] 공급고객 검색 요청 - customerName: " + customerName
+                + ", page: " + page + ", size: " + size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return supplyCustomerRepository.search(
-                        customerName,
-                        pageable
-                )
-                .map(SupplyCustomerResponseDto::fromEntity);
+        Page<SupplyCustomer> result = supplyCustomerRepository.search(
+                customerName,
+                pageable
+        );
+
+        System.out.println("[SupplyCustomerService] 공급고객 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(SupplyCustomerResponseDto::fromEntity);
     }
     // 단일 수정
     @Transactional
@@ -112,4 +127,12 @@ public class SupplyCustomerService {
             throw new IllegalArgumentException("공급 고객명 공백 불가");
         }
     }
+    @Transactional
+    public SupplyCustomer getOrCreate(String name) {
+        return supplyCustomerRepository.findByCustomerName(name)
+                .orElseGet(() -> supplyCustomerRepository.save(
+                        SupplyCustomer.builder().customerName(name).build()
+                ));
+    }
+
 }

@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CarCategory extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
@@ -33,5 +34,6 @@ public class CarCategory extends BaseTimeEntity {
     private CarCategory parentCategory;
     // 차종
     @OneToMany(mappedBy = "carCategory", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<CarModel> carModels = new ArrayList<>();
 }

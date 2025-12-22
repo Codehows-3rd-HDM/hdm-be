@@ -14,9 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OperationPurpose extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     // 목적 ID
     @Column(name = "purpose_id", columnDefinition = "BIGINT")
     private Long id;
@@ -28,5 +28,4 @@ public class OperationPurpose extends BaseTimeEntity {
     // 기준 Scope
     @Column(name = "default_scope")
     private Integer defaultScope;
-
 }

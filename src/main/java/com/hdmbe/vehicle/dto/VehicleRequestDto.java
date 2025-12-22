@@ -45,6 +45,6 @@ public class VehicleRequestDto {
     private String companyNameForCreation; // 업체 이름 (생성용)
 
     // 등록용 (ID 기반)
-//    private Long childCategoryId; // 소분류 카테고리 ID
+    private Long childCategoryId; // 소분류 카테고리 ID
 
 }

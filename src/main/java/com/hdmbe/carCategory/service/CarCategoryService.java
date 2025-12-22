@@ -28,7 +28,7 @@ public class CarCategoryService {
         }
 
         CarCategory category = CarCategory.builder()
-                .categoryName(requestDto.getCategoryName())
+                .categoryName(requestDto.getCategoryId())
                 .parentCategory(parent)
                 .build();
 
@@ -49,5 +49,21 @@ public class CarCategoryService {
         CarCategory category = carCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다: " + id));
         return CarCategoryResponseDto.fromEntity(category);
+    }
+
+    @Transactional
+    public CarCategory getOrCreate(String bigName, String smallName)
+    {
+        // 1. 대분류(부모) 처리
+        CarCategory parentCategory = carCategoryRepository.findByCategoryNameAndParentCategoryIsNull(bigName)
+                                                  .orElseGet(() -> carCategoryRepository.save(
+                                                          CarCategory.builder().categoryName(bigName).parentCategory(null).build()
+                                                  ));
+
+        // 2. 소분류(자식) 처리
+        return  carCategoryRepository.findByCategoryNameAndParentCategory(smallName, parentCategory)
+                .orElseGet(() -> carCategoryRepository.save(
+                        CarCategory.builder().categoryName(smallName).parentCategory(parentCategory).build()
+                ));
     }
 }

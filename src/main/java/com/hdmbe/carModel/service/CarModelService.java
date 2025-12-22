@@ -31,12 +31,8 @@ public class CarModelService {
     @Transactional
     public CarModelResponseDto createCarModel(CarModelRequestDto dto) {
         validateCreate(dto);
-        CarCategory category = carCategoryRepository.findByCategoryName(dto.getCarCategoryName())
+        CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
-
-        // CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
-        // .orElseThrow(() -> new EntityNotFoundException("CarCategory not found id=" +
-        // dto.getCarCategoryId()));
 
         CarModel model = CarModel.builder()
                 .carCategory(category)
@@ -58,16 +54,24 @@ public class CarModelService {
             int page,
             int size
     ) {
+        System.out.println("[CarModelService] 차종 검색 요청 - parentCategoryId: " + parentCategoryId
+                + ", carCategoryId: " + carCategoryId + ", fuelType: " + fuelType
+                + ", keyword: " + keyword + ", page: " + page + ", size: " + size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return carModelRepository.search(
-                        parentCategoryId,
-                        carCategoryId,
-                        fuelType,
-                        keyword,
-                        pageable
-                )
-                .map(CarModelResponseDto::fromEntity);
+        Page<CarModel> result = carModelRepository.search(
+                parentCategoryId,
+                carCategoryId,
+                fuelType,
+                keyword,
+                pageable
+        );
+
+        System.out.println("[CarModelService] 차종 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(CarModelResponseDto::fromEntity);
     }
 
     // 단일 수정
@@ -84,10 +88,12 @@ public class CarModelService {
             model.setCarCategory(category);
         }
 
-        if (dto.getFuelType() != null)
+        if (dto.getFuelType() != null) {
             model.setFuelType(dto.getFuelType());
-        if (dto.getCustomEfficiency() != null)
+        }
+        if (dto.getCustomEfficiency() != null) {
             model.setCustomEfficiency(dto.getCustomEfficiency());
+        }
 
         return CarModelResponseDto.fromEntity(model);
     }
@@ -102,16 +108,20 @@ public class CarModelService {
 
     // 필수값 검증
     private void validateCreate(CarModelRequestDto dto) {
-        if (dto.getCarCategoryId() == null)
+        if (dto.getCarCategoryId() == null) {
             throw new IllegalArgumentException("카테고리Id 필수");
-        if (dto.getFuelType() == null)
+        }
+        if (dto.getFuelType() == null) {
             throw new IllegalArgumentException("연료종류 필수");
-        if (dto.getCustomEfficiency() == null)
+        }
+        if (dto.getCustomEfficiency() == null) {
             throw new IllegalArgumentException("연비 필수");
+        }
     }
 
     private void validateUpdate(CarModelRequestDto dto) {
-        if (dto.getCarCategoryId() != null && dto.getCarCategoryId() <= 0)
+        if (dto.getCarCategoryId() != null && dto.getCarCategoryId() <= 0) {
             throw new IllegalArgumentException("카테고리Id 유효하지 않음");
+        }
     }
 }

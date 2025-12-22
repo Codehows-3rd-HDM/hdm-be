@@ -44,12 +44,12 @@ public class RegistrationOptionsController {
         // fetch car categories once
         List<com.hdmbe.carCategory.dto.CarCategoryResponseDto> carCategories = carCategoryService.getAll();
 
-//        // 1. 운행목적 (PURPOSE_OPTIONS)
-//        options.put("PURPOSE_OPTIONS",
-//                operationPurposeService.getAll().stream()
-//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
-//                        .collect(Collectors.toList())
-//        );
+        // 1. 운행목적 (PURPOSE_OPTIONS)
+        options.put("PURPOSE_OPTIONS",
+                operationPurposeService.getAll().stream()
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
+                        .collect(Collectors.toList())
+        );
 
         // 2. 협력사/업체 (COMPANY_OPTIONS)
         options.put("COMPANY_OPTIONS",
@@ -99,7 +99,7 @@ public class RegistrationOptionsController {
                         return;
                     }
                     carCategoryMap.computeIfAbsent(parentName, k -> new java.util.ArrayList<>())
-                            .add(Map.<String, Object>of("id", dto.getId(), "name", dto.getParentCategoryName()));
+                            .add(Map.<String, Object>of("id", dto.getId(), "name", dto.getChildCategoryName()));
                 });
 
         options.put("CAR_CATEGORY_MAP", carCategoryMap);
@@ -114,17 +114,25 @@ public class RegistrationOptionsController {
                 Map.<String, Object>of("id", 6, "name", "수소"),
                 Map.<String, Object>of("id", 7, "name", "중유"),
                 Map.<String, Object>of("id", 8, "name", "등유"),
-                Map.<String, Object>of("id", 9, "name", "도시가스")
+                Map.<String, Object>of("id", 9, "name", "도시가스"),
+                Map.<String, Object>of("id", 10, "name", "하이브리드")
         ));
 
-//        // 6. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
-//        options.put("SUPPLY_CUSTOMER_OPTIONS",
-//                supplyCustomerService.getAll().stream()
-//                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
-//                        .collect(Collectors.toList())
-//        );
+        // 6. 공급 유형 (SUPPLY_TYPE_OPTIONS)
+        options.put("SUPPLY_TYPE_OPTIONS",
+                supplyTypeService.getAll().stream()
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
+                        .collect(Collectors.toList())
+        );
 
-        // 7. Scope (SCOPE_OPTIONS)
+        // 7. 공급 고객 (SUPPLY_CUSTOMER_OPTIONS)
+        options.put("SUPPLY_CUSTOMER_OPTIONS",
+                supplyCustomerService.getAll().stream()
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getCustomerName()))
+                        .collect(Collectors.toList())
+        );
+
+        // 8. Scope (SCOPE_OPTIONS)
         options.put("SCOPE_OPTIONS", List.of(
                 Map.<String, Object>of("id", 1, "name", "Scope1"),
                 Map.<String, Object>of("id", 3, "name", "Scope3"),
@@ -137,12 +145,11 @@ public class RegistrationOptionsController {
 //                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getSupplyTypeName()))
 //                        .collect(Collectors.toList())
 //        );
-
         // 9. 지역 (REGION_OPTIONS)
         options.put("REGION_OPTIONS", List.of(
                 "강원특별자치도", "경기도", "경상남도", "경상북도", "광주광역시", "대구광역시",
                 "대전광역시", "부산광역시", "서울특별시", "세종특별자치시", "울산광역시",
-                "인천광역시", "전라남도", "전북특별자치도", "제주특별자치도", "충청남도", "충청북도"
+                "인천광역시", "전라남도", "전북특별자치도", "제주특별자치도", "충청남도", "충청북도", "해외"
         ));
 
         return ResponseEntity.ok(options);

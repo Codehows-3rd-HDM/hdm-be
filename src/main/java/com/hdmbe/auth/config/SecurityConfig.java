@@ -28,7 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
         http
                 // 1. CORS 설정 적용 (프론트엔드 연동 위해 필수)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 2. CSRF 비활성화 (JWT 쓸 땐 필요 없음)
                 .csrf(csrf -> csrf.disable())
@@ -44,7 +44,7 @@ public class SecurityConfig {
 //                        .hasAnyRole("SUPERADMIN")
                         .permitAll()
                         // [SUPERADMIN, ADMIN]
-                        .requestMatchers( "/nicepark/excel/upload", "/s1/excel/upload").hasAnyRole("SUPERADMIN", "ADMIN")
+                        .requestMatchers( "/admin/excel/upload/**").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
                         .requestMatchers("/login", "/logout", "/admin/**").permitAll()
                         .anyRequest().authenticated())
@@ -71,19 +71,4 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // 🌐 CORS 설정 (리액트 포트 허용)
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-
-        // 프론트엔드 주소 허용 (React: 3000, Vite: 5173 등 사용하는 포트 적기)
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 쿠키나 인증 헤더 허용
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
 }

@@ -30,27 +30,39 @@ public class SupplyTypeService {
         SupplyType saved = supplyTypeRepository.save(
                 SupplyType.builder()
                         .supplyTypeName(dto.getSupplyTypeName())
-                        .build()
-        );
+                        .build());
         return SupplyTypeResponseDto.fromEntity(saved);
     }
 
-    // 전체 조회 + 검색
+    // 전체 조회 (드롭다운용)
+    @Transactional(readOnly = true)
+    public List<SupplyTypeResponseDto> getAll() {
+        return supplyTypeRepository.findAll().stream()
+                .map(SupplyTypeResponseDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // 전체 조회
     @Transactional(readOnly = true)
     public Page<SupplyTypeResponseDto> search(
             String supplyTypeName,
             int page,
-            int size
-    ) {
+            int size) {
+        System.out.println("[SupplyTypeService] 공급유형 검색 요청 - supplyTypeName: " + supplyTypeName
+                + ", page: " + page + ", size: " + size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        return supplyTypeRepository.search(
-                        supplyTypeName,
-                        pageable
-                )
-                .map(SupplyTypeResponseDto::fromEntity);
+        Page<SupplyType> result = supplyTypeRepository.search(
+                supplyTypeName,
+                pageable);
+
+        System.out.println("[SupplyTypeService] 공급유형 검색 결과 - 총 개수: " + result.getTotalElements()
+                + ", 현재 페이지 개수: " + result.getNumberOfElements());
+
+        return result.map(SupplyTypeResponseDto::fromEntity);
     }
+
     // 단일 수정
     @Transactional
     public SupplyTypeResponseDto updateSingle(Long id, SupplyTypeRequestDto dto) {
@@ -79,10 +91,9 @@ public class SupplyTypeService {
     public void deleteSingle(Long id) {
         SupplyType supplyType = supplyTypeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음 id=" + id));
-    // 사용 중인 ID 체크
-        boolean isUsed =
-                companySupplyTypeMapRepository
-                        .existsBySupplyTypeIdAndEndDateIsNull(id);
+        // 사용 중인 ID 체크
+        boolean isUsed = companySupplyTypeMapRepository
+                .existsBySupplyTypeIdAndEndDateIsNull(id);
 
         if (isUsed) {
             throw new IllegalStateException("사용 중인 공급 유형은 삭제할 수 없습니다.");
@@ -102,6 +113,7 @@ public class SupplyTypeService {
             deleteSingle(id);
         }
     }
+
     // 유효성 검사
     private void validateCreate(SupplyTypeRequestDto dto) {
         if (dto.getSupplyTypeName() == null || dto.getSupplyTypeName().isBlank()) {
@@ -113,5 +125,12 @@ public class SupplyTypeService {
         if (dto.getSupplyTypeName() != null && dto.getSupplyTypeName().isBlank()) {
             throw new IllegalArgumentException("공급 유형명 공백 불가");
         }
+    }
+
+    @Transactional
+    public SupplyType getOrCreate(String name) {
+        return supplyTypeRepository.findBySupplyTypeName(name)
+                .orElseGet(() -> supplyTypeRepository.save(
+                        SupplyType.builder().supplyTypeName(name).build()));
     }
 }
