@@ -64,8 +64,8 @@ public class VehicleService {
 
         // OperationPurpose 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         OperationPurpose operationPurpose;
-        if (dto.getOperationPurposeId() != null) {
-            operationPurpose = operationPurposeRepository.findById(dto.getOperationPurposeId())
+        if (dto.getPurposeId() != null) {
+            operationPurpose = operationPurposeRepository.findById(dto.getPurposeId())
                     .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다."));
         } else if (dto.getPurposeName() != null && !dto.getPurposeName().isEmpty()) {
             List<OperationPurpose> purposes = operationPurposeRepository.findAll();
@@ -94,7 +94,7 @@ public class VehicleService {
                         .carNumber(dto.getCarNumber())
                         .carName(dto.getCarName())
                         .carModel(
-                                carModelRepository.findById(dto.getCarModelId())
+                                carModelRepository.findById(carModel.getId())
                                         .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다.")))
                         .driverMemberId(dto.getDriverMemberId())
                         .company(company)
@@ -187,9 +187,9 @@ public class VehicleService {
         }
 
         // 운행목적 변경
-        if (dto.getOperationPurposeId() != null) {
+        if (dto.getPurposeId() != null) {
 
-            OperationPurpose purpose = operationPurposeRepository.findById(dto.getOperationPurposeId())
+            OperationPurpose purpose = operationPurposeRepository.findById(dto.getPurposeId())
                     .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
 
             // 기존 목적 종료
@@ -257,7 +257,7 @@ public class VehicleService {
             throw new IllegalArgumentException("차종 id 유효하지 않음");
         }
 
-        if (dto.getOperationPurposeId() != null && dto.getOperationPurposeId() <= 0) {
+        if (dto.getPurposeId() != null && dto.getPurposeId() <= 0) {
             throw new IllegalArgumentException("운행목적 id 유효하지 않음");
         }
 
