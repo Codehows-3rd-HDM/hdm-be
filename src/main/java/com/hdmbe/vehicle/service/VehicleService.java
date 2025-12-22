@@ -228,8 +228,10 @@ public class VehicleService {
                 .orElseThrow(() -> new EntityNotFoundException("차량 id 없음 = " + id));
 
         // 현재 운행목적 매핑 종료 (이력 관리)
-        vehicleOperationPurposeMapRepository.findByVehicleAndEndDateIsNull(vehicle)
-                .ifPresent(map -> map.setEndDate(LocalDate.now()));
+        vehicleOperationPurposeMapRepository
+                .findByVehicleAndEndDateIsNull(vehicle)
+                .ifPresent(vehicleOperationPurposeMapRepository::delete);
+
 
         vehicleRepository.delete(vehicle);
     }
