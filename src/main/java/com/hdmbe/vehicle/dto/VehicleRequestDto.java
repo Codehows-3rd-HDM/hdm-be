@@ -20,7 +20,7 @@ public class VehicleRequestDto {
     // 차량번호
     private String carNumber;
     // 운행목적 ID
-    private Long operationPurposeId;
+    private Long purposeId;
     // 협력사 ID
     private Long companyId;
     // 사원번호

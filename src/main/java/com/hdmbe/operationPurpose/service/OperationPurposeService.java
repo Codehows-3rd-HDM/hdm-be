@@ -29,7 +29,7 @@ public class OperationPurposeService {
         OperationPurpose saved = operationPurposeRepository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
-                        .defaultScope(dto.getDefaultScope())
+                        .defaultScope(dto.getDefaultScopeId())
                         .build());
 
         return OperationPurposeResponseDto.fromEntity(saved);
@@ -79,8 +79,8 @@ public class OperationPurposeService {
             purpose.setPurposeName(dto.getPurposeName());
         }
 
-        if (dto.getDefaultScope() != null) {
-            purpose.setDefaultScope(dto.getDefaultScope());
+        if (dto.getDefaultScopeId() != null) {
+            purpose.setDefaultScope(dto.getDefaultScopeId());
         }
 
         return OperationPurposeResponseDto.fromEntity(purpose);
@@ -122,11 +122,11 @@ public class OperationPurposeService {
             throw new IllegalArgumentException("운행목적명 필수");
         }
 
-        if (dto.getDefaultScope() == null) {
+        if (dto.getDefaultScopeId() == null) {
             throw new IllegalArgumentException("Scope 필수");
         }
 
-        validateScope(dto.getDefaultScope());
+        validateScope(dto.getDefaultScopeId());
     }
 
     private void validateUpdate(OperationPurposeRequestDto dto) {
@@ -134,8 +134,8 @@ public class OperationPurposeService {
             throw new IllegalArgumentException("운행목적명 공백 불가");
         }
 
-        if (dto.getDefaultScope() != null) {
-            validateScope(dto.getDefaultScope());
+        if (dto.getDefaultScopeId() != null) {
+            validateScope(dto.getDefaultScopeId());
         }
     }
 
