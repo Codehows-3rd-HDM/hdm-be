@@ -47,7 +47,7 @@ public class RegistrationOptionsController {
         // 1. 운행목적 (PURPOSE_OPTIONS)
         options.put("PURPOSE_OPTIONS",
                 operationPurposeService.getAll().stream()
-                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName()))
+                        .map(dto -> Map.<String, Object>of("id", dto.getId(), "name", dto.getPurposeName() + " (Scope: " + dto.getDefaultScope() + ")"))
                         .collect(Collectors.toList())
         );
 
