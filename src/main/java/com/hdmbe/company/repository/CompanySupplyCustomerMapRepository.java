@@ -9,5 +9,8 @@ import java.util.Optional;
 
 public interface CompanySupplyCustomerMapRepository
         extends JpaRepository<CompanySupplyCustomerMap,Long> {
+
     Optional<CompanySupplyCustomerMap> findByCompanyAndEndDateIsNull(Company company);
+
+    void deleteByCompany(Company company);
 }

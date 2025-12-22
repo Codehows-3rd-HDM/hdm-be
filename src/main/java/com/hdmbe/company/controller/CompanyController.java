@@ -55,7 +55,7 @@ public class CompanyController {
     }
 
     // 페이지 전체 수정
-    @PatchMapping("/bulk")
+    @PatchMapping("/bulk-update")
     public List<CompanyResponseDto> updateMultiple(
             @RequestBody List<CompanyRequestDto> dtoList
     ) {
@@ -67,7 +67,8 @@ public class CompanyController {
     public void deleteSingle(@PathVariable Long id) {
         companyService.deleteSingle(id);
     }
-    // 체크박스 삭제
+
+    // 다중 삭제 (체크박스)
     @DeleteMapping
     public void deleteMultiple(@RequestBody List<Long> ids) {
         companyService.deleteMultiple(ids);

@@ -81,7 +81,7 @@ public class SupplyTypeService {
                 .orElseThrow(() -> new EntityNotFoundException("공급 유형 없음 id=" + id));
     // 사용 중인 ID 체크
         boolean isUsed =
-                CompanySupplyTypeMapRepository
+                companySupplyTypeMapRepository
                         .existsBySupplyTypeIdAndEndDateIsNull(id);
 
         if (isUsed) {

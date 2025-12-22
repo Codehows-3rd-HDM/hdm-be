@@ -128,7 +128,7 @@ public class OperationPurposeService {
     }
 
     private void validateScope(Integer scope) {
-        if (scope < 1 || scope > 3)
+        if (scope < 1 || scope > 4)
             throw new IllegalArgumentException("Scope 값이 올바르지 않습니다.");
     }
 }

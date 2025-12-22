@@ -72,9 +72,9 @@ public class CompanyResponseDto {
                 )
 
                 // 주소 (표현용 분리)
+                .address(company.getAddress())
                 .region(region)
                 .detailAddress(detailAddress)
-
                 .remark(company.getRemark())
                 .build();
     }

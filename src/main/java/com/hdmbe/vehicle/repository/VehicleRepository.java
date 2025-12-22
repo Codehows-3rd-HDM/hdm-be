@@ -1,5 +1,6 @@
 package com.hdmbe.vehicle.repository;
 
+import com.hdmbe.company.entity.Company;
 import com.hdmbe.vehicle.entity.Vehicle;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByCarNumberContaining(String carNumber);
 
     List<Vehicle> findByDriverMemberIdContaining(String driverMemberId);
+
+    boolean existsByCompany(Company company);
 
     @Query("""
         SELECT DISTINCT v

@@ -39,6 +39,6 @@ public class Company extends BaseTimeEntity {
     @Column(name = "remark")
     private String remark;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "company")
     private List<Vehicle> vehicles = new ArrayList<>();
 }

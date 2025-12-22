@@ -12,6 +12,7 @@ import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
+import com.hdmbe.vehicle.repository.VehicleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,6 +34,7 @@ public class CompanyService {
     private final SupplyCustomerRepository supplyCustomerRepository;
     private final CompanySupplyCustomerMapRepository companySupplyCustomerMapRepository;
     private final CompanySupplyTypeMapRepository companySupplyTypeMapRepository;
+    private final VehicleRepository vehicleRepository;
 
     // 등록
     @Transactional
@@ -137,72 +139,69 @@ public class CompanyService {
     }
 
     // 단일 수정
+    @Transactional
     public CompanyResponseDto updateSingle(Long id, CompanyRequestDto dto) {
-        validateUpdate(dto);
+
         Company company = companyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("협력사 없음 id=" + id));
+                .orElseThrow(() -> new EntityNotFoundException("회사 없음"));
 
-        // 업체명
-        if (dto.getCompanyName() != null) {
-            company.setCompanyName(dto.getCompanyName());
-        }
+        if (dto.getCompanyName() != null) company.setCompanyName(dto.getCompanyName());
+        if (dto.getOneWayDistance() != null) company.setOneWayDistance(dto.getOneWayDistance());
+        if (dto.getRemark() != null) company.setRemark(dto.getRemark());
 
-        // 편도거리
-        if (dto.getOneWayDistance() != null) {
-            company.setOneWayDistance(dto.getOneWayDistance());
-        }
-
-        // 비고
-        if (dto.getRemark() != null) {
-            company.setRemark(dto.getRemark());
-        }
-
-        // 주소 (region + detailAddress → address)
         if (dto.getRegion() != null || dto.getDetailAddress() != null) {
-            String address =
-                    (dto.getRegion() != null ? dto.getRegion() : "") +
-                            (dto.getDetailAddress() != null ? " " + dto.getDetailAddress() : "");
-            company.setAddress(address.trim());
+            company.setAddress(dto.getRegion() + " " + dto.getDetailAddress());
         }
 
-        // 공급 유형 변경
+        // 공급유형 변경 → endDate 처리
         if (dto.getSupplyTypeId() != null) {
             companySupplyTypeMapRepository.findByCompanyAndEndDateIsNull(company)
-                    .ifPresent(map -> map.setEndDate(LocalDate.now()));
+                    .ifPresent(m -> m.setEndDate(LocalDate.now()));
+
             SupplyType type = supplyTypeRepository.findById(dto.getSupplyTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("공급유형 없음"));
-            CompanySupplyTypeMap typeMap = CompanySupplyTypeMap.builder()
-                    .company(company)
-                    .supplyType(type)
-                    .build();
-            companySupplyTypeMapRepository.save(typeMap);
+
+            companySupplyTypeMapRepository.save(
+                    CompanySupplyTypeMap.builder()
+                            .company(company)
+                            .supplyType(type)
+                            .build()
+            );
         }
 
-        // 공급 고객 변경
+        // 공급고객 변경 → endDate 처리
         if (dto.getCustomerId() != null) {
             companySupplyCustomerMapRepository.findByCompanyAndEndDateIsNull(company)
-                    .ifPresent(map -> map.setEndDate(LocalDate.now()));
+                    .ifPresent(m -> m.setEndDate(LocalDate.now()));
+
             SupplyCustomer customer = supplyCustomerRepository.findById(dto.getCustomerId())
                     .orElseThrow(() -> new IllegalArgumentException("공급고객 없음"));
-            CompanySupplyCustomerMap customerMap = CompanySupplyCustomerMap.builder()
-                    .company(company)
-                    .supplyCustomer(customer)
-                    .build();
-            companySupplyCustomerMapRepository.save(customerMap);
+
+            companySupplyCustomerMapRepository.save(
+                    CompanySupplyCustomerMap.builder()
+                            .company(company)
+                            .supplyCustomer(customer)
+                            .build()
+            );
         }
 
-        CompanySupplyTypeMap typeMap = companySupplyTypeMapRepository.findByCompanyAndEndDateIsNull(company).orElse(null);
-        CompanySupplyCustomerMap customerMap = companySupplyCustomerMapRepository.findByCompanyAndEndDateIsNull(company).orElse(null);
-
-        return CompanyResponseDto.fromEntity(company, typeMap, customerMap);
+        return CompanyResponseDto.fromEntity(
+                company,
+                companySupplyTypeMapRepository.findByCompanyAndEndDateIsNull(company).orElse(null),
+                companySupplyCustomerMapRepository.findByCompanyAndEndDateIsNull(company).orElse(null)
+        );
     }
-
 
     // 전체 수정
     @Transactional
     public List<CompanyResponseDto> updateMultiple(List<CompanyRequestDto> requests) {
         return requests.stream()
-                .peek(this::validateUpdate)
+                .peek(req -> {
+                    if (req.getId() == null) {
+                        throw new IllegalArgumentException("전체 수정 시 id 필수");
+                    }
+                    validateUpdate(req);
+                })
                 .map(req -> updateSingle(req.getId(), req))
                 .toList();
     }
@@ -210,10 +209,19 @@ public class CompanyService {
     // 단일 삭제
     @Transactional
     public void deleteSingle(Long id) {
+
         Company company = companyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("협력사 id 없음 =" + id));
+                .orElseThrow(() -> new EntityNotFoundException("회사 없음"));
+
+        if (vehicleRepository.existsByCompany(company)) {
+            throw new IllegalStateException("차량이 존재하는 회사는 삭제할 수 없습니다.");
+        }
+
+        companySupplyTypeMapRepository.deleteByCompany(company);
+        companySupplyCustomerMapRepository.deleteByCompany(company);
         companyRepository.delete(company);
     }
+
     // 다중 삭제
     @Transactional
     public void deleteMultiple(List<Long> ids) {
@@ -240,8 +248,9 @@ public class CompanyService {
         if (request.getOneWayDistance() == null )
             throw new IllegalArgumentException("편도거리 필수");
 
-        if (request.getAddress() == null || request.getAddress().isBlank())
-            throw new IllegalArgumentException("주소 필수");
+        if (request.getRegion() == null || request.getRegion().isBlank())
+            throw new IllegalArgumentException("지역 필수");
+
     }
 
     private void validateUpdate(CompanyRequestDto request) {
@@ -253,7 +262,10 @@ public class CompanyService {
                 && request.getOneWayDistance().signum() <= 0)
             throw new IllegalArgumentException("편도거리는 0보다 커야 함");
 
-        if (request.getAddress() != null && request.getAddress().isBlank())
-            throw new IllegalArgumentException("주소 공백 불가");
+        if (request.getRegion() != null && request.getRegion().isBlank())
+            throw new IllegalArgumentException("지역 공백 불가");
+
+        if (request.getDetailAddress() != null && request.getDetailAddress().isBlank())
+            throw new IllegalArgumentException("상세주소 공백 불가");
     }
 }

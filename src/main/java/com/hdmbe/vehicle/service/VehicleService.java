@@ -74,8 +74,8 @@ public class VehicleService {
 //
 //        // CarModel 찾기
 //        CarModel carModel;
-//        if (dto.getChildCategoryId() != null && dto.getFuelType() != null) {
-//            carModel = carModelRepository.findByCarCategoryIdAndFuelType(dto.getChildCategoryId(), dto.getFuelType())
+//        if (dto.getCarCategoryId() != null && dto.getFuelType() != null) {
+//            carModel = carModelRepository.findByCarCategoryIdAndFuelType(dto.getCarCategoryId(), dto.getFuelType())
 //                    .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."));
 //        } else if (dto.getCarModelId() != null) {
 //            carModel = carModelRepository.findById(dto.getCarModelId())
@@ -91,8 +91,6 @@ public class VehicleService {
 //                        .carModel(carModel)
 //                        .driverMemberId(dto.getDriverMemberId())
 //                        .company(company)
-
-    /// /                        .operationPurpose(operationPurpose)
 //                        .operationDistance(dto.getOperationDistance())
 //                        .remark(dto.getRemark())
 //                        .build()
@@ -100,7 +98,7 @@ public class VehicleService {
 //
 //        return VehicleResponseDto.fromEntity(saved);
 //    }
-//
+
 //    // 전체 조회
     @Transactional(readOnly = true)
     public Page<VehicleResponseDto> search(
