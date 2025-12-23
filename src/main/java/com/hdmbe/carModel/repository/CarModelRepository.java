@@ -1,18 +1,16 @@
 package com.hdmbe.carModel.repository;
 
+import java.util.Optional;
 
-import com.hdmbe.carCategory.entity.CarCategory;
-import com.hdmbe.carModel.entity.CarModel;
-import com.hdmbe.commonModule.constant.FuelType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.hdmbe.carCategory.entity.CarCategory;
+import com.hdmbe.carModel.entity.CarModel;
+import com.hdmbe.commonModule.constant.FuelType;
 
 public interface CarModelRepository
         extends JpaRepository<CarModel, Long> {
@@ -44,8 +42,8 @@ public interface CarModelRepository
     );
 
     Optional<CarModel> findByCarCategoryAndFuelType(
-        CarCategory carCategory,
-        FuelType fuelType
-    );           
-         
+            CarCategory carCategory,
+            FuelType fuelType
+    );
+
 }
