@@ -31,7 +31,8 @@ public interface CarModelRepository
         AND (
             :keyword IS NULL OR
             cc.categoryName LIKE %:keyword% OR
-            pc.categoryName LIKE %:keyword%
+            pc.categoryName LIKE %:keyword% OR
+            cm.fuelType LIKE %:keyword%
         )
     """)
     Page<CarModel> search(

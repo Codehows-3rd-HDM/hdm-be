@@ -50,6 +50,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             OR cc.categoryName LIKE %:keyword%
             OR pcc.categoryName LIKE %:keyword%
             OR v.carName LIKE %:keyword%
+            OR op.purposeName LIKE %:keyword%
         )
     """)
     Page<Vehicle> search(

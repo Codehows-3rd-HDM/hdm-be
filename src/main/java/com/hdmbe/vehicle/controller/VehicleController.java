@@ -27,7 +27,7 @@ public class VehicleController {
     @GetMapping("search")
     public Page<VehicleResponseDto> search(
             @RequestParam(required = false) String carNumber,
-            @RequestParam(required = false) Long purposeId,
+            @RequestParam(required = false) Long purposeName,
             @RequestParam(required = false) String companyName,
             @RequestParam(required = false) String driverMemberId,
             @RequestParam(required = false) String keyword,
@@ -35,7 +35,7 @@ public class VehicleController {
             @RequestParam(defaultValue = "15") int size) {
         return vehicleService.search(
                 carNumber,
-                purposeId,
+                purposeName,
                 companyName,
                 driverMemberId,
                 keyword,
