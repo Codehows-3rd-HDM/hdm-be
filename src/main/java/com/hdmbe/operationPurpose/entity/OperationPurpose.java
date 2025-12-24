@@ -22,7 +22,7 @@ public class OperationPurpose extends BaseTimeEntity {
     private Long id;
 
     // 목적 이름
-    @Column(name = "purpose_name", length = 20, unique = true)
+    @Column(name = "purpose_name", length = 20)
     private String purposeName;
 
     // 기준 Scope

@@ -55,8 +55,7 @@ public class Company extends BaseTimeEntity {
     @Column(name = "remark")
     private String remark;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
-    @Builder.Default
+    @OneToMany(mappedBy = "company")
     private List<Vehicle> vehicles = new ArrayList<>();
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
