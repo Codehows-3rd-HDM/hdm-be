@@ -6,18 +6,12 @@ import com.hdmbe.company.entity.Company;
 import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.operationPurpose.entity.OperationPurpose;
 import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
-import com.hdmbe.carModel.entity.CarModel;
-import com.hdmbe.carModel.repository.CarModelRepository;
 import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
-import com.hdmbe.vehicle.dto.VehicleRequestDto;
-import com.hdmbe.vehicle.dto.VehicleResponseDto;
-
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
-import com.hdmbe.commonModule.constant.FuelType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -81,8 +75,8 @@ public class VehicleService {
         if (dto.getChildCategoryId() != null && dto.getFuelType() != null) {
             carModel = carModelRepository.findByCarCategoryIdAndFuelType(dto.getChildCategoryId(), dto.getFuelType())
                     .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."));
-        } else if (dto.getCarModelId() != null) {
-            carModel = carModelRepository.findById(dto.getCarModelId())
+        } else if (dto.getCarCategoryId() != null) {
+            carModel = carModelRepository.findById(dto.getCarCategoryId())
                     .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."));
         } else {
             throw new EntityNotFoundException("차종 카테고리 ID와 연료 타입이 필요합니다.");
@@ -93,7 +87,7 @@ public class VehicleService {
                         .carNumber(dto.getCarNumber())
                         .carName(dto.getCarName())
                         .carModel(
-                                carModelRepository.findById(dto.getCarModelId())
+                                carModelRepository.findById(dto.getCarCategoryId())
                                         .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."))
                         )
                         .driverMemberId(dto.getDriverMemberId())
@@ -166,6 +160,10 @@ public class VehicleService {
         if (dto.getCarNumber() != null) {
             vehicle.setCarNumber(dto.getCarNumber());
         }
+        // 차량 모델명 (Vehicle 자체에 저장)
+        if (dto.getCarName() != null) {
+            vehicle.setCarName(dto.getCarName());
+        }
 
         // 사원번호
         if (dto.getDriverMemberId() != null) {
@@ -182,12 +180,21 @@ public class VehicleService {
             Company company = companyRepository.findById(dto.getCompanyId())
                     .orElseThrow(() -> new EntityNotFoundException("협력사 없음"));
             vehicle.setCompany(company);
-        }
 
+
+            if (vehicle.getOperationDistance() == null) {
+                vehicle.setOperationDistance(company.getOneWayDistance());
+            }
+        }
+        if (dto.getOperationDistance() != null) {
+            vehicle.setOperationDistance(dto.getOperationDistance());
+        }
         // 차종 변경
-        if (dto.getCarModelId() != null) {
-            CarModel carModel = carModelRepository.findById(dto.getCarModelId())
-                    .orElseThrow(() -> new EntityNotFoundException("차종 없음"));
+        if (dto.getCarCategoryId() != null && dto.getFuelType() != null) {
+            CarModel carModel = carModelRepository.findByCarCategoryIdAndFuelType(
+                    dto.getCarCategoryId(), dto.getFuelType()
+            ).orElseThrow(() -> new EntityNotFoundException("해당 하위 카테고리 + 연료 타입 조합의 차종이 없습니다."));
+
             vehicle.setCarModel(carModel);
         }
 
@@ -261,7 +268,7 @@ public class VehicleService {
             throw new IllegalArgumentException("협력사 id 유효하지 않음");
         }
 
-        if (dto.getCarModelId() != null && dto.getCarModelId() <= 0) {
+        if (dto.getCarCategoryId() != null && dto.getCarCategoryId() <= 0) {
             throw new IllegalArgumentException("차종 id 유효하지 않음");
         }
 

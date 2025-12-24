@@ -16,6 +16,8 @@ import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
 import com.hdmbe.supplyType.service.SupplyTypeService;
+import com.hdmbe.vehicle.entity.Vehicle;
+import com.hdmbe.vehicle.repository.VehicleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,6 +53,7 @@ public class CompanyService {
     private final CompanySupplyCustomerMapRepository companySupplyCustomerMapRepository;
     private final SupplyTypeRepository supplyTypeRepository;
     private final SupplyCustomerRepository supplyCustomerRepository;
+    private final VehicleRepository vehicleRepository;
 
     // 등록
     @Transactional
@@ -166,6 +169,7 @@ public class CompanyService {
     }
 
     // 단일 수정
+    @Transactional
     public CompanyResponseDto updateSingle(Long id, CompanyRequestDto dto) {
         validateUpdate(dto);
         Company company = companyRepository.findById(id)
@@ -179,6 +183,11 @@ public class CompanyService {
         // 편도거리
         if (dto.getOneWayDistance() != null) {
             company.setOneWayDistance(dto.getOneWayDistance());
+
+            List<Vehicle> vehicles = vehicleRepository.findByCompany(company);
+            for (Vehicle v : vehicles) {
+                v.setOperationDistance(dto.getOneWayDistance());
+            }
         }
 
         // 비고

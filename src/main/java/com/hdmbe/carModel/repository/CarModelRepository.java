@@ -19,6 +19,8 @@ public interface CarModelRepository
 
     Optional<CarModel> findByCarCategoryIdAndFuelType(Long categoryId, FuelType fuelType);
 
+    Optional<CarModel> findByCarCategoryId(Long carCategoryId);
+
     @Query("""
                 select cm
                 from CarModel cm

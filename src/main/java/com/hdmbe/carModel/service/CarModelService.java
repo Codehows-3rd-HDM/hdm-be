@@ -79,14 +79,15 @@ public class CarModelService {
     public CarModelResponseDto updateSingle(Long id, CarModelRequestDto dto) {
         validateUpdate(dto);
 
-        CarModel model = carModelRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("차종 id 없음 =" + id));
-
-        if (dto.getCarCategoryId() != null) {
-            CarCategory category = carCategoryRepository.findById(dto.getCarCategoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("카테고리 id 없음 =" + dto.getCarCategoryId()));
-            model.setCarCategory(category);
+        if (dto.getCarCategoryId() == null) {
+            throw new IllegalArgumentException("carCategoryId 필수");
         }
+
+        CarModel model = carModelRepository.findByCarCategoryId(dto.getCarCategoryId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
+
 
         if (dto.getFuelType() != null) {
             model.setFuelType(dto.getFuelType());
@@ -102,7 +103,27 @@ public class CarModelService {
     @Transactional
     public List<CarModelResponseDto> updateMultiple(List<CarModelRequestDto> dtoList) {
         return dtoList.stream()
-                .map(dto -> updateSingle(dto.getId(), dto))
+                .map(dto -> {
+
+                    if (dto.getCarCategoryId() == null) {
+                        throw new IllegalArgumentException("carCategoryId 필수");
+                    }
+
+                    CarModel model = carModelRepository.findByCarCategoryId(dto.getCarCategoryId())
+                            .orElseThrow(() ->
+                                    new EntityNotFoundException(
+                                            "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
+
+                    if (dto.getFuelType() != null) {
+                        model.setFuelType(dto.getFuelType());
+                    }
+
+                    if (dto.getCustomEfficiency() != null) {
+                        model.setCustomEfficiency(dto.getCustomEfficiency());
+                    }
+
+                    return CarModelResponseDto.fromEntity(model);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -123,5 +144,8 @@ public class CarModelService {
         if (dto.getCarCategoryId() != null && dto.getCarCategoryId() <= 0) {
             throw new IllegalArgumentException("카테고리Id 유효하지 않음");
         }
+    }
+    private void validateDelete(CarModelRequestDto dto) {
+
     }
 }
