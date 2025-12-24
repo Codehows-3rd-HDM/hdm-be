@@ -29,9 +29,8 @@ public class OperationPurposeService {
         OperationPurpose saved = operationPurposeRepository.save(
                 OperationPurpose.builder()
                         .purposeName(dto.getPurposeName())
-                        .defaultScope(dto.getDefaultScope())
-                        .build()
-        );
+                        .defaultScope(dto.getDefaultScopeId())
+                        .build());
 
         return OperationPurposeResponseDto.fromEntity(saved);
     }
@@ -51,8 +50,7 @@ public class OperationPurposeService {
             Integer scope,
             String keyword,
             int page,
-            int size
-    ) {
+            int size) {
         System.out.println("[OperationPurposeService] 운행목적 검색 요청 - purposeName: " + purposeName
                 + ", scope: " + scope + ", keyword: " + keyword
                 + ", page: " + page + ", size: " + size);
@@ -65,8 +63,7 @@ public class OperationPurposeService {
                 purposeName,
                 scope,
                 keyword,
-                pageable
-        )
+                pageable)
                 .map(OperationPurposeResponseDto::fromEntity);
     }
 
@@ -75,17 +72,15 @@ public class OperationPurposeService {
     public OperationPurposeResponseDto updateSingle(Long id, OperationPurposeRequestDto dto) {
         validateUpdate(dto);
 
-        OperationPurpose purpose
-                = operationPurposeRepository.findById(id)
-                        .orElseThrow(()
-                                -> new EntityNotFoundException("운행목적 없음 id=" + id));
+        OperationPurpose purpose = operationPurposeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("운행목적 없음 id=" + id));
 
         if (dto.getPurposeName() != null) {
             purpose.setPurposeName(dto.getPurposeName());
         }
 
-        if (dto.getDefaultScope() != null) {
-            purpose.setDefaultScope(dto.getDefaultScope());
+        if (dto.getDefaultScopeId() != null) {
+            purpose.setDefaultScope(dto.getDefaultScopeId());
         }
 
         return OperationPurposeResponseDto.fromEntity(purpose);
@@ -94,8 +89,7 @@ public class OperationPurposeService {
     // 전체 수정
     @Transactional
     public List<OperationPurposeResponseDto> updateMultiple(
-            List<OperationPurposeRequestDto> dtoList
-    ) {
+            List<OperationPurposeRequestDto> dtoList) {
         return dtoList.stream()
                 .map(dto -> updateSingle(dto.getId(), dto))
                 .toList();
@@ -104,10 +98,8 @@ public class OperationPurposeService {
     // 단일 삭제
     @Transactional
     public void deleteSingle(Long id) {
-        OperationPurpose purpose
-                = operationPurposeRepository.findById(id)
-                        .orElseThrow(()
-                                -> new EntityNotFoundException("운행목적 없음 id=" + id));
+        OperationPurpose purpose = operationPurposeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("운행목적 없음 id=" + id));
 
         operationPurposeRepository.delete(purpose);
     }
@@ -130,11 +122,11 @@ public class OperationPurposeService {
             throw new IllegalArgumentException("운행목적명 필수");
         }
 
-        if (dto.getDefaultScope() == null) {
+        if (dto.getDefaultScopeId() == null) {
             throw new IllegalArgumentException("Scope 필수");
         }
 
-        validateScope(dto.getDefaultScope());
+        validateScope(dto.getDefaultScopeId());
     }
 
     private void validateUpdate(OperationPurposeRequestDto dto) {
@@ -142,26 +134,24 @@ public class OperationPurposeService {
             throw new IllegalArgumentException("운행목적명 공백 불가");
         }
 
-        if (dto.getDefaultScope() != null) {
-            validateScope(dto.getDefaultScope());
+        if (dto.getDefaultScopeId() != null) {
+            validateScope(dto.getDefaultScopeId());
         }
     }
 
     private void validateScope(Integer scope) {
-        if (scope < 1 || scope > 3) {
+        if (scope < 1 || scope > 4)
             throw new IllegalArgumentException("Scope 값이 올바르지 않습니다.");
-        }
     }
+
     @Transactional
-    public OperationPurpose getOrCreate(String name, String scopeStr)
-    {
+    public OperationPurpose getOrCreate(String name, String scopeStr) {
         // Scope 파싱 (문자열 "1" -> 숫자 1)
         int scope = parseScope(scopeStr);
 
         return operationPurposeRepository.findByPurposeName(name)
                 .orElseGet(() -> operationPurposeRepository.save(
-                        OperationPurpose.builder().purposeName(name).defaultScope(scope).build()
-                ));
+                        OperationPurpose.builder().purposeName(name).defaultScope(scope).build()));
     }
 
     private int parseScope(String scopeStr) {
@@ -178,8 +168,7 @@ public class OperationPurposeService {
             if (scope != 1 && scope != 3 && scope != 4) {
                 throw new IllegalArgumentException(
                         "지원하지 않는 Scope입니다. (입력된 값: " + scope + ")\n" +
-                                "※ 허용된 값: 1, 3, 4 / Scope 2는 지원하지 않습니다."
-                );
+                                "※ 허용된 값: 1, 3, 4 / Scope 2는 지원하지 않습니다.");
             }
 
             return scope;

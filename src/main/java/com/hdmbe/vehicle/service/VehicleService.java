@@ -50,15 +50,16 @@ public class VehicleService {
             company = companies.stream()
                     .filter(c -> c.getCompanyName().equals(dto.getCompanyNameForCreation()))
                     .findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 없습니다: " + dto.getCompanyNameForCreation()));
+                    .orElseThrow(
+                            () -> new EntityNotFoundException("업체를 찾을 수 없습니다: " + dto.getCompanyNameForCreation()));
         } else {
             throw new EntityNotFoundException("업체 ID 또는 이름이 필요합니다.");
         }
 
         // OperationPurpose 찾기: ID가 있으면 ID로, 없으면 이름으로 찾기
         OperationPurpose operationPurpose;
-        if (dto.getOperationPurposeId() != null) {
-            operationPurpose = operationPurposeRepository.findById(dto.getOperationPurposeId())
+        if (dto.getPurposeId() != null) {
+            operationPurpose = operationPurposeRepository.findById(dto.getPurposeId())
                     .orElseThrow(() -> new EntityNotFoundException("운행목적을 찾을 수 없습니다."));
         } else if (dto.getPurposeName() != null && !dto.getPurposeName().isEmpty()) {
             List<OperationPurpose> purposes = operationPurposeRepository.findAll();
@@ -87,15 +88,14 @@ public class VehicleService {
                         .carNumber(dto.getCarNumber())
                         .carName(dto.getCarName())
                         .carModel(
-                                carModelRepository.findById(dto.getCarCategoryId())
-                                        .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다."))
-                        )
+                                carModelRepository.findById(carModel.getId())
+                                        .orElseThrow(() -> new EntityNotFoundException("차종을 찾을 수 없습니다.")))
                         .driverMemberId(dto.getDriverMemberId())
                         .company(company)
-                        .operationDistance(dto.getOperationDistance() != null ? dto.getOperationDistance() : BigDecimal.ZERO)
+                        .operationDistance(
+                                dto.getOperationDistance() != null ? dto.getOperationDistance() : BigDecimal.ZERO)
                         .remark(dto.getRemark())
-                        .build()
-        );
+                        .build());
 
         // Vehicle과 OperationPurpose 매핑
         VehicleOperationPurposeMap purposeMap = VehicleOperationPurposeMap.builder()
@@ -107,7 +107,6 @@ public class VehicleService {
         return VehicleResponseDto.fromEntity(saved, purposeMap);
     }
 
-
     // 전체 조회
     @Transactional(readOnly = true)
     public Page<VehicleResponseDto> search(
@@ -117,15 +116,13 @@ public class VehicleService {
             String driverMemberId,
             String keyword,
             int page,
-            int size
-    ) {
+            int size) {
         System.out.println("[VehicleService] 차량 검색 요청 - carNumber: " + carNumber
                 + ", purposeId: " + purposeId + ", companyName: " + companyName
                 + ", driverMemberId: " + driverMemberId + ", keyword: " + keyword
                 + ", page: " + page + ", size: " + size);
 
-        Pageable pageable
-                = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         Page<Vehicle> result = vehicleRepository.search(
                 carNumber,
@@ -133,17 +130,15 @@ public class VehicleService {
                 companyName,
                 driverMemberId,
                 keyword,
-                pageable
-        );
+                pageable);
 
         System.out.println("[VehicleService] 차량 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
 
         return result.map(vehicle -> {
-            VehicleOperationPurposeMap purposeMap
-                    = vehicleOperationPurposeMapRepository
-                            .findByVehicleAndEndDateIsNull(vehicle)
-                            .orElse(null);
+            VehicleOperationPurposeMap purposeMap = vehicleOperationPurposeMapRepository
+                    .findByVehicleAndEndDateIsNull(vehicle)
+                    .orElse(null);
 
             return VehicleResponseDto.fromEntity(vehicle, purposeMap);
         });
@@ -181,7 +176,6 @@ public class VehicleService {
                     .orElseThrow(() -> new EntityNotFoundException("협력사 없음"));
             vehicle.setCompany(company);
 
-
             if (vehicle.getOperationDistance() == null) {
                 vehicle.setOperationDistance(company.getOneWayDistance());
             }
@@ -192,18 +186,17 @@ public class VehicleService {
         // 차종 변경
         if (dto.getCarCategoryId() != null && dto.getFuelType() != null) {
             CarModel carModel = carModelRepository.findByCarCategoryIdAndFuelType(
-                    dto.getCarCategoryId(), dto.getFuelType()
-            ).orElseThrow(() -> new EntityNotFoundException("해당 하위 카테고리 + 연료 타입 조합의 차종이 없습니다."));
+                    dto.getCarCategoryId(), dto.getFuelType())
+                    .orElseThrow(() -> new EntityNotFoundException("해당 하위 카테고리 + 연료 타입 조합의 차종이 없습니다."));
 
             vehicle.setCarModel(carModel);
         }
 
         // 운행목적 변경
-        if (dto.getOperationPurposeId() != null) {
+        if (dto.getPurposeId() != null) {
 
-            OperationPurpose purpose
-                    = operationPurposeRepository.findById(dto.getOperationPurposeId())
-                            .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
+            OperationPurpose purpose = operationPurposeRepository.findById(dto.getPurposeId())
+                    .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
 
             // 기존 목적 종료
             vehicleOperationPurposeMapRepository
@@ -215,14 +208,12 @@ public class VehicleService {
                     VehicleOperationPurposeMap.builder()
                             .vehicle(vehicle)
                             .operationPurpose(purpose)
-                            .build()
-            );
+                            .build());
         }
 
-        VehicleOperationPurposeMap currentMap
-                = vehicleOperationPurposeMapRepository
-                        .findByVehicleAndEndDateIsNull(vehicle)
-                        .orElse(null);
+        VehicleOperationPurposeMap currentMap = vehicleOperationPurposeMapRepository
+                .findByVehicleAndEndDateIsNull(vehicle)
+                .orElse(null);
 
         return VehicleResponseDto.fromEntity(vehicle, currentMap);
     }
@@ -243,8 +234,9 @@ public class VehicleService {
                 .orElseThrow(() -> new EntityNotFoundException("차량 id 없음 = " + id));
 
         // 현재 운행목적 매핑 종료 (이력 관리)
-        vehicleOperationPurposeMapRepository.findByVehicleAndEndDateIsNull(vehicle)
-                .ifPresent(map -> map.setEndDate(LocalDate.now()));
+        vehicleOperationPurposeMapRepository
+                .findByVehicleAndEndDateIsNull(vehicle)
+                .ifPresent(vehicleOperationPurposeMapRepository::delete);
 
         vehicleRepository.delete(vehicle);
     }
@@ -272,7 +264,7 @@ public class VehicleService {
             throw new IllegalArgumentException("차종 id 유효하지 않음");
         }
 
-        if (dto.getOperationPurposeId() != null && dto.getOperationPurposeId() <= 0) {
+        if (dto.getPurposeId() != null && dto.getPurposeId() <= 0) {
             throw new IllegalArgumentException("운행목적 id 유효하지 않음");
         }
 

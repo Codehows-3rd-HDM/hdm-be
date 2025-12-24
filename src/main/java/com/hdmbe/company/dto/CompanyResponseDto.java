@@ -29,8 +29,8 @@ public class CompanyResponseDto {
     private Long supplyTypeId;
     private String supplyTypeName;
     private BigDecimal oneWayDistance;
-    private Long supplyCustomerId;
-    private String supplyCustomerName;
+    private Long customerId;
+    private String customerName;
     private String region;
     private String detailAddress;
     private String address;
@@ -71,17 +71,18 @@ public class CompanyResponseDto {
                 // 편도 거리
                 .oneWayDistance(company.getOneWayDistance())
                 // 공급 고객
-                .supplyCustomerId(
+                .customerId(
                         supplyCustomerMap != null
                                 ? supplyCustomerMap.getSupplyCustomer().getId()
                                 : null
                 )
-                .supplyCustomerName(
+                .customerName(
                         supplyCustomerMap != null
                                 ? supplyCustomerMap.getSupplyCustomer().getCustomerName()
                                 : null
                 )
                 // 주소 (표현용 분리)
+                .address(company.getAddress())
                 .region(region)
                 .detailAddress(detailAddress)
                 .remark(company.getRemark())
