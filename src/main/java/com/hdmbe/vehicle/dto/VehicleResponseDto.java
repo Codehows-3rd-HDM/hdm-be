@@ -22,8 +22,12 @@ public class VehicleResponseDto {
     private String driverMemberId;
     // 협렵사
     private String companyName;
+    // 협력사 Id
+    private Long companyId;
     // 운행목적
     private String operationPurposeName;
+    // 운행목적 Id
+    private Long purposeId;
     // scope
     private Integer defaultScope;
     // 편도거리
@@ -32,6 +36,8 @@ public class VehicleResponseDto {
     private String parentCategoryName;
     // 소분류
     private String carCategoryName;
+    // 소분류 ID
+    private Long carCategoryId;
     // 연료
     private FuelType fuelType;
     // 비고
@@ -57,11 +63,14 @@ public class VehicleResponseDto {
                 .carName(vehicle.getCarName())
                 .driverMemberId(vehicle.getDriverMemberId())
                 .companyName(company.getCompanyName())
+                .companyId(company.getId())
                 .operationPurposeName(purpose != null ? purpose.getPurposeName() : null)
+                .purposeId(purpose != null ? purpose.getId() : null)
                 .defaultScope(purpose != null ? purpose.getDefaultScope() : null)
                 .operationDistance(effectiveDistance)
                 .parentCategoryName(parentCategory != null ? parentCategory.getCategoryName() : null)
                 .carCategoryName(carCategory.getCategoryName())
+                .carCategoryId(carCategory.getId())
                 .fuelType(carModel.getFuelType())
                 .remark(vehicle.getRemark())
                 .build();
