@@ -193,31 +193,36 @@ public class VehicleService {
         }
 
         // 운행목적 변경
+        VehicleOperationPurposeMap newMap = null;
+
         if (dto.getPurposeId() != null) {
 
-            OperationPurpose purpose = operationPurposeRepository.findById(dto.getPurposeId())
-                    .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
-
+            OperationPurpose purpose =
+                    operationPurposeRepository.findById(dto.getPurposeId())
+                            .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
             // 기존 목적 종료
             vehicleOperationPurposeMapRepository
                     .findByVehicleAndEndDateIsNull(vehicle)
                     .ifPresent(map -> map.setEndDate(LocalDate.now()));
-
             // 신규 목적 등록
-            vehicleOperationPurposeMapRepository.save(
+            newMap = vehicleOperationPurposeMapRepository.save(
                     VehicleOperationPurposeMap.builder()
                             .vehicle(vehicle)
                             .operationPurpose(purpose)
-                            .build());
+                            .build()
+            );
         }
 
-        VehicleOperationPurposeMap currentMap = vehicleOperationPurposeMapRepository
-                .findByVehicleAndEndDateIsNull(vehicle)
-                .orElse(null);
+        VehicleOperationPurposeMap currentMap =
+                newMap != null
+                        ? newMap
+                        : vehicleOperationPurposeMapRepository
+                        .findByVehicleAndEndDateIsNull(vehicle)
+                        .orElse(null);
 
         return VehicleResponseDto.fromEntity(vehicle, currentMap);
-    }
 
+    }
     // 전체 수정
     @Transactional
     public List<VehicleResponseDto> updateMultiple(List<VehicleRequestDto> dtoList) {
