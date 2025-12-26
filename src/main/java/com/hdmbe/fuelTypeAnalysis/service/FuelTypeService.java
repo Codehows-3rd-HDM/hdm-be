@@ -61,6 +61,9 @@ public class FuelTypeService {
             }
         }
         List<FuelTypeResponseDto> result = new ArrayList<>();
+        BigDecimal sumRatios = BigDecimal.ZERO;
+
+        FuelTypeResponseDto maxRatioItem = null;
 
         for (Map.Entry<FuelType, BigDecimal> entry : fuelTotalMap.entrySet()) {
 
@@ -73,8 +76,19 @@ public class FuelTypeService {
                             : total.multiply(BigDecimal.valueOf(100))
                             .divide(grandTotal, 2, RoundingMode.HALF_UP);
 
-            List<BigDecimal> monthlyTrend = null;
+            // 가장 큰 비율 항목 찾기
+            if (maxRatioItem == null || ratio.compareTo(maxRatioItem.getRatio()) > 0) {
+                maxRatioItem = FuelTypeResponseDto.builder()
+                        .fuelType(fuel)
+                        .totalEmission(total)
+                        .ratio(ratio)
+                        .monthlyTrend(null) // 나중에 채움
+                        .build();
+            }
 
+            sumRatios = sumRatios.add(ratio);
+
+            List<BigDecimal> monthlyTrend = null;
             if (fuelMonthMap.containsKey(fuel)) {
                 Map<Integer, BigDecimal> monthData = fuelMonthMap.get(fuel);
                 monthlyTrend = IntStream.rangeClosed(1, 12)
@@ -90,6 +104,17 @@ public class FuelTypeService {
                             .monthlyTrend(monthlyTrend)
                             .build()
             );
+        }
+
+        // 4. 합계 보정 (가장 큰 비율 항목에 차이 보정)
+        BigDecimal difference = BigDecimal.valueOf(100).subtract(sumRatios);
+        if (difference.compareTo(BigDecimal.ZERO) != 0 && maxRatioItem != null) {
+            for (FuelTypeResponseDto dtoItem : result) {
+                if (dtoItem.getFuelType() == maxRatioItem.getFuelType()) {
+                    dtoItem.setRatio(dtoItem.getRatio().add(difference));
+                    break;
+                }
+            }
         }
 
         return result;
