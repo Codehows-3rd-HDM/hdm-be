@@ -1,17 +1,5 @@
 package com.hdmbe.emissionTarget.service;
 
-import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
-import com.hdmbe.emissionTarget.dto.CategoryTargetDto;
-import com.hdmbe.emissionTarget.dto.FullTargetResponseDto;
-import com.hdmbe.emissionTarget.dto.MonthlyActualResponseDto;
-import com.hdmbe.emissionTarget.dto.MonthlyValueDto;
-import com.hdmbe.emissionTarget.dto.SaveEmissionTargetRequest;
-import com.hdmbe.emissionTarget.entity.EmissionTarget;
-import com.hdmbe.emissionTarget.repository.EmissionTargetRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -22,6 +10,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
+import com.hdmbe.emissionTarget.dto.CategoryTargetDto;
+import com.hdmbe.emissionTarget.dto.FullTargetResponseDto;
+import com.hdmbe.emissionTarget.dto.MonthlyActualResponseDto;
+import com.hdmbe.emissionTarget.dto.MonthlyValueDto;
+import com.hdmbe.emissionTarget.dto.SaveEmissionTargetRequest;
+import com.hdmbe.emissionTarget.entity.EmissionTarget;
+import com.hdmbe.emissionTarget.repository.EmissionTargetRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +86,34 @@ public class EmissionTargetService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         System.out.println("[EmissionTargetService] 기준 연도 실적 합계=" + total);
+
+        return MonthlyActualResponseDto.builder()
+                .year(year)
+                .monthly(monthly)
+                .total(total)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MonthlyActualResponseDto getActualsByScope(int year, int scope) {
+        System.out.println("[EmissionTargetService] Scope" + scope + " 기준 연도 실적 조회 year=" + year);
+
+        List<MonthlyValueDto> monthly = initEmptyMonthly();
+
+        List<EmissionMonthlyRepository.MonthlySumView> rows = emissionMonthlyRepository.sumByYearAndScope(year, scope);
+        for (EmissionMonthlyRepository.MonthlySumView row : rows) {
+            int monthIdx = Math.max(1, Math.min(12, row.getMonth()));
+            monthly.set(monthIdx - 1, MonthlyValueDto.builder()
+                    .month(monthIdx)
+                    .value(normalize(row.getTotal()))
+                    .build());
+        }
+
+        BigDecimal total = monthly.stream()
+                .map(MonthlyValueDto::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        System.out.println("[EmissionTargetService] Scope" + scope + " 기준 연도 실적 합계=" + total);
 
         return MonthlyActualResponseDto.builder()
                 .year(year)

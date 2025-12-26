@@ -1,10 +1,7 @@
 package com.hdmbe.emissionTarget.controller;
 
-import com.hdmbe.emissionTarget.dto.FullTargetResponseDto;
-import com.hdmbe.emissionTarget.dto.MonthlyActualResponseDto;
-import com.hdmbe.emissionTarget.dto.SaveEmissionTargetRequest;
-import com.hdmbe.emissionTarget.service.EmissionTargetService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.hdmbe.emissionTarget.dto.FullTargetResponseDto;
+import com.hdmbe.emissionTarget.dto.MonthlyActualResponseDto;
+import com.hdmbe.emissionTarget.dto.SaveEmissionTargetRequest;
+import com.hdmbe.emissionTarget.service.EmissionTargetService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/admin/emission-targets")
@@ -49,5 +51,12 @@ public class EmissionTargetController {
     public ResponseEntity<MonthlyActualResponseDto> getActuals(@PathVariable int year) {
         System.out.println("[EmissionTargetController] GET /actuals/" + year);
         return ResponseEntity.ok(emissionTargetService.getActuals(year));
+    }
+
+    // 특정 연도의 Scope별 월별 실제 배출량
+    @GetMapping("/actuals/{year}/scope/{scope}")
+    public ResponseEntity<MonthlyActualResponseDto> getActualsByScope(@PathVariable int year, @PathVariable int scope) {
+        System.out.println("[EmissionTargetController] GET /actuals/" + year + "/scope/" + scope);
+        return ResponseEntity.ok(emissionTargetService.getActualsByScope(year, scope));
     }
 }
