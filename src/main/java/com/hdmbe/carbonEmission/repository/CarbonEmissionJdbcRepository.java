@@ -24,8 +24,8 @@ public class CarbonEmissionJdbcRepository {
         // 1. SQL 준비 (테이블명, 컬럼명 확인 필수!)
         // 예: carbon_emission_daily_log 테이블이라고 가정
         String sql = "INSERT INTO carbon_emission_daily_log " +
-                "(created_at,daily_calculated_emission,operation_date,updated_at,car_id) " + // 컬럼명 확인!
-                "VALUES (?,?,?,?,?)";
+                "(created_at,daily_calculated_emission,operation_date,updated_at,car_id,emission_source) " + // 컬럼명 확인!
+                "VALUES (?,?,?,?,?,?)";
 
         // 2. 배치 실행
         jdbcTemplate.batchUpdate(sql, logs, 1000, // 1000개씩 묶음
@@ -38,18 +38,17 @@ public class CarbonEmissionJdbcRepository {
                     LocalDateTime updated = (log.getUpdatedAt() != null) ? log.getUpdatedAt() : LocalDateTime.now();
                     ps.setTimestamp(4, Timestamp.valueOf(updated));
                     ps.setLong(5, log.getVehicle().getId());
+                    ps.setString(6, log.getEmissionSource());
                 });
     }
 
     @Transactional
     public void saveAllMonthlyBatch(List<CarbonEmissionMonthlyLog> logs)
     {
-
-
          // 1. 쿼리문
         String sql = "INSERT INTO carbon_emission_monthly_log " +
-                     "(created_at, month, total_emission, updated_at, car_id, year) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+                     "(created_at, month, total_emission, updated_at, car_id, year, emission_source) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         // 2. 배치 실행 (1000개씩 끊어서 날려도 되고, 한 번에 다 날려도 됨)
         jdbcTemplate.batchUpdate(sql,
@@ -65,37 +64,7 @@ public class CarbonEmissionJdbcRepository {
                     ps.setTimestamp(4, Timestamp.valueOf(updated));
                     ps.setLong(5, log.getVehicle().getId());
                     ps.setInt(6, log.getYear());
-                });
-    }
-
-    // 월별 데이터 Upsert (있으면 더하고, 없으면 생성)
-    @Transactional
-    public void saveAllMonthlyUpsertBatch(List<CarbonEmissionMonthlyLog> logs) {
-
-        // MySQL 전용 문법: 이미 같은 (year, month, car_id)가 있으면 배출량을 더해라!
-        String sql = "INSERT INTO carbon_emission_monthly_log " +
-                "(created_at, month, total_emission, updated_at, car_id, year) " +
-                "VALUES (?, ?, ?, ?, ?, ?) " +
-                "ON DUPLICATE KEY UPDATE " +
-                "total_emission = total_emission + VALUES(total_emission), " + // 기존 값 + 새 값
-                "updated_at = VALUES(updated_at)"; // 수정시간 갱신
-
-        jdbcTemplate.batchUpdate(sql,
-                logs,
-                1000,
-                (PreparedStatement ps, CarbonEmissionMonthlyLog log) -> {
-                    // Null 체크 포함한 파라미터 매핑 (아까와 동일)
-                    LocalDateTime created = (log.getCreatedAt() != null) ? log.getCreatedAt() : LocalDateTime.now();
-                    ps.setTimestamp(1, Timestamp.valueOf(created));
-
-                    ps.setInt(2, log.getMonth());
-                    ps.setBigDecimal(3, log.getTotalEmission()); // 여기서 넣은 값이 위의 VALUES(total_emission)이 됨
-
-                    LocalDateTime updated = (log.getUpdatedAt() != null) ? log.getUpdatedAt() : LocalDateTime.now();
-                    ps.setTimestamp(4, Timestamp.valueOf(updated));
-
-                    ps.setLong(5, log.getVehicle().getId());
-                    ps.setInt(6, log.getYear());
+                    ps.setString(7, log.getEmissionSource());
                 });
     }
 }

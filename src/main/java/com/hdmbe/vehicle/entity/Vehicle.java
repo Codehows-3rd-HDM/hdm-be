@@ -8,6 +8,7 @@ import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,4 +66,7 @@ public class Vehicle extends BaseTimeEntity {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
     @Builder.Default
     private List<CarbonEmissionMonthlyLog> monthlyLogs = new ArrayList<>();
+
+    @Column(name = "calc_base_date", nullable = true)
+    private LocalDate calcBaseDate;
 }

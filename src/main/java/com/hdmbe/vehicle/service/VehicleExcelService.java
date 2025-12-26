@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -30,8 +31,18 @@ public class VehicleExcelService {
                                String remark,
                                Company company,             // (이미 찾아온 객체)
                                CarModel carModel,           // (이미 찾아온 객체)
-                               OperationPurpose newPurpose)    // (이미 찾아온 객체)
+                               OperationPurpose newPurpose,    // (이미 찾아온 객체)
+                               String calcBaseDate)
     {
+
+//        LocalDate convertedCalcBaseDate = calcBaseDate == null ? null : LocalDate.parse(calcBaseDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        // 1. null이나 빈 문자열("")이면 null을 넣고
+        // 2. 값이 있으면 날짜로 변환해서 넣음 (이 변수는 람다 안에서 바로 사용 가능!)
+        LocalDate convertedCalcBaseDate = (calcBaseDate == null || calcBaseDate.trim().isEmpty())
+                ? null
+                : LocalDate.parse(calcBaseDate.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+
         // 1. [Vehicle] 기본 정보 저장/업데이트
         Vehicle savedVehicle = vehicleRepository.findByCarNumber(carNumber)
                 .map(existing -> {
@@ -44,6 +55,7 @@ public class VehicleExcelService {
                     // Company, CarModel은 이력 관리 안 한다면 그냥 set
                     existing.setCompany(company);
                     existing.setCarModel(carModel);
+                    existing.setCalcBaseDate(convertedCalcBaseDate);
 
                     return existing; // Dirty Checking
                 })
@@ -58,6 +70,7 @@ public class VehicleExcelService {
                                         .remark(remark != null ? remark : "")
                                         .company(company)
                                         .carModel(carModel)
+                                        .calcBaseDate(convertedCalcBaseDate)
                                         .build()
                         )
                 );

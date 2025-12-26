@@ -36,15 +36,15 @@ public class S1ExcelUpService {
 
     // 에스원 업로드 메인 로직
     @Transactional
-    public void uploadS1Log(List<S1ExcelUpDto> dtoList, int year, int month) {
+    public List<String> uploadS1Log(List<S1ExcelUpDto> dtoList, int year, int month) {
         // 1. [청소] 해당 연/월의 기존 데이터 삭제
         deleteExistingData(year, month);
 
         // [수정-최적화] DB에 등록된 모든 사번을 한번에 가져와서 Set 으로 만듬 (null 제외)
-        Set<String> validMemberIds = new HashSet<>(vehicleRepository.findAllDriverMemberIds());
+        Set<Vehicle> validMembers = new HashSet<>(vehicleRepository.findAllDriverMemberIds());
 
         // 2. [검증 및 변환] DTO 리스트 -> Entity 리스트
-        List<S1Log> logList = convertAndValidate(dtoList, year, month, validMemberIds);
+        List<S1Log> logList = convertAndValidate(dtoList, year, month, validMembers);
 
         // ✅ [추가] 데이터가 하나도 없으면 에러 발생시키기!
         if (logList.isEmpty()) {
@@ -54,10 +54,14 @@ public class S1ExcelUpService {
         // 3. [저장]
         s1LogRepository.saveAll(logList);
 
-        // 4. [계산]
-        s1EmissionService.process(logList);
+        // 저장 즉시 반영
+        s1LogRepository.flush();
 
-        log.info("{}년 {}월 S1 데이터 업로드 완료 (저장: {}건)", year, month, logList.size());
+        // 4. [계산 트리거]
+        // ✅ [수정 3] year, month 파라미터 전달 & 결과 리턴
+        log.info("{}년 {}월 S1 데이터 업로드 완료 (원본 저장: {}건)", year, month, logList.size());
+
+        return s1EmissionService.process(logList, year, month);
     }
 
     // 내부 메서드 1: 기존 데이터 삭제 (연간, 월간 분기 처리)
@@ -70,29 +74,25 @@ public class S1ExcelUpService {
             startDate = LocalDate.of(year, 1, 1);
             endDate = LocalDate.of(year, 12, 31);
 
-            // Monthly 로그 삭제
-            emissionMonthlyRepository.deleteByYear(year);
         } else {
             YearMonth yearMonth = YearMonth.of(year, month);
 
             // Daily 로그용
             startDate = yearMonth.atDay(1);
             endDate = yearMonth.atEndOfMonth();
-
-            // Monthly 로그 삭제
-            emissionMonthlyRepository.deleteByYearAndMonth(year, month);
         }
 
         s1LogRepository.deleteByAccessDateBetween(startDate, endDate);
 
         // 계산된 Daily 로그도 같이 삭제!
-        emissionDailyRepository.deleteByOperationDateBetween(startDate, endDate);
+        // 수정 S1EmissionService 에서 삭제
+      //  emissionDailyRepository.deleteByOperationDateBetween(startDate, endDate);
 
         // 3. Monthly 로그는 위 if문 안에서 이미 삭제함
     }
 
     // 내부 메서드 2: Entity 변환 및 검증 (메인 컨트롤러 역할 + 유효한 놈만 골라 담기)
-    private List<S1Log> convertAndValidate(List<S1ExcelUpDto> dtoList, int targetYear, int targetMonth, Set<String> validMemberIds) {
+    private List<S1Log> convertAndValidate(List<S1ExcelUpDto> dtoList, int targetYear, int targetMonth, Set<Vehicle> validMembers) {
         List<S1Log> resultList = new ArrayList<>();
         List<String> errorList = new ArrayList<>();
 
@@ -102,9 +102,14 @@ public class S1ExcelUpService {
             try {
                 // 1. 날짜 검증 (아까 만든 validateDate 사용)
                 LocalDate accessDate = validateDate(dto.getAccessDate(), targetYear, targetMonth, i);
-
                 // 2. [수정] 사번으로 차량 조회, Set에 사번이 있나?
-                if (!validMemberIds.contains(dto.getMemberId())) {
+                if (validMembers.stream().noneMatch(m -> m.getDriverMemberId().equals(dto.getMemberId()))) {
+                    log.warn("미등록 사원 데이터 제외됨: {}", dto.getMemberId());
+                    continue;
+                }
+
+                Vehicle validMember = validMembers.stream().filter( m -> m.getDriverMemberId().equals(dto.getMemberId())).findFirst().orElseThrow();
+                if(validMember.getCalcBaseDate() != null && accessDate.isBefore(validMember.getCalcBaseDate())) {
                     log.warn("미등록 사원 데이터 제외됨: {}", dto.getMemberId());
                     continue;
                 }

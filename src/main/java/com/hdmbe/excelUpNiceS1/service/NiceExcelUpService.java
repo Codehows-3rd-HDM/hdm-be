@@ -1,6 +1,7 @@
 package com.hdmbe.excelUpNiceS1.service;
 
 
+import com.hdmbe.carbonEmission.repository.CarbonEmissionJdbcRepository;
 import com.hdmbe.carbonEmission.repository.EmissionDailyRepository;
 import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.carbonEmission.service.NiceParkEmissionService;
@@ -39,9 +40,10 @@ public class NiceExcelUpService
     private final EmissionMonthlyRepository emissionMonthlyRepository;
     private final VehicleRepository vehicleRepository;
 
+
     // 메인 로직
     @Transactional      // 중간에 에러 나면 삭제된 것도 롤백되어야 함
-    public void uploadNiceParkLog(List<NiceExcelUpDto> dtoList, int year, int month) throws IOException
+    public List<String> uploadNiceParkLog(List<NiceExcelUpDto> dtoList, int year, int month) throws IOException
     {
         // (1) [삭제] 해당 연/월의 기존 데이터 삭제
         deleteExistingData(year, month);
@@ -60,11 +62,12 @@ public class NiceExcelUpService
         // (3) [저장] DB에 일괄 저장
         niceparkLogRepository.saveAll(logList);
 
-        // (4) [계산 트리거] "자, 이제 계산해서 일별/월별 장부에 적어!" (✅ 여기가 핵심 연결고리!)
-        niceParkEmissionService.process(logList);
+        // 저장도 즉시 반영
+        niceparkLogRepository.flush();
 
-        log.info("{}년 {}월 나이스파크 데이터 {}건 저장 및 탄소배출량 계산 완료", year, month, logList.size());
-
+        // (4) [계산 트리거] "자, 이제 계산해서 일별/월별 장부에 적어!" (여기가 핵심 연결고리!)
+        // 계산 서비스에서 제외된 차량 리스트를 받아와서 그대로 리턴
+        return niceParkEmissionService.process(logList, year, month);
     }
 
     // 내부 메서드 1: 기존 데이터 삭제
@@ -72,8 +75,6 @@ public class NiceExcelUpService
     {
         LocalDateTime startDateTime;    // 나이스파크 원본 데이터 (차량 출입 로그)
         LocalDateTime endDateTime;      // 나이스파크 원본 데이터 (차량 출입 로그)
-        LocalDate startDate;            // 일별 탄소배출량 (하룻동안 탄소 배출량)
-        LocalDate endDate;              // 일별 탄소배출량 (하룻동안 탄소 배출량)
 
         if (month == 0)
         {
@@ -81,13 +82,6 @@ public class NiceExcelUpService
             // '월-전체' 선택 시 : 해당 연도의 1월1일 ~ 12월 31일 삭제
             startDateTime =  LocalDateTime.of(year,1, 1, 0, 0, 0);
             endDateTime = LocalDateTime.of(year, 12, 31, 23, 59, 59);
-
-            // Daily 탄소 배출량 로그용 (DATE)
-            startDate = LocalDate.of(year, 1, 1);
-            endDate = LocalDate.of(year, 12, 31);
-
-            // Monthly 로그 삭제
-            emissionMonthlyRepository.deleteByYear(year);
         }
         else
         {
@@ -96,21 +90,9 @@ public class NiceExcelUpService
             YearMonth yearMonth = YearMonth.of(year, month);
             startDateTime = yearMonth.atDay(1).atStartOfDay();
             endDateTime = yearMonth.atEndOfMonth().atTime(23, 59, 59);
-
-            // Daily 로그용
-            startDate = yearMonth.atDay(1);
-            endDate = yearMonth.atEndOfMonth();
-
-            // Monthly 로그 삭제
-            emissionMonthlyRepository.deleteByYearAndMonth(year, month);
         }
 
         niceparkLogRepository.deleteByAccessTimeBetween(startDateTime, endDateTime);
-
-        // 계산된 Daily 로그도 같이 삭제!
-        emissionDailyRepository.deleteByOperationDateBetween(startDate, endDate);
-
-        // Monthly 로그는 위 if문 안에서 이미 삭제함
     }
 
     // 내부 메서드 2: DTO -> Entity 변환 및 날짜 검증 (POI 제거됨!)

@@ -1,5 +1,7 @@
 package com.hdmbe.carbonEmission.service;
 
+import com.hdmbe.carbonEmission.repository.CarbonEmissionJdbcRepository;
+import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.carbonEmission.component.EmissionCalculator;
 import com.hdmbe.carbonEmission.entity.CarbonEmissionDailyLog;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +28,41 @@ public class S1EmissionService {
     private final VehicleRepository vehicleRepository;
     private final CarbonEmissionFactorRepository factorRepository;
     private final EmissionDailyRepository emissionDailyRepository;
-
-    private final EmissionCalculator calculator; // 계산기 컴포넌트
+    private final EmissionMonthlyRepository emissionMonthlyRepository;
     private final MonthlyLogService monthlyLogService; // 월별 저장 서비스
+    private final EmissionCalculator calculator; // 계산기 컴포넌트
+    private final CarbonEmissionJdbcRepository carbonEmissionJdbcRepository;
 
     @Transactional
-    public void process(List<S1Log> logList) {
-        if (logList.isEmpty()) return;
+    // ✅ 파라미터 year, month 추가됨!
+    public List<String> process(List<S1Log> logList, int year, int month) {
+        if (logList.isEmpty()) return new ArrayList<>();
 
+        List<String> excludedCars = new ArrayList<>(); // 미등록 차량 리스트
+
+        // 1. [삭제 로직] 엑셀 날짜 안 믿음! 사용자가 선택한 "연/월" 기준으로 "S1"만 삭제
+        LocalDate startDate;
+        LocalDate endDate;
+
+        if (month == 0) {
+            // 연간 선택 시
+            startDate = LocalDate.of(year, 1, 1);
+            endDate = LocalDate.of(year, 12, 31);
+            // 월별 집계 삭제 (S1만)
+            emissionMonthlyRepository.deleteByYearAndSource(year, "S1");
+        } else {
+            // 월간 선택 시
+            YearMonth ym = YearMonth.of(year, month);
+            startDate = ym.atDay(1);
+            endDate = ym.atEndOfMonth();
+            // 월별 집계 삭제 (S1만)
+            emissionMonthlyRepository.deleteByYearMonthAndSource(year, month, "S1");
+        }
+
+        // 일별 데이터 삭제 (기간 + S1 꼬리표)
+        emissionDailyRepository.deleteByDateAndSource(startDate, endDate, "S1");
+
+        // 3. 계산 및 저장 로직 시작
         List<CarbonEmissionDailyLog> dailyLogs = new ArrayList<>();
         Map<String, BigDecimal> monthlyTotalMap = new HashMap<>();
         Map<String, Vehicle> vehicleMap = new HashMap<>();
@@ -63,6 +93,7 @@ public class S1EmissionService {
                     .vehicle(vehicle)
                     .operationDate(date)
                     .dailyEmission(emission)
+                    .emissionSource("S1")
                     .build());
 
             // 5. Monthly 집계 (메모리)
@@ -72,7 +103,12 @@ public class S1EmissionService {
         }
 
         // 6. 저장
-        emissionDailyRepository.saveAll(dailyLogs);
-        monthlyLogService.saveMonthlyLogsBulk(monthlyTotalMap, vehicleMap);
+       // emissionDailyRepository.saveAll(dailyLogs);
+        carbonEmissionJdbcRepository.saveAllDailyBatch(dailyLogs);  // JDBC로 한 방에 저장
+
+        monthlyLogService.saveMonthlyLogsBulk(monthlyTotalMap, vehicleMap, "S1");
+
+
+        return excludedCars;
     }
 }

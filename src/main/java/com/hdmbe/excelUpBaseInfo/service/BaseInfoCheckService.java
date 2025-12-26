@@ -1,20 +1,16 @@
 package com.hdmbe.excelUpBaseInfo.service;
 
-import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
-import com.hdmbe.carModel.service.CarModelExcelService;
-import com.hdmbe.carbonEmission.service.CarbonEmissionFactorService;
-import com.hdmbe.company.repository.CompanyRepository;
-import com.hdmbe.company.service.CompanyExcelService;
+import com.hdmbe.company.entity.CompanySupplyCustomerMap;
+import com.hdmbe.company.entity.CompanySupplyTypeMap;
+import com.hdmbe.company.repository.CompanySupplyCustomerMapRepository;
+import com.hdmbe.company.repository.CompanySupplyTypeMapRepository;
 import com.hdmbe.excelUpBaseInfo.dto.BaseInfoCheckDto;
 import com.hdmbe.excelUpBaseInfo.dto.ExcelUpBaseInfoDto;
 import com.hdmbe.operationPurpose.entity.OperationPurpose;
-import com.hdmbe.operationPurpose.service.OperationPurposeService;
-import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
-import com.hdmbe.vehicle.service.VehicleExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +26,9 @@ public class BaseInfoCheckService {
 
    private final VehicleRepository vehicleRepository;
    private final VehicleOperationPurposeMapRepository mapRepository;
+    private final CompanySupplyTypeMapRepository supplyTypeMapRepository;
+    private final CompanySupplyCustomerMapRepository supplyCustomerMapRepository;
+
 
     @Transactional(readOnly = true)
     public List<BaseInfoCheckDto> checkDataStatus(List<ExcelUpBaseInfoDto> dtoList)
@@ -39,7 +38,7 @@ public class BaseInfoCheckService {
         for (ExcelUpBaseInfoDto dto : dtoList)
         {
             // 1. 차량번호로 DB 조회
-            Optional<Vehicle> vehicleOpt = vehicleRepository.findByCarNumber(dto.getCarNumber());
+            Optional<Vehicle> vehicleOpt = vehicleRepository.findByCarNumberWithAll(dto.getCarNumber());
 
             if (vehicleOpt.isEmpty())
             {
@@ -47,7 +46,7 @@ public class BaseInfoCheckService {
                 results.add(BaseInfoCheckDto.builder()
                                 .idx(dto.getIdx())
                                 .carNumber(dto.getCarNumber())
-                                .status("NEW")
+                                .rowStatus("NEW")
                                 .message("신규 등록 차량")
                                 .build());
             }
@@ -55,6 +54,10 @@ public class BaseInfoCheckService {
             {
                 // [수정차량]
                 Vehicle v = vehicleOpt.get();
+
+                // ✅ DB Entity(v)를 -> DTO(dbData)로 변환해서 프론트로 보낼 준비
+                ExcelUpBaseInfoDto dbData = convertEntityToDto(v);
+
                 List<String> changes = new ArrayList<>();
 
                 // =========================================================
@@ -86,24 +89,49 @@ public class BaseInfoCheckService {
                     if (!isSame(v.getCompany().getAddress(), dto.getAddress())) {
                         changes.add("주소");
                     }
-
-                    // ⚠️ [주의] 공급유형/고객은 이력 관리(Map)라서 1:1 비교가 힘들 수 있음.
-                    // 만약 Company 엔티티에 현재 유형 이름을 가져오는 메소드가 없다면 일단 주석 처리하거나
-                    // v.getCompany().getSupplyTypes() 리스트를 뒤져야 함.
-                    // 여기서는 일단 '이름' 필드가 있다고 가정하고 작성 (없으면 빨간줄 뜹니다. 확인 필요!)
-                    /*
-                    if (!isSame(v.getCompany().getCurrentSupplyTypeName(), dto.getSupplyTypeName())) {
-                        changes.add("공급유형");
-                    }
-                    if (!isSame(v.getCompany().getCurrentCustomerName(), dto.getSupplyCustomerName())) {
-                        changes.add("공급고객");
-                    }
-                    */
                 } else {
                     // DB에는 업체 연결이 안 되어있는데 엑셀엔 업체명이 있다? -> 변경됨
                     if (dto.getCompanyName() != null && !dto.getCompanyName().isEmpty()) {
                         changes.add("업체 정보(신규 연결)");
                     }
+                }
+
+                // =========================================================
+// 2-1. 공급유형 비교 (Map 기반)
+// =========================================================
+                String dbSupplyTypeName = "";
+
+                Optional<CompanySupplyTypeMap> supplyTypeMapOpt =
+                        supplyTypeMapRepository.findByCompanyAndEndDateIsNull(v.getCompany());
+
+                if (supplyTypeMapOpt.isPresent()) {
+                    dbSupplyTypeName =
+                            supplyTypeMapOpt.get()
+                                    .getSupplyType()
+                                    .getSupplyTypeName();
+                }
+
+                if (!isSame(dbSupplyTypeName, dto.getSupplyTypeName())) {
+                    changes.add("공급유형");
+                }
+
+// =========================================================
+// 2-2. 공급고객 비교 (Map 기반)
+// =========================================================
+                String dbCustomerName = "";
+
+                Optional<CompanySupplyCustomerMap> customerMapOpt =
+                        supplyCustomerMapRepository.findByCompanyAndEndDateIsNull(v.getCompany());
+
+                if (customerMapOpt.isPresent()) {
+                    dbCustomerName =
+                            customerMapOpt.get()
+                                    .getSupplyCustomer()
+                                    .getCustomerName();
+                }
+
+                if (!isSame(dbCustomerName, dto.getSupplyCustomerName())) {
+                    changes.add("공급고객");
                 }
 
                 // =========================================================
@@ -197,19 +225,21 @@ public class BaseInfoCheckService {
 
                 // [결과 저장]
                 if (!changes.isEmpty()) {
-                    String msg = String.join(", ", changes) + " 정보 불일치";
+                    String msg = String.join(", ", changes) + " 수정";
                     results.add(BaseInfoCheckDto.builder()
                             .idx(dto.getIdx())
                             .carNumber(dto.getCarNumber())
-                            .status("MODIFIED")
+                            .rowStatus("UPDATED")
                             .message(msg)
+                            .dbData(dbData)
                             .build());
                 } else {
                     results.add(BaseInfoCheckDto.builder()
                             .idx(dto.getIdx())
                             .carNumber(dto.getCarNumber())
-                            .status("UNCHANGED")
+                            .rowStatus("UNCHANGED")
                             .message("변경 사항 없음")
+                            .dbData(dbData)
                             .build());
                 }
             }
@@ -217,19 +247,99 @@ public class BaseInfoCheckService {
         return results;
     }
 
-    // [비교 함수] Enum이든, 숫자든, null이든 다 문자로 바꿔서 비교하는 함수
+    // [최종 수정] 수식, 소수점 오차, 공백까지 모두 무시하는 강력한 비교 함수
     private boolean isSame(Object dbValue, Object excelValue) {
-        // 1. 둘 다 null이면 같다
-        if (dbValue == null && excelValue == null) return true;
+        // 1. DB값과 엑셀값을 안전하게 문자열로 변환 (null이면 ""로 변환)
+        String s1 = (dbValue == null) ? "" : dbValue.toString().trim();
+        String s2 = (excelValue == null) ? "" : excelValue.toString().trim();
 
-        // 2. 둘 중 하나만 null이면 다르다
-        if (dbValue == null || excelValue == null) return false;
+        // 2. 이제 둘 다 null일 걱정 없음. 바로 비교.
+        // DB가 null이고 엑셀이 ""여도, 여기서 둘 다 ""가 되어서 true(같음)가 됨.
+        if (s1.equals(s2)) {
+            return true;
+        }
 
-        // 3. String으로 변환 (Enum은 이름으로, 숫자는 문자열로)
-        String s1 = dbValue.toString().trim();
-        String s2 = excelValue.toString().trim();
+        // 3. 숫자 비교 (소수점 무시)
+        if (isNumeric(s1) && isNumeric(s2)) {
+            try {
+                BigDecimal b1 = new BigDecimal(s1);
+                BigDecimal b2 = new BigDecimal(s2);
 
-        // 4. 문자열 비교
-        return s1.equals(s2);
+                // 값 비교
+                if (b1.compareTo(b2) == 0) return true;
+
+                // 미세 오차 허용
+                BigDecimal diff = b1.subtract(b2).abs();
+                if (diff.compareTo(new BigDecimal("0.000001")) < 0) return true;
+
+            } catch (Exception e) {
+                // 변환 실패 시 무시
+            }
+        }
+
+        return false;
+    }
+
+    // 숫자 판별 헬퍼
+    private boolean isNumeric(String str) {
+        if (str == null || str.isEmpty()) return false;
+        return str.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    // [추가] Entity -> DTO 변환 헬퍼 메서드
+    private ExcelUpBaseInfoDto convertEntityToDto(Vehicle v) {
+        ExcelUpBaseInfoDto.ExcelUpBaseInfoDtoBuilder builder = ExcelUpBaseInfoDto.builder()
+                .carNumber(v.getCarNumber())
+                .driverMemberId(v.getDriverMemberId())
+                .distanceInput(v.getOperationDistance());
+
+        // 1. 업체 정보
+        if (v.getCompany() != null) {
+            builder.companyName(v.getCompany().getCompanyName());
+            builder.address(v.getCompany().getAddress());
+
+            // 1-1. 공급유형 조회
+            Optional<CompanySupplyTypeMap> supplyTypeMapOpt =
+                    supplyTypeMapRepository.findByCompanyAndEndDateIsNull(v.getCompany());
+            supplyTypeMapOpt.ifPresent(map ->
+                    builder.supplyTypeName(map.getSupplyType().getSupplyTypeName())
+            );
+
+            // 1-2. 공급고객 조회
+            Optional<CompanySupplyCustomerMap> customerMapOpt =
+                    supplyCustomerMapRepository.findByCompanyAndEndDateIsNull(v.getCompany());
+            customerMapOpt.ifPresent(map ->
+                    builder.supplyCustomerName(map.getSupplyCustomer().getCustomerName())
+            );
+        }
+
+        // 2. 차종 정보
+        if (v.getCarModel() != null) {
+            builder.carModelName(v.getCarModel().getCarCategory().getCategoryName());
+            builder.fuelName(v.getCarModel().getFuelType() != null ? v.getCarModel().getFuelType().toString() : ""); // Enum -> String
+            builder.efficiency(v.getCarModel().getCustomEfficiency());
+
+            // 카테고리 정보
+            if (v.getCarModel().getCarCategory() != null) {
+                builder.smallCategory(v.getCarModel().getCarCategory().getCategoryName());
+                if (v.getCarModel().getCarCategory().getParentCategory() != null) {
+                    builder.bigCategory(v.getCarModel().getCarCategory().getParentCategory().getCategoryName());
+                }
+            }
+        }
+
+        // 3. 운행 목적 및 Scope 매핑 정보
+        Optional<VehicleOperationPurposeMap> mapOpt = mapRepository.findByVehicleAndEndDateIsNull(v);
+        if (mapOpt.isPresent()) {
+            OperationPurpose op = mapOpt.get().getOperationPurpose();
+            if (op != null) {
+                builder.purposeName(op.getPurposeName());
+                if (op.getDefaultScope() != null) {
+                    builder.scope(String.valueOf(op.getDefaultScope()));
+                }
+            }
+        }
+
+        return builder.build();
     }
 }
