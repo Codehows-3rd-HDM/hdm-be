@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -73,15 +74,31 @@ public class NiceParkEmissionService {
             emissionMonthlyRepository.deleteByYearMonthAndSource(year, month, "NICE");
         }
 
+        // 2. [최적화 & 준비] 차량 조회 (이번엔 차량번호가 Key!)
+        // Map<차량번호, List<Vehicle>> 형태로 그룹핑
+        // (주의: 같은 차량번호라도 날짜별로 이력이 여러 개일 수 있으니 List임)
+        Map<String, List<Vehicle>> vehicleHistoryMap = vehicleRepository.findAll().stream()
+                .filter(v -> v.getCarNumber() != null) // 혹시 모를 null 방지
+                .collect(Collectors.groupingBy(Vehicle::getCarNumber));
+
         // 3. 계산 및 저장 로직
         List<CarbonEmissionDailyLog> dailyLogs = new ArrayList<>();
         Map<String, BigDecimal> monthlyTotalMap = new HashMap<>();
         Map<String, Vehicle> vehicleMap = new HashMap<>(); // Monthly 저장을 위해 Vehicle 객체 임시 저장
 
         for (NiceparkLog niceparkLog : logList) {
-            // 1. 차량 조회
-            Vehicle vehicle = vehicleRepository.findByCarNumber(niceparkLog.getCarNumber()).orElse(null);
+            // 로그 날짜 먼저 확보 (차 찾을 때 필요함)
+            LocalDate logDate = niceparkLog.getAccessTime().toLocalDate();
+
+            // [수정 1] Map에서 이력 꺼내기
+            List<Vehicle> historyList = vehicleHistoryMap.get(niceparkLog.getCarNumber());
+
+            // [수정 2] 날짜 비교 로직으로 "진짜 차" 찾기
+            Vehicle vehicle = findValidVehicle(historyList, logDate);
+
             String memberId = vehicle != null ? vehicle.getDriverMemberId() : null;
+
+
             // [나이스 DB에 임직원 차량있을 경우]
             // 차량이 DB에 없거나, '사번'이 있는 임직원 차량이면 나이스파크 집계에서 제외!
             if (vehicle == null || (memberId != null && !memberId.trim().isEmpty())) {
@@ -131,5 +148,19 @@ public class NiceParkEmissionService {
         monthlyLogService.saveMonthlyLogsBulk(monthlyTotalMap, vehicleMap, "NICE");
 
         return excludedCars;
+    }
+
+    // =================================================================
+    // ✅ [재사용] S1EmissionService랑 똑같은 로직입니다. (복붙 가능)
+    // =================================================================
+    private Vehicle findValidVehicle(List<Vehicle> historyList, LocalDate logDate) {
+        if (historyList == null || historyList.isEmpty()) {
+            return null;
+        }
+        return historyList.stream()
+                .filter(v -> !v.getCalcBaseDate().isAfter(logDate)) // 미래 차 제외
+                .sorted((v1, v2) -> v2.getCalcBaseDate().compareTo(v1.getCalcBaseDate())) // 최신순 정렬
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +28,8 @@ public class BaseInfoCheckService {
 
    private final VehicleRepository vehicleRepository;
    private final VehicleOperationPurposeMapRepository mapRepository;
-    private final CompanySupplyTypeMapRepository supplyTypeMapRepository;
-    private final CompanySupplyCustomerMapRepository supplyCustomerMapRepository;
+   private final CompanySupplyTypeMapRepository supplyTypeMapRepository;
+   private final CompanySupplyCustomerMapRepository supplyCustomerMapRepository;
 
 
     @Transactional(readOnly = true)
@@ -35,10 +37,28 @@ public class BaseInfoCheckService {
     {
         List<BaseInfoCheckDto> results = new ArrayList<>();
 
+        // 날짜 포맷터 준비
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate defaultDate = LocalDate.of(1900, 1, 1);
+
         for (ExcelUpBaseInfoDto dto : dtoList)
         {
-            // 1. 차량번호로 DB 조회
-            Optional<Vehicle> vehicleOpt = vehicleRepository.findByCarNumberWithAll(dto.getCarNumber());
+            // [수정 1] 날짜 변환 로직 (VehicleExcelService와 동일하게!)
+            // 엑셀에 날짜 없으면 1900-01-01로 간주
+            LocalDate targetDate = (dto.getCalcBaseDate() == null || dto.getCalcBaseDate().trim().isEmpty())
+                    ? defaultDate
+                    : LocalDate.parse(dto.getCalcBaseDate().trim(), formatter);
+
+            // 최신 날짜로 찾기
+            Optional<Vehicle> vehicleOpt;
+
+            if (targetDate.equals(defaultDate)) {
+                // 1. 엑셀에 날짜가 없다? -> DB에서 해당 차량의 "가장 최신 이력"을 가져옴!
+                vehicleOpt = vehicleRepository.findTopByCarNumberOrderByCalcBaseDateDesc(dto.getCarNumber());
+            } else {
+                // 2. 엑셀에 날짜가 있다? -> 그 날짜에 해당하는 이력을 정확히 찾음
+                vehicleOpt = vehicleRepository.findByCarNumberAndCalcBaseDate(dto.getCarNumber(), targetDate);
+            }
 
             if (vehicleOpt.isEmpty())
             {
@@ -55,7 +75,7 @@ public class BaseInfoCheckService {
                 // [수정차량]
                 Vehicle v = vehicleOpt.get();
 
-                // ✅ DB Entity(v)를 -> DTO(dbData)로 변환해서 프론트로 보낼 준비
+                // DB Entity(v)를 -> DTO(dbData)로 변환해서 프론트로 보낼 준비
                 ExcelUpBaseInfoDto dbData = convertEntityToDto(v);
 
                 List<String> changes = new ArrayList<>();
@@ -97,8 +117,8 @@ public class BaseInfoCheckService {
                 }
 
                 // =========================================================
-// 2-1. 공급유형 비교 (Map 기반)
-// =========================================================
+                // 2-1. 공급유형 비교 (Map 기반)
+                // =========================================================
                 String dbSupplyTypeName = "";
 
                 Optional<CompanySupplyTypeMap> supplyTypeMapOpt =
@@ -115,9 +135,9 @@ public class BaseInfoCheckService {
                     changes.add("공급유형");
                 }
 
-// =========================================================
-// 2-2. 공급고객 비교 (Map 기반)
-// =========================================================
+                // =========================================================
+                // 2-2. 공급고객 비교 (Map 기반)
+                // =========================================================
                 String dbCustomerName = "";
 
                 Optional<CompanySupplyCustomerMap> customerMapOpt =
@@ -292,6 +312,15 @@ public class BaseInfoCheckService {
                 .carNumber(v.getCarNumber())
                 .driverMemberId(v.getDriverMemberId())
                 .distanceInput(v.getOperationDistance());
+
+        // [추가] 날짜도 DTO에 담아서 프론트에 보여주면 좋음 (1900년이면 빈값 처리 등)
+        if (v.getCalcBaseDate() != null) {
+            if (v.getCalcBaseDate().getYear() == 1900) {
+                builder.calcBaseDate(""); // 1900년은 화면에 안 보여줌
+            } else {
+                builder.calcBaseDate(v.getCalcBaseDate().toString());
+            }
+        }
 
         // 1. 업체 정보
         if (v.getCompany() != null) {

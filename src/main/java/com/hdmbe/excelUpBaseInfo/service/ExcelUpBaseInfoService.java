@@ -117,7 +117,7 @@ public class ExcelUpBaseInfoService {
                         company,               // 위에서 만든 업체
                         carModel,              // 위에서 만든 차종
                         purpose,                // 위에서 만든 목적
-                        dto.getCalcBaseDate()
+                        dto.getCalcBaseDate()   //차량등록일
                 );
 
             } catch (Exception e) {
