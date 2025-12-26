@@ -45,7 +45,7 @@ GROUP BY cm.fuelType
     List<Object[]> findFuelEmissionForPie(
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("scope") Integer scope
+            @Param("defaultScope") Integer defaultScope
     );
 
     // 그래프
@@ -73,6 +73,6 @@ ORDER BY m.month
 """)
     List<Object[]> findYearlyMonthlyTrend(
             @Param("year") Integer year,
-            @Param("scope") Integer scope
+            @Param("defaultScope") Integer defaultScope
     );
 }

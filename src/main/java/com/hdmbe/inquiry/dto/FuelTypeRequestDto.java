@@ -1,4 +1,4 @@
-package com.hdmbe.fuelTypeAnalysis.dto;
+package com.hdmbe.inquiry.dto;
 
 import com.hdmbe.commonModule.constant.FuelType;
 import lombok.*;
@@ -15,7 +15,7 @@ public class FuelTypeRequestDto {
     // 조회 기준 월
     private Integer month;
     // Scope 1,3,기타
-    private Integer scope;
+    private Integer defaultScope;
     // 연료타입
     private FuelType fuelType;
 

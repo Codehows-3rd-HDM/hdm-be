@@ -1,4 +1,4 @@
-package com.hdmbe.fuelTypeAnalysis.dto;
+package com.hdmbe.inquiry.dto;
 
 import com.hdmbe.commonModule.constant.FuelType;
 import lombok.*;
@@ -19,6 +19,6 @@ public class FuelTypeResponseDto {
     private BigDecimal totalEmission;
     // 전체 대비 비율 (%)
     private BigDecimal ratio;
-    // 월별 추이(1~12월)
+    // 월별 추이 (그래프용)
     private List<BigDecimal> monthlyTrend;
 }

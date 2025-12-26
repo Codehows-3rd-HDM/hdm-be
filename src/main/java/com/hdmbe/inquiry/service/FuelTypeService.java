@@ -1,9 +1,9 @@
-package com.hdmbe.fuelTypeAnalysis.service;
+package com.hdmbe.inquiry.service;
 
 import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.commonModule.constant.FuelType;
-import com.hdmbe.fuelTypeAnalysis.dto.FuelTypeRequestDto;
-import com.hdmbe.fuelTypeAnalysis.dto.FuelTypeResponseDto;
+import com.hdmbe.inquiry.dto.FuelTypeRequestDto;
+import com.hdmbe.inquiry.dto.FuelTypeResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class FuelTypeService {
         List<Object[]> pieRows = emissionMonthlyRepository.findFuelEmissionForPie(
                 dto.getYear(),
                 dto.getMonth(),
-                dto.getScope()
+                dto.getDefaultScope()
         );
 
         Map<FuelType, BigDecimal> fuelTotalMap = new HashMap<>();
@@ -47,7 +47,7 @@ public class FuelTypeService {
             List<Object[]> trendRows =
                     emissionMonthlyRepository.findYearlyMonthlyTrend(
                             dto.getYear(),
-                            dto.getScope()
+                            dto.getDefaultScope()
                     );
 
             for (Object[] r : trendRows) {

@@ -1,8 +1,8 @@
-package com.hdmbe.fuelTypeAnalysis.controller;
+package com.hdmbe.inquiry.controller;
 
-import com.hdmbe.fuelTypeAnalysis.dto.FuelTypeRequestDto;
-import com.hdmbe.fuelTypeAnalysis.dto.FuelTypeResponseDto;
-import com.hdmbe.fuelTypeAnalysis.service.FuelTypeService;
+import com.hdmbe.inquiry.dto.FuelTypeRequestDto;
+import com.hdmbe.inquiry.dto.FuelTypeResponseDto;
+import com.hdmbe.inquiry.service.FuelTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
