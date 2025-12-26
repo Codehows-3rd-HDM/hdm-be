@@ -27,17 +27,26 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
     @Query("select m.month as month, sum(m.totalEmission) as total from CarbonEmissionMonthlyLog m where m.year = :year group by m.month order by m.month")
     List<MonthlySumView> sumByYear(@Param("year") int year);
 
-    // Scope별 월별 합계 조회 (차량 운행목적 매핑 기준)
-    @Query("SELECT m.month as month, SUM(m.totalEmission) as total " +
-           "FROM CarbonEmissionMonthlyLog m " +
-           "WHERE m.year = :year " +
-           "AND EXISTS (" +
-           "  SELECT 1 FROM VehicleOperationPurposeMap vmap " +
-           "  WHERE vmap.vehicle.id = m.vehicle.id " +
-           "  AND vmap.endDate IS NULL " +
-           "  AND vmap.operationPurpose.defaultScope = :scope" +
-           ") " +
-           "GROUP BY m.month ORDER BY m.month")
+    // Scope별 월별 합계 조회 (운행목적 변경 이력 반영, 월 기준 단일 매핑 선택)
+    // 각 월에 대해 해당 차량의 "그 달의 마지막 날"을 포함하는 매핑 중
+    // end_date(NULL은 9999-12-31로 간주)가 가장 작은(가까운) 매핑을 유효 매핑으로 선택합니다.
+    @Query(value = "SELECT m.month AS month, SUM(m.total_emission) AS total "
+            + "FROM CARBON_EMISSION_MONTHLY_LOG m "
+            + "WHERE m.year = :year "
+            + "AND EXISTS ("
+            + "  SELECT 1 FROM VEHICLE_OPERATION_PURPOSE_MAP v "
+            + "  JOIN OPERATION_PURPOSE op ON op.purpose_id = v.purpose_id "
+            + "  WHERE v.car_id = m.car_id "
+            + "    AND op.default_scope = :scope "
+            + "    AND COALESCE(v.end_date, DATE('9999-12-31')) >= LAST_DAY(CONCAT(m.year, '-', LPAD(m.month, 2, '0'), '-01')) "
+            + "    AND NOT EXISTS ("
+            + "      SELECT 1 FROM VEHICLE_OPERATION_PURPOSE_MAP v2 "
+            + "      WHERE v2.car_id = m.car_id "
+            + "        AND COALESCE(v2.end_date, DATE('9999-12-31')) >= LAST_DAY(CONCAT(m.year, '-', LPAD(m.month, 2, '0'), '-01')) "
+            + "        AND COALESCE(v2.end_date, DATE('9999-12-31')) < COALESCE(v.end_date, DATE('9999-12-31'))"
+            + "    )"
+            + ") "
+            + "GROUP BY m.month ORDER BY m.month", nativeQuery = true)
     List<MonthlySumView> sumByYearAndScope(@Param("year") int year, @Param("scope") Integer scope);
 
     // 실적이 존재하는 연도 목록 조회

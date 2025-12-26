@@ -43,12 +43,9 @@ public class CarbonEmissionFactorService {
                 ));
     }
 
-
-    private final CarbonEmissionFactorRepository repo;
-
     // 조회
     public List<CarbonEmissionFactorResponse> getAll() {
-        return repo.findAll()
+        return carbonEmissionFactorRepository.findAll()
                 .stream()
                 .map(CarbonEmissionFactorResponse::fromEntity)
                 .toList();
@@ -56,13 +53,13 @@ public class CarbonEmissionFactorService {
 
     // 수정
     public CarbonEmissionFactorResponse update(Long id, CarbonEmissionFactorUpdateRequest dto) {
-        CarbonEmissionFactor entity = repo.findById(id)
+        CarbonEmissionFactor entity = carbonEmissionFactorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 배출계수"));
 
         entity.setEmissionFactor(dto.getEmissionFactor());
         entity.setRemark(dto.getRemark());
 
-        repo.save(entity);
+        carbonEmissionFactorRepository.save(entity);
 
         return CarbonEmissionFactorResponse.fromEntity(entity);
     }
