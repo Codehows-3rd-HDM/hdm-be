@@ -8,14 +8,18 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "CARBON_EMISSION_MONTHLY_LOG")
+@Table(name = "CARBON_EMISSION_MONTHLY_LOG",
+        uniqueConstraints = {
+        @UniqueConstraint(
+        name = "uk_monthly_log",
+        columnNames = {"year", "month", "car_id"})
+    })
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CarbonEmissionMonthlyLog extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     // 월별 ID
     @Column(name = "monthly_id", columnDefinition = "BIGINT")
     private Long id;
@@ -41,4 +45,8 @@ public class CarbonEmissionMonthlyLog extends BaseTimeEntity {
     @Column(name = "total_emission", precision = 12, scale = 3)
     private BigDecimal totalEmission;
     //(NUMERIC) 타입을 안전한 소수계산을 위해 사용함
+
+    // 꼬리표
+    @Column(name = "emission_source", length = 20)
+    private String emissionSource; // "S1" 또는 "NICE" 저장
 }

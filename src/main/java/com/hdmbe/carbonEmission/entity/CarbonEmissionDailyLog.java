@@ -42,4 +42,8 @@ public class CarbonEmissionDailyLog extends BaseTimeEntity {
     @Column(name = "daily_calculated_emission", precision = 10, scale = 3)
     private BigDecimal dailyEmission;
     //(NUMERIC) 타입을 안전한 소수계산을 위해 사용함
+
+    // 꼬리표
+    @Column(name = "emission_source", length = 20)
+    private String emissionSource; // "S1" 또는 "NICE" 저장
 }

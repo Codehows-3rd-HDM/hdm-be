@@ -8,6 +8,7 @@ import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,4 +66,8 @@ public class Vehicle extends BaseTimeEntity {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
     @Builder.Default
     private List<CarbonEmissionMonthlyLog> monthlyLogs = new ArrayList<>();
+
+    // [수정 3] 필수값으로 변경 (nullable = false) -> 1900년 날짜라도 무조건 들어감
+    @Column(name = "calc_base_date", nullable = false)
+    private LocalDate calcBaseDate;
 }
