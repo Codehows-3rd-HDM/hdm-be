@@ -49,4 +49,7 @@ public class VehicleRequestDto {
     // 등록용 (ID 기반)
     private Long childCategoryId; // 소분류 카테고리 ID
 
+    // 차량 등록일 (calcBaseDate)
+    private String calcBaseDate; // 차를 탄 시작 날짜
+
 }

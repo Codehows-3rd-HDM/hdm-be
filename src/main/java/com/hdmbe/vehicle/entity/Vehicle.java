@@ -67,7 +67,7 @@ public class Vehicle extends BaseTimeEntity {
     @Builder.Default
     private List<CarbonEmissionMonthlyLog> monthlyLogs = new ArrayList<>();
 
-    // [수정 3] 필수값으로 변경 (nullable = false) -> 1900년 날짜라도 무조건 들어감
-    @Column(name = "calc_base_date", nullable = false)
+    // calcBaseDate (null 허용, DB DEFAULT값: 1900-01-01)
+    @Column(name = "calc_base_date", columnDefinition = "DATE DEFAULT '1900-01-01'")
     private LocalDate calcBaseDate;
 }

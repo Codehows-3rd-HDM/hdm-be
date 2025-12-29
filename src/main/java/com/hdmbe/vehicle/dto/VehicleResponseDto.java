@@ -1,11 +1,16 @@
 package com.hdmbe.vehicle.dto;
 
+import java.math.BigDecimal;
+
 import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
-import lombok.*;
 
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -13,6 +18,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class VehicleResponseDto {
+
     // 차량
     private Long id;
     private String carNumber;
@@ -42,9 +48,11 @@ public class VehicleResponseDto {
     private FuelType fuelType;
     // 비고
     private String remark;
+    // 차량 등록일
+    private String calcBaseDate;
 
     public static VehicleResponseDto fromEntity(Vehicle vehicle,
-        VehicleOperationPurposeMap purposeMap
+            VehicleOperationPurposeMap purposeMap
     ) {
         var company = vehicle.getCompany();
         var carModel = vehicle.getCarModel();
@@ -52,10 +60,10 @@ public class VehicleResponseDto {
         var parentCategory = carCategory.getParentCategory();
         var purpose = purposeMap != null ? purposeMap.getOperationPurpose() : null;
 
-        BigDecimal effectiveDistance =
-                vehicle.getOperationDistance() != null
-                        ? vehicle.getOperationDistance()
-                        : company.getOneWayDistance();
+        BigDecimal effectiveDistance
+                = vehicle.getOperationDistance() != null
+                ? vehicle.getOperationDistance()
+                : company.getOneWayDistance();
 
         return VehicleResponseDto.builder()
                 .id(vehicle.getId())
@@ -73,7 +81,7 @@ public class VehicleResponseDto {
                 .carCategoryId(carCategory.getId())
                 .fuelType(carModel.getFuelType())
                 .remark(vehicle.getRemark())
+                .calcBaseDate(vehicle.getCalcBaseDate() != null ? vehicle.getCalcBaseDate().toString() : null)
                 .build();
     }
 }
-
