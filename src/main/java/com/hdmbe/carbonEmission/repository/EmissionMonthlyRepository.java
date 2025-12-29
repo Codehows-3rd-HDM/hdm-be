@@ -31,13 +31,13 @@ JOIN v.carModel cm
 WHERE (:year IS NULL OR m.year = :year)
   AND (:month IS NULL OR m.month = :month)
   AND (
-      :scope IS NULL
+      :defaultScope IS NULL
       OR EXISTS (
           SELECT 1
           FROM VehicleOperationPurposeMap vmap
           WHERE vmap.vehicle = v
             AND vmap.endDate IS NULL
-            AND vmap.operationPurpose.defaultScope = :scope
+            AND vmap.operationPurpose.defaultScope = :defaultScope
       )
   )
 GROUP BY cm.fuelType
@@ -59,13 +59,13 @@ JOIN m.vehicle v
 JOIN v.carModel cm
 WHERE m.year = :year
   AND (
-      :scope IS NULL
+      :defaultScope IS NULL
       OR EXISTS (
           SELECT 1
           FROM VehicleOperationPurposeMap vmap
           WHERE vmap.vehicle = v
             AND vmap.endDate IS NULL
-            AND vmap.operationPurpose.defaultScope = :scope
+            AND vmap.operationPurpose.defaultScope = :defaultScope
       )
   )
 GROUP BY cm.fuelType, m.month
