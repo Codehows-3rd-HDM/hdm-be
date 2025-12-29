@@ -100,15 +100,16 @@ public class OperationPurposeInquiryService {
             result.add(dtoItem);
             ratioSum = ratioSum.add(ratio);
 
-            if (maxRatioItem == null || ratio.compareTo(maxRatioItem.getRatio()) > 0) {
+            if (maxRatioItem == null || (ratio != null && ratio.compareTo(maxRatioItem.getRatio() != null ? maxRatioItem.getRatio() : BigDecimal.ZERO) > 0)) {
                 maxRatioItem = dtoItem;
             }
         }
 
-        // 비율 100% 보정
+
         if (maxRatioItem != null) {
+            BigDecimal difference = BigDecimal.valueOf(100).subtract(ratioSum);
             maxRatioItem.setRatio(
-                    maxRatioItem.getRatio().add(BigDecimal.valueOf(100).subtract(ratioSum))
+                    (maxRatioItem.getRatio() != null ? maxRatioItem.getRatio() : BigDecimal.ZERO).add(difference)
             );
         }
 
