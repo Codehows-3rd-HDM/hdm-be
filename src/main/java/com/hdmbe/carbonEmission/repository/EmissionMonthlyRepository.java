@@ -4,19 +4,14 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.hdmbe.carbonEmission.entity.CarbonEmissionMonthlyLog;
 import com.hdmbe.vehicle.entity.Vehicle;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionMonthlyLog, Long> {
 
@@ -146,6 +141,32 @@ ORDER BY m.month
     void deleteByYearAndSource(@Param("year") int year,
             @Param("source") String source);
 
+
+    // [신규] 협력사별 탄소 배출량 합계 조회 (DTO 반환)
+    // year는 필수, month는 null이면 전체 조회 / 값이 있으면 해당 월 조회
+    @Query("SELECT new com.hdmbe.inquiry.dto.ViewCompanyResponseDto(" +
+            "  c.id, " +
+            "  c.companyName, " +
+            "  c.address, " +
+            "  SUM(m.totalEmission) " +
+            ") " +
+            "FROM CarbonEmissionMonthlyLog m " +
+            "JOIN m.vehicle v " +
+            "JOIN v.company c " +
+            "WHERE m.year = :year " +
+            "AND (:month IS NULL OR m.month = :month) " +
+            // 검색어: 회사명 또는 주소 검색
+            "AND (:keyword IS NULL OR c.companyName LIKE %:keyword% OR c.address LIKE %:keyword%) " +
+            "GROUP BY c.id, c.companyName, c.address")
+    List<ViewCompanyResponseDto> findEmissionByCompany(
+            @Param("year") int year,
+            @Param("month") Integer month,
+            @Param("keyword") String keyword
+    );
+
+    // 저장된 데이터 중 가장 최근 연도(MAX) 조회
+    @Query("SELECT COALESCE(MAX(m.year), 2025) FROM CarbonEmissionMonthlyLog m")
+    int findLatestYear();
     }
 
     

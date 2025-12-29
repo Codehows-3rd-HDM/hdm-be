@@ -46,7 +46,7 @@ public class SecurityConfig {
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/admin/excel/upload/**").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
-                        .requestMatchers("/login", "/logout", "/admin/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/admin/**", "/view/company").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)
