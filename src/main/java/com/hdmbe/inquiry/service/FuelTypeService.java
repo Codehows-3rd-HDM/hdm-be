@@ -4,6 +4,7 @@ import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.inquiry.dto.FuelTypeRequestDto;
 import com.hdmbe.inquiry.dto.FuelTypeResponseDto;
+import com.hdmbe.inquiry.repository.FuelTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +17,14 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class FuelTypeService {
 
-    private final EmissionMonthlyRepository emissionMonthlyRepository;
+    private final FuelTypeRepository fuelTypeRepository;
 
     public List<FuelTypeResponseDto> getFuelEmission(
             FuelTypeRequestDto dto
     ) {
 
         // 파이차트
-        List<Object[]> pieRows = emissionMonthlyRepository.findFuelEmissionForPie(
+        List<Object[]> pieRows = fuelTypeRepository.findFuelEmissionForPie(
                 dto.getYear(),
                 dto.getMonth(),
                 dto.getDefaultScope()
@@ -45,7 +46,7 @@ public class FuelTypeService {
         if (dto.getYear() != null && dto.getMonth() == null) {
 
             List<Object[]> trendRows =
-                    emissionMonthlyRepository.findYearlyMonthlyTrend(
+                    fuelTypeRepository.findYearlyMonthlyTrend(
                             dto.getYear(),
                             dto.getDefaultScope()
                     );
@@ -106,7 +107,7 @@ public class FuelTypeService {
             );
         }
 
-        // 4. 합계 보정 (가장 큰 비율 항목에 차이 보정)
+        // 합계 보정 (가장 큰 비율 항목에 차이 보정)
         BigDecimal difference = BigDecimal.valueOf(100).subtract(sumRatios);
         if (difference.compareTo(BigDecimal.ZERO) != 0 && maxRatioItem != null) {
             for (FuelTypeResponseDto dtoItem : result) {
