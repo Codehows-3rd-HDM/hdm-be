@@ -295,12 +295,12 @@ public class VehicleService {
     // calcBaseDate 파싱 헬퍼 메서드
     private LocalDate parseCalcBaseDate(String calcBaseDate) {
         if (calcBaseDate == null || calcBaseDate.trim().isEmpty()) {
-            return null; // DB DEFAULT값 (1900-01-01) 사용
+            return LocalDate.of(1900, 1, 1); // null/빈값 → 1900-01-01 직접 설정
         }
         try {
             return LocalDate.parse(calcBaseDate.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         } catch (Exception e) {
-            return null; // 파싱 실패 시 null -> DB DEFAULT값 사용
+            return LocalDate.of(1900, 1, 1); // 파싱 실패 → 1900-01-01 직접 설정
         }
     }
 }
