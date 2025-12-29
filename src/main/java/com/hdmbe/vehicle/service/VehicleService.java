@@ -10,6 +10,8 @@ import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
+import com.hdmbe.carbonEmission.repository.EmissionDailyRepository;
+import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -34,6 +37,8 @@ public class VehicleService {
     private final CompanyRepository companyRepository;
     private final OperationPurposeRepository operationPurposeRepository;
     private final CarModelRepository carModelRepository;
+    private final EmissionDailyRepository emissionDailyRepository;
+    private final EmissionMonthlyRepository emissionMonthlyRepository;
 
     // 등록
     @Transactional
@@ -95,6 +100,7 @@ public class VehicleService {
                         .operationDistance(
                                 dto.getOperationDistance() != null ? dto.getOperationDistance() : BigDecimal.ZERO)
                         .remark(dto.getRemark())
+                        .calcBaseDate(parseCalcBaseDate(dto.getCalcBaseDate()))
                         .build());
 
         // Vehicle과 OperationPurpose 매핑
@@ -197,8 +203,8 @@ public class VehicleService {
 
         if (dto.getPurposeId() != null) {
 
-            OperationPurpose purpose =
-                    operationPurposeRepository.findById(dto.getPurposeId())
+            OperationPurpose purpose
+                    = operationPurposeRepository.findById(dto.getPurposeId())
                             .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
             // 기존 목적 종료
             vehicleOperationPurposeMapRepository
@@ -213,16 +219,17 @@ public class VehicleService {
             );
         }
 
-        VehicleOperationPurposeMap currentMap =
-                newMap != null
+        VehicleOperationPurposeMap currentMap
+                = newMap != null
                         ? newMap
                         : vehicleOperationPurposeMapRepository
-                        .findByVehicleAndEndDateIsNull(vehicle)
-                        .orElse(null);
+                                .findByVehicleAndEndDateIsNull(vehicle)
+                                .orElse(null);
 
         return VehicleResponseDto.fromEntity(vehicle, currentMap);
 
     }
+
     // 전체 수정
     @Transactional
     public List<VehicleResponseDto> updateMultiple(List<VehicleRequestDto> dtoList) {
@@ -237,6 +244,16 @@ public class VehicleService {
     public void deleteSingle(Long id) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("차량 id 없음 = " + id));
+
+        // [보호] Nice/S1 로그에서 사용 중인 차량인지 확인
+        boolean hasDailyLog = emissionDailyRepository.existsByVehicle(vehicle);
+        boolean hasMonthlyLog = emissionMonthlyRepository.existsByVehicle(vehicle);
+
+        if (hasDailyLog || hasMonthlyLog) {
+            throw new IllegalArgumentException(
+                    "해당 차량(" + vehicle.getCarNumber() + ")은 Nice/S1 로그에서 사용 중이므로 삭제할 수 없습니다. "
+            );
+        }
 
         // 현재 운행목적 매핑 종료 (이력 관리)
         vehicleOperationPurposeMapRepository
@@ -273,5 +290,17 @@ public class VehicleService {
             throw new IllegalArgumentException("운행목적 id 유효하지 않음");
         }
 
+    }
+
+    // calcBaseDate 파싱 헬퍼 메서드
+    private LocalDate parseCalcBaseDate(String calcBaseDate) {
+        if (calcBaseDate == null || calcBaseDate.trim().isEmpty()) {
+            return null; // DB DEFAULT값 (1900-01-01) 사용
+        }
+        try {
+            return LocalDate.parse(calcBaseDate.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (Exception e) {
+            return null; // 파싱 실패 시 null -> DB DEFAULT값 사용
+        }
     }
 }

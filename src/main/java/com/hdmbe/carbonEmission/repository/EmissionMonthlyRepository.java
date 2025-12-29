@@ -27,6 +27,9 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
     // 특정 연도 전체 삭제
     void deleteByYear(int year);
 
+    // 특정 차량의 로그 존재 여부 확인
+    boolean existsByVehicle(Vehicle vehicle);
+
     // 차량, 연도, 월 조건으로 데이터 단건 조회
     Optional<CarbonEmissionMonthlyLog> findByVehicleAndYearAndMonth(Vehicle vehicle, int year, int month);
 
@@ -146,16 +149,4 @@ ORDER BY m.month
     void deleteByYearAndSource(@Param("year") int year,
             @Param("source") String source);
 
-    }
-
-    
-             
-             
-            
-            
-             
-             
-                
-    
-    
-    
+}
