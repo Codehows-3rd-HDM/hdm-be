@@ -149,7 +149,7 @@ public class OperationPurposeService {
         // Scope 파싱 (문자열 "1" -> 숫자 1)
         int scope = parseScope(scopeStr);
 
-        return operationPurposeRepository.findByPurposeName(name)
+        return operationPurposeRepository.findByPurposeNameAndDefaultScope(name, scope)
                 .orElseGet(() -> operationPurposeRepository.save(
                         OperationPurpose.builder().purposeName(name).defaultScope(scope).build()));
     }

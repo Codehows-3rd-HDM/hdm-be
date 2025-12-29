@@ -30,7 +30,7 @@ public class ExcelDownBaseInfoDto {
     private BigDecimal efficiency; // 연비
     private BigDecimal emissionFactor;// 탄소배출계수
 
-    // 🔥 생성자 순서를 쿼리 순서와 100% 일치시킴
+    // 생성자 순서를 쿼리 순서와 100% 일치시킴
     public ExcelDownBaseInfoDto(
             int idx,
             String carNumber,

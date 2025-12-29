@@ -34,5 +34,5 @@ public interface OperationPurposeRepository extends JpaRepository<OperationPurpo
             @Param("keyword") String keyword,
             Pageable pageable
     );
-    Optional<OperationPurpose> findByPurposeName(String purposeName);
+    Optional<OperationPurpose> findByPurposeNameAndDefaultScope(String purposeName, Integer defaultScope);
 }

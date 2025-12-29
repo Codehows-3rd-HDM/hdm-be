@@ -42,4 +42,7 @@ public class ExcelUpBaseInfoDto {
 
     // 5. 거리 (일단 프론트에서 거리 하나로 받은 다음에 operationDistance, oneWayDistance 나눠서 저장)
     private BigDecimal distanceInput;
+
+    private String calcBaseDate;
+
 }
