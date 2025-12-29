@@ -4,17 +4,12 @@ import com.hdmbe.carbonEmission.entity.CarbonEmissionFactor;
 import com.hdmbe.carbonEmission.repository.CarbonEmissionFactorRepository;
 import com.hdmbe.commonModule.constant.FuelType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import com.hdmbe.carbonEmission.dto.CarbonEmissionFactorResponse;
 import com.hdmbe.carbonEmission.dto.CarbonEmissionFactorUpdateRequest;
-import com.hdmbe.carbonEmission.entity.CarbonEmissionFactor;
-import com.hdmbe.carbonEmission.repository.CarbonEmissionFactorRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
