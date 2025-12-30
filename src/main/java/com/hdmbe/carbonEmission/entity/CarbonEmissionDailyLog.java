@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 
 
@@ -29,7 +28,7 @@ public class CarbonEmissionDailyLog extends BaseTimeEntity {
 //    @Column(name = "car_id", nullable = false)
 //    private Long carId;
 
-    // ✅ [수정] 객체(Entity)와 직접 연결!
+    // [수정] 객체(Entity)와 직접 연결!
     @ManyToOne(fetch = FetchType.LAZY) // 필요할 때만 조회 (성능 최적화)
     @JoinColumn(name = "car_id", nullable = false) // 실제 DB 컬럼명 지정
     private Vehicle vehicle;

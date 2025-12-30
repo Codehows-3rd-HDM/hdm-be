@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +65,26 @@ public class EmissionTargetService {
         List<Integer> years = emissionMonthlyRepository.findDistinctYears();
         System.out.println("[EmissionTargetService] 실적 존재 연도 조회 결과=" + years);
         return years;
+    }
+
+    // 실적 + 목표 모두 포함하는 연도 조회
+    @Transactional(readOnly = true)
+    public List<Integer> getAvailableAnalysisYears() {
+        // 1. 실적 있는 연도
+        List<Integer> actualYears = emissionMonthlyRepository.findDistinctYears();
+
+        // 2. 목표 있는 연도
+        List<Integer> targetYears = emissionTargetRepository.findDistinctYears();
+
+        // 3. 두 리스트 합치기 (Set으로 중복 제거: 2025가 양쪽에 있어도 하나만 남음)
+        Set<Integer> uniqueYears = new HashSet<>();
+        uniqueYears.addAll(actualYears);
+        uniqueYears.addAll(targetYears);
+
+        // 4. 내림차순 정렬 (2026, 2025, 2024... 순서)
+        return uniqueYears.stream()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
