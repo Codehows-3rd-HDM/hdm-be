@@ -46,7 +46,7 @@ public class SecurityConfig {
                         // [SUPERADMIN, ADMIN]
                         .requestMatchers( "/admin/excel/upload/**").hasAnyRole("SUPERADMIN", "ADMIN")
                         // [ALL]
-                        .requestMatchers("/login", "/logout", "/admin/**", "/view/company").permitAll()
+                        .requestMatchers("/login", "/logout", "/admin/**", "/view/**").permitAll()
                         .anyRequest().authenticated())
 
                 // 5. JWT 필터 끼워넣기 (Username...Filter 앞에 실행)
@@ -58,13 +58,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔐 비밀번호 암호화 빈
+    // 비밀번호 암호화 빈
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();   //비밀번호 암호화
     }
 
-    // 🔐 인증 관리자 빈
+    // 인증 관리자 빈
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception
     {
