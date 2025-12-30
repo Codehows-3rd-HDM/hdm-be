@@ -10,6 +10,7 @@ import java.util.List;
 public interface FuelTypeRepository extends JpaRepository<CarbonEmissionMonthlyLog, Long> {
 
     // 파이 차트
+    // 주의: defaultScope가 null인 경우, Scope1(1)과 Scope3(3)만 포함하고 기타(4)는 제외
     @Query("""
 SELECT
     cm.fuelType,
@@ -19,15 +20,15 @@ JOIN m.vehicle v
 JOIN v.carModel cm
 WHERE (:year IS NULL OR m.year = :year)
   AND (:month IS NULL OR m.month = :month)
-  AND (
-      :defaultScope IS NULL
-      OR EXISTS (
-          SELECT 1
-          FROM VehicleOperationPurposeMap vmap
-          WHERE vmap.vehicle = v
-            AND vmap.endDate IS NULL
-            AND vmap.operationPurpose.defaultScope = :defaultScope
-      )
+  AND EXISTS (
+      SELECT 1
+      FROM VehicleOperationPurposeMap vmap
+      WHERE vmap.vehicle = v
+        AND vmap.endDate IS NULL
+        AND (
+            :defaultScope IS NOT NULL AND vmap.operationPurpose.defaultScope = :defaultScope
+            OR :defaultScope IS NULL AND vmap.operationPurpose.defaultScope IN (1, 3)
+        )
   )
 GROUP BY cm.fuelType
 """)
@@ -38,6 +39,7 @@ GROUP BY cm.fuelType
     );
 
     // 그래프
+    // 주의: defaultScope가 null인 경우, Scope1(1)과 Scope3(3)만 포함하고 기타(4)는 제외
     @Query("""
 SELECT
     cm.fuelType,
@@ -47,15 +49,15 @@ FROM CarbonEmissionMonthlyLog m
 JOIN m.vehicle v
 JOIN v.carModel cm
 WHERE m.year = :year
-  AND (
-      :defaultScope IS NULL
-      OR EXISTS (
-          SELECT 1
-          FROM VehicleOperationPurposeMap vmap
-          WHERE vmap.vehicle = v
-            AND vmap.endDate IS NULL
-            AND vmap.operationPurpose.defaultScope = :defaultScope
-      )
+  AND EXISTS (
+      SELECT 1
+      FROM VehicleOperationPurposeMap vmap
+      WHERE vmap.vehicle = v
+        AND vmap.endDate IS NULL
+        AND (
+            :defaultScope IS NOT NULL AND vmap.operationPurpose.defaultScope = :defaultScope
+            OR :defaultScope IS NULL AND vmap.operationPurpose.defaultScope IN (1, 3)
+        )
   )
 GROUP BY cm.fuelType, m.month
 ORDER BY m.month
