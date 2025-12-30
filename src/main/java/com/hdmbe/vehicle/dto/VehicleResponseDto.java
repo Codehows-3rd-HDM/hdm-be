@@ -65,6 +65,15 @@ public class VehicleResponseDto {
                 ? vehicle.getOperationDistance()
                 : company.getOneWayDistance();
 
+        // calcBaseDate가 1900-01-01이면 null로 반환
+        String calcBaseDateStr = null;
+        if (vehicle.getCalcBaseDate() != null) {
+            String dateStr = vehicle.getCalcBaseDate().toString();
+            if (!"1900-01-01".equals(dateStr)) {
+                calcBaseDateStr = dateStr;
+            }
+        }
+
         return VehicleResponseDto.builder()
                 .id(vehicle.getId())
                 .carNumber(vehicle.getCarNumber())
@@ -81,7 +90,7 @@ public class VehicleResponseDto {
                 .carCategoryId(carCategory.getId())
                 .fuelType(carModel.getFuelType())
                 .remark(vehicle.getRemark())
-                .calcBaseDate(vehicle.getCalcBaseDate() != null ? vehicle.getCalcBaseDate().toString() : null)
+                .calcBaseDate(calcBaseDateStr)
                 .build();
     }
 }

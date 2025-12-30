@@ -130,13 +130,48 @@ public class VehicleService {
 
         Pageable mappedPageable = remapVehicleSort(pageable);
 
-        Page<Vehicle> result = vehicleRepository.search(
-                carNumber,
-                purposeId,
-                companyName,
-                driverMemberId,
-                keyword,
-                mappedPageable);
+        // 정렬 키에 따라 다른 쿼리 호출
+        Page<Vehicle> result;
+        if (pageable.getSort().isSorted()) {
+            String sortProperty = pageable.getSort().stream()
+                    .map(org.springframework.data.domain.Sort.Order::getProperty)
+                    .findFirst()
+                    .orElse("");
+
+            if ("operationPurposeName".equals(sortProperty) || "purposeId".equals(sortProperty)) {
+                result = vehicleRepository.searchOrderByOperationPurpose(
+                        carNumber,
+                        purposeId,
+                        companyName,
+                        driverMemberId,
+                        keyword,
+                        mappedPageable);
+            } else if ("defaultScope".equals(sortProperty)) {
+                result = vehicleRepository.searchOrderByScope(
+                        carNumber,
+                        purposeId,
+                        companyName,
+                        driverMemberId,
+                        keyword,
+                        mappedPageable);
+            } else {
+                result = vehicleRepository.search(
+                        carNumber,
+                        purposeId,
+                        companyName,
+                        driverMemberId,
+                        keyword,
+                        mappedPageable);
+            }
+        } else {
+            result = vehicleRepository.search(
+                    carNumber,
+                    purposeId,
+                    companyName,
+                    driverMemberId,
+                    keyword,
+                    mappedPageable);
+        }
 
         System.out.println("[VehicleService] 차량 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -307,8 +342,10 @@ public class VehicleService {
                 new Sort.Order(direction, "carModel.carCategory.categoryName");
             case "fuelType" ->
                 new Sort.Order(direction, "carModel.fuelType");
-            case "operationPurposeName", "defaultScope" ->
-                null; // Vehicle 엔티티에 직접 매핑되지 않아 정렬 제외
+            case "purposeId", "operationPurposeName" ->
+                new Sort.Order(direction, "op.id");
+            case "defaultScope" ->
+                new Sort.Order(direction, "op.defaultScope");
             default ->
                 order;
         };
