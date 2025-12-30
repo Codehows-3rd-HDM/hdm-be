@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     @Query("""
-    SELECT DISTINCT c
+    SELECT c
     FROM Company c
     LEFT JOIN CompanySupplyTypeMap cstm
         ON cstm.company = c
@@ -49,4 +49,3 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findByCompanyName(String companyName);
 
 }
-

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -46,16 +47,15 @@ public class SupplyTypeService {
     @Transactional(readOnly = true)
     public Page<SupplyTypeResponseDto> search(
             String supplyTypeName,
-            int page,
-            int size) {
+            Pageable pageable) {
         System.out.println("[SupplyTypeService] 공급유형 검색 요청 - supplyTypeName: " + supplyTypeName
-                + ", page: " + page + ", size: " + size);
+                + ", pageable: " + pageable);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable mappedPageable = remapSupplyTypeSort(pageable);
 
         Page<SupplyType> result = supplyTypeRepository.search(
                 supplyTypeName,
-                pageable);
+                mappedPageable);
 
         System.out.println("[SupplyTypeService] 공급유형 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -131,6 +131,35 @@ public class SupplyTypeService {
     public SupplyType getOrCreate(String name) {
         return supplyTypeRepository.findBySupplyTypeName(name)
                 .orElseGet(() -> supplyTypeRepository.save(
-                        SupplyType.builder().supplyTypeName(name).build()));
+                SupplyType.builder().supplyTypeName(name).build()));
+    }
+
+    private Pageable remapSupplyTypeSort(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        List<Sort.Order> mappedOrders = pageable.getSort().stream()
+                .map(this::mapSupplyTypeOrder)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (mappedOrders.isEmpty()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
+    }
+
+    private Sort.Order mapSupplyTypeOrder(Sort.Order order) {
+        String property = order.getProperty();
+        Sort.Direction direction = order.getDirection();
+
+        return switch (property) {
+            case "supplyType" ->
+                new Sort.Order(direction, "supplyTypeName");
+            default ->
+                order;
+        };
     }
 }

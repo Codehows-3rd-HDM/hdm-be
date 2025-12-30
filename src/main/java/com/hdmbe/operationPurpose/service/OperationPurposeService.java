@@ -16,6 +16,7 @@ import com.hdmbe.operationPurpose.repository.OperationPurposeRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -49,21 +50,18 @@ public class OperationPurposeService {
             String purposeName,
             Integer scope,
             String keyword,
-            int page,
-            int size) {
+            Pageable pageable) {
         System.out.println("[OperationPurposeService] 운행목적 검색 요청 - purposeName: " + purposeName
                 + ", scope: " + scope + ", keyword: " + keyword
-                + ", page: " + page + ", size: " + size);
+                + ", pageable: " + pageable);
 
-        int pageSize = Math.min(size, 50);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable mappedPageable = remapOperationPurposeSort(pageable);
 
         return operationPurposeRepository.search(
                 purposeName,
                 scope,
                 keyword,
-                pageable)
+                mappedPageable)
                 .map(OperationPurposeResponseDto::fromEntity);
     }
 
@@ -140,8 +138,9 @@ public class OperationPurposeService {
     }
 
     private void validateScope(Integer scope) {
-        if (scope < 1 || scope > 4)
+        if (scope < 1 || scope > 4) {
             throw new IllegalArgumentException("Scope 값이 올바르지 않습니다.");
+        }
     }
 
     @Transactional
@@ -151,7 +150,7 @@ public class OperationPurposeService {
 
         return operationPurposeRepository.findByPurposeNameAndDefaultScope(name, scope)
                 .orElseGet(() -> operationPurposeRepository.save(
-                        OperationPurpose.builder().purposeName(name).defaultScope(scope).build()));
+                OperationPurpose.builder().purposeName(name).defaultScope(scope).build()));
     }
 
     private int parseScope(String scopeStr) {
@@ -167,8 +166,8 @@ public class OperationPurposeService {
             // 3. 유효 값 체크 (1, 3, 4만 허용! 2는 안 됨!)
             if (scope != 1 && scope != 3 && scope != 4) {
                 throw new IllegalArgumentException(
-                        "지원하지 않는 Scope입니다. (입력된 값: " + scope + ")\n" +
-                                "※ 허용된 값: 1, 3, 4 / Scope 2는 지원하지 않습니다.");
+                        "지원하지 않는 Scope입니다. (입력된 값: " + scope + ")\n"
+                        + "※ 허용된 값: 1, 3, 4 / Scope 2는 지원하지 않습니다.");
             }
 
             return scope;
@@ -177,6 +176,37 @@ public class OperationPurposeService {
             // 4. 숫자가 아닐 때
             throw new IllegalArgumentException("Scope는 숫자(1, 3, 4)로만 입력해야 합니다. (입력된 값: " + scopeStr + ")");
         }
+    }
+
+    private Pageable remapOperationPurposeSort(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        List<Sort.Order> mappedOrders = pageable.getSort().stream()
+                .map(this::mapOperationPurposeOrder)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (mappedOrders.isEmpty()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
+    }
+
+    private Sort.Order mapOperationPurposeOrder(Sort.Order order) {
+        String property = order.getProperty();
+        Sort.Direction direction = order.getDirection();
+
+        return switch (property) {
+            case "purpose" ->
+                new Sort.Order(direction, "purposeName");
+            case "scope" ->
+                new Sort.Order(direction, "defaultScope");
+            default ->
+                order;
+        };
     }
 
 }

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,21 +52,20 @@ public class CarModelService {
             Long carCategoryId,
             FuelType fuelType,
             String keyword,
-            int page,
-            int size
+            Pageable pageable
     ) {
         System.out.println("[CarModelService] 차종 검색 요청 - parentCategoryId: " + parentCategoryId
                 + ", carCategoryId: " + carCategoryId + ", fuelType: " + fuelType
-                + ", keyword: " + keyword + ", page: " + page + ", size: " + size);
+                + ", keyword: " + keyword + ", pageable: " + pageable);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable mappedPageable = remapCarModelSort(pageable);
 
         Page<CarModel> result = carModelRepository.search(
                 parentCategoryId,
                 carCategoryId,
                 fuelType,
                 keyword,
-                pageable
+                mappedPageable
         );
 
         System.out.println("[CarModelService] 차종 검색 결과 - 총 개수: " + result.getTotalElements()
@@ -84,10 +84,9 @@ public class CarModelService {
         }
 
         CarModel model = carModelRepository.findByCarCategoryId(dto.getCarCategoryId())
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
-
+                .orElseThrow(()
+                        -> new EntityNotFoundException(
+                        "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
 
         if (dto.getFuelType() != null) {
             model.setFuelType(dto.getFuelType());
@@ -110,9 +109,9 @@ public class CarModelService {
                     }
 
                     CarModel model = carModelRepository.findByCarCategoryId(dto.getCarCategoryId())
-                            .orElseThrow(() ->
-                                    new EntityNotFoundException(
-                                            "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
+                            .orElseThrow(()
+                                    -> new EntityNotFoundException(
+                                    "차종 없음 (carCategoryId=" + dto.getCarCategoryId() + ")"));
 
                     if (dto.getFuelType() != null) {
                         model.setFuelType(dto.getFuelType());
@@ -145,7 +144,41 @@ public class CarModelService {
             throw new IllegalArgumentException("카테고리Id 유효하지 않음");
         }
     }
+
     private void validateDelete(CarModelRequestDto dto) {
 
+    }
+
+    private Pageable remapCarModelSort(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        List<Sort.Order> mappedOrders = pageable.getSort().stream()
+                .map(this::mapCarModelOrder)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (mappedOrders.isEmpty()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
+    }
+
+    private Sort.Order mapCarModelOrder(Sort.Order order) {
+        String property = order.getProperty();
+        Sort.Direction direction = order.getDirection();
+
+        return switch (property) {
+            case "parentCategoryName" ->
+                new Sort.Order(direction, "carCategory.parentCategory.categoryName");
+            case "carCategoryName" ->
+                new Sort.Order(direction, "carCategory.categoryName");
+            case "fuelType" ->
+                new Sort.Order(direction, "fuelType");
+            default ->
+                order;
+        };
     }
 }

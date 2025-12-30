@@ -1,14 +1,27 @@
 package com.hdmbe.vehicle.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
 import com.hdmbe.vehicle.service.VehicleService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/admin/vehicle")
@@ -31,16 +44,14 @@ public class VehicleController {
             @RequestParam(required = false) String companyName,
             @RequestParam(required = false) String driverMemberId,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size) {
+            @PageableDefault(size = 15) Pageable pageable) {
         return vehicleService.search(
                 carNumber,
                 purposeName,
                 companyName,
                 driverMemberId,
                 keyword,
-                page,
-                size);
+                pageable);
     }
 
     // 단일 수정

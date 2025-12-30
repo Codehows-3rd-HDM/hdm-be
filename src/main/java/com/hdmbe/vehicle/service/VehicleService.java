@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.List;
 
 @Service
@@ -121,14 +122,13 @@ public class VehicleService {
             String companyName,
             String driverMemberId,
             String keyword,
-            int page,
-            int size) {
+            Pageable pageable) {
         System.out.println("[VehicleService] 차량 검색 요청 - carNumber: " + carNumber
                 + ", purposeId: " + purposeId + ", companyName: " + companyName
                 + ", driverMemberId: " + driverMemberId + ", keyword: " + keyword
-                + ", page: " + page + ", size: " + size);
+                + ", pageable: " + pageable);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable mappedPageable = remapVehicleSort(pageable);
 
         Page<Vehicle> result = vehicleRepository.search(
                 carNumber,
@@ -136,7 +136,7 @@ public class VehicleService {
                 companyName,
                 driverMemberId,
                 keyword,
-                pageable);
+                mappedPageable);
 
         System.out.println("[VehicleService] 차량 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -273,6 +273,45 @@ public class VehicleService {
         for (Long id : ids) {
             deleteSingle(id);
         }
+    }
+
+    private Pageable remapVehicleSort(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        List<Sort.Order> mappedOrders = pageable.getSort().stream()
+                .map(this::mapVehicleOrder)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (mappedOrders.isEmpty()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
+    }
+
+    private Sort.Order mapVehicleOrder(Sort.Order order) {
+        String property = order.getProperty();
+        Sort.Direction direction = order.getDirection();
+
+        return switch (property) {
+            case "carModelName" ->
+                new Sort.Order(direction, "carName");
+            case "companyName" ->
+                new Sort.Order(direction, "company.companyName");
+            case "parentCategoryName" ->
+                new Sort.Order(direction, "carModel.carCategory.parentCategory.categoryName");
+            case "carCategoryName" ->
+                new Sort.Order(direction, "carModel.carCategory.categoryName");
+            case "fuelType" ->
+                new Sort.Order(direction, "carModel.fuelType");
+            case "operationPurposeName", "defaultScope" ->
+                null; // Vehicle 엔티티에 직접 매핑되지 않아 정렬 제외
+            default ->
+                order;
+        };
     }
 
     // 유효성 검사

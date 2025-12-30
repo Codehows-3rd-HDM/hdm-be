@@ -5,6 +5,8 @@ import com.hdmbe.company.dto.CompanyResponseDto;
 import com.hdmbe.company.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +33,7 @@ public class CompanyController {
             @RequestParam(required = false) String supplyCustomerName,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
+            @PageableDefault(size = 15) Pageable pageable
     ) {
         return companyService.search(
                 companyName,
@@ -40,8 +41,7 @@ public class CompanyController {
                 supplyCustomerName,
                 address,
                 keyword,
-                page,
-                size
+                pageable
         );
     }
 

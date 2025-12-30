@@ -1,7 +1,6 @@
 package com.hdmbe.company.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.hdmbe.company.dto.CompanyRequestDto;
 import com.hdmbe.company.dto.CompanyResponseDto;
@@ -15,9 +14,7 @@ import com.hdmbe.SupplyCustomer.entity.SupplyCustomer;
 import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.supplyType.repository.SupplyTypeRepository;
 import com.hdmbe.SupplyCustomer.repository.SupplyCustomerRepository;
-import com.hdmbe.supplyType.service.SupplyTypeService;
 import com.hdmbe.vehicle.entity.Vehicle;
-import com.hdmbe.vehicle.repository.VehicleRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -110,16 +108,15 @@ public class CompanyService {
             String supplyCustomerName,
             String address,
             String keyword,
-            int page,
-            int size) {
+            Pageable pageable) {
         System.out.println("[CompanyService] 협력사 검색 요청 - companyName: " + companyName
                 + ", supplyTypeName: " + supplyTypeName
                 + ", supplyCustomerName: " + supplyCustomerName
                 + ", address: " + address
                 + ", keyword: " + keyword
-                + ", page: " + page + ", size: " + size);
+                + ", pageable: " + pageable);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable mappedPageable = remapCompanySort(pageable);
 
         Page<Company> result = companyRepository.search(
                 companyName,
@@ -127,7 +124,7 @@ public class CompanyService {
                 supplyCustomerName,
                 address,
                 keyword,
-                pageable);
+                mappedPageable);
 
         System.out.println("[CompanyService] 협력사 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -162,10 +159,12 @@ public class CompanyService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("회사 없음"));
 
-        if (dto.getCompanyName() != null)
+        if (dto.getCompanyName() != null) {
             company.setCompanyName(dto.getCompanyName());
-        if (dto.getOneWayDistance() != null)
+        }
+        if (dto.getOneWayDistance() != null) {
             company.setOneWayDistance(dto.getOneWayDistance());
+        }
 
         List<Vehicle> vehicles = vehicleRepository.findByCompany(company);
         for (Vehicle v : vehicles) {
@@ -173,8 +172,9 @@ public class CompanyService {
         }
 
         // 비고
-        if (dto.getRemark() != null)
+        if (dto.getRemark() != null) {
             company.setRemark(dto.getRemark());
+        }
 
         if (dto.getRegion() != null || dto.getDetailAddress() != null) {
             company.setAddress(dto.getRegion() + " " + dto.getDetailAddress());
@@ -258,6 +258,37 @@ public class CompanyService {
         }
     }
 
+    private Pageable remapCompanySort(Pageable pageable) {
+        if (pageable == null || pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        List<Sort.Order> mappedOrders = pageable.getSort().stream()
+                .map(this::mapCompanyOrder)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (mappedOrders.isEmpty()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
+    }
+
+    private Sort.Order mapCompanyOrder(Sort.Order order) {
+        String property = order.getProperty();
+        Sort.Direction direction = order.getDirection();
+
+        return switch (property) {
+            case "supplyTypeName", "customerName" ->
+                null; // Collection 필드로 직렬화 불가능하므로 정렬 제외
+            case "region" ->
+                new Sort.Order(direction, "address");
+            default ->
+                order;
+        };
+    }
+
     private void validateCreate(CompanyRequestDto request) {
 
         if (request.getCompanyName() == null || request.getCompanyName().isBlank()) {
@@ -292,10 +323,12 @@ public class CompanyService {
             throw new IllegalArgumentException("편도거리는 0보다 커야 함");
         }
 
-        if (request.getRegion() != null && request.getRegion().isBlank())
+        if (request.getRegion() != null && request.getRegion().isBlank()) {
             throw new IllegalArgumentException("지역 공백 불가");
+        }
 
-        if (request.getDetailAddress() != null && request.getDetailAddress().isBlank())
+        if (request.getDetailAddress() != null && request.getDetailAddress().isBlank()) {
             throw new IllegalArgumentException("상세주소 공백 불가");
+        }
     }
 }

@@ -36,7 +36,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     boolean existsByCompany(Company company);
 
     @Query("""
-        SELECT DISTINCT v
+        SELECT v
         FROM Vehicle v
         LEFT JOIN VehicleOperationPurposeMap vop
             ON vop.vehicle = v
