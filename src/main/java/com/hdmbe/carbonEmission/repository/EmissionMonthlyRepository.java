@@ -1,10 +1,13 @@
 package com.hdmbe.carbonEmission.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
+import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
+import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -90,25 +93,44 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
     void deleteByYearAndSource(@Param("year") int year,
             @Param("source") String source);
 
-    // [신규] 협력사별 탄소 배출량 합계 조회 (DTO 반환)
+    // 협력사별 탄소 배출량 합계 조회 (DTO 반환)
     // year는 필수, month는 null이면 전체 조회 / 값이 있으면 해당 월 조회
-    @Query("SELECT new com.hdmbe.inquiry.dto.ViewCompanyResponseDto("
-            + "  c.id, "
-            + "  c.companyName, "
-            + "  c.address, "
-            + "  SUM(m.totalEmission) "
-            + ") "
-            + "FROM CarbonEmissionMonthlyLog m "
-            + "JOIN m.vehicle v "
-            + "JOIN v.company c "
-            + "WHERE m.year = :year "
-            + "AND (:month IS NULL OR m.month = :month) "
-            + // 검색어: 회사명 또는 주소 검색
-            "AND (:keyword IS NULL OR c.companyName LIKE %:keyword% OR c.address LIKE %:keyword%) "
-            + "GROUP BY c.id, c.companyName, c.address")
+    @Query("""
+    SELECT new com.hdmbe.inquiry.dto.ViewCompanyResponseDto(
+    c.id,
+    c.companyName,
+    c.address,
+    SUM(m.totalEmission)
+    )
+    FROM CarbonEmissionMonthlyLog m
+    JOIN m.vehicle v
+    JOIN v.company c
+    WHERE m.year = :year
+      AND (:month IS NULL OR m.month = :month)
+
+  /* Scope 4 제외 (해당 월 말 기준 유효한 매핑 중 scope != 4 존재) */
+     AND EXISTS (
+      SELECT 1
+      FROM VehicleOperationPurposeMap vopm
+      JOIN vopm.operationPurpose op
+      WHERE vopm.vehicle = v
+        AND op.defaultScope != 4
+        AND (vopm.endDate IS NULL OR vopm.endDate >= :targetDate)
+  )
+
+  /* 검색어 */
+  AND (
+      :keyword IS NULL
+      OR c.companyName LIKE %:keyword%
+      OR c.address LIKE %:keyword%
+  )
+
+GROUP BY c.id, c.companyName, c.address
+""")
     List<ViewCompanyResponseDto> findEmissionByCompany(
             @Param("year") int year,
             @Param("month") Integer month,
+            @Param("targetDate") LocalDate targetDate,
             @Param("keyword") String keyword
     );
 

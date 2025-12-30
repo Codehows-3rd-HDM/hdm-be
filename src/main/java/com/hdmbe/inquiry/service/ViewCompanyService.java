@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -23,7 +25,6 @@ public class ViewCompanyService {
 
         // 1. 연도 처리 (없으면 DB 최신 연도)
         if (req.getYear() == null) {
-            // ★ 여기서 오류가 났던 겁니다! 반드시 소문자(emissionMonthlyRepository)를 써야 합니다.
             int latestYear = emissionMonthlyRepository.findLatestYear();
             req.setYear(latestYear);
         }
@@ -31,16 +32,24 @@ public class ViewCompanyService {
         // 2. 월 처리 (0 -> 전체)
         Integer targetMonth = (req.getMonth() != null && req.getMonth() == 0) ? null : req.getMonth();
 
+        // 추가. 기준 날짜 계산 (핵심)
+        YearMonth ym =
+                (targetMonth != null)
+                        ? YearMonth.of(req.getYear(), targetMonth)
+                        : YearMonth.of(req.getYear(), 12);
+
+        LocalDate targetDate = ym.atEndOfMonth();
+
         // 3. 키워드 처리
         String targetKeyword = (req.getKeyword() != null && !req.getKeyword().trim().isEmpty())
                 ? req.getKeyword()
                 : null;
 
         // 4. DB 조회 (Scope 파라미터 제거됨)
-        // ★ 대문자 EmissionMonthlyRepository.find...(X) -> 소문자 emissionMonthlyRepository.find...(O)
         List<ViewCompanyResponseDto> stats = emissionMonthlyRepository.findEmissionByCompany(
                 req.getYear(),
                 targetMonth,
+                targetDate,
                 targetKeyword
         );
 
@@ -50,7 +59,7 @@ public class ViewCompanyService {
         return stats;
     }
 
-    // (참고) 비율 계산 메서드 (Service 안에 같이 두세요)
+    // 비율 계산 메서드
     private void calculateRatioAndSort(List<ViewCompanyResponseDto> stats) {
         BigDecimal totalSum = stats.stream()
                 .map(ViewCompanyResponseDto::getTotalEmission)
