@@ -55,7 +55,7 @@ public class ReductionActivityService {
 
     @Transactional(readOnly = true)
     public List<ResponseActivityDto> getActivities(LocalDate periodStart, LocalDate periodEnd) {
-        List<ReductionActivity> activities = reductionActivityRepository.findByPeriodRange(periodStart, periodEnd);
+        List<ReductionActivity> activities = reductionActivityRepository.findWithPhotosByPeriodRange(periodStart, periodEnd);
         return activities.stream()
                 .map(this::toResponseDto)
                 .toList();
@@ -63,13 +63,13 @@ public class ReductionActivityService {
 
     @Transactional(readOnly = true)
     public ResponseActivityDto getActivity(Long id) {
-        ReductionActivity activity = reductionActivityRepository.findById(id)
+        ReductionActivity activity = Optional.ofNullable(reductionActivityRepository.findWithPhotosById(id))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "활동을 찾을 수 없습니다."));
         return toResponseDto(activity);
     }
 
     public Long updateActivity(Long id, CreateActivityDto dto, List<MultipartFile> files) throws Exception {
-        ReductionActivity activity = reductionActivityRepository.findById(id)
+        ReductionActivity activity = Optional.ofNullable(reductionActivityRepository.findWithPhotosById(id))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "활동을 찾을 수 없습니다."));
 
         activity.setPeriodStart(dto.getPeriodStart());
@@ -96,7 +96,8 @@ public class ReductionActivityService {
     }
 
     public void deleteActivity(Long id) {
-        ReductionActivity activity = reductionActivityRepository.findById(id)
+        ReductionActivity activity = Optional.ofNullable(reductionActivityRepository.findById(id)
+                .orElse(null))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "활동을 찾을 수 없습니다."));
 
         reductionActivityRepository.delete(activity);
@@ -112,12 +113,14 @@ public class ReductionActivityService {
         dto.setCostAmount(activity.getCostAmount());
         dto.setExpectedEffect(activity.getExpectedEffect());
 
-        Optional<String> firstPhotoUrl = activity.getPhotos()
+        List<String> photoUrls = activity.getPhotos()
                 .stream()
                 .map(ReductionActivityPhoto::getPhotoUrl)
                 .filter(url -> url != null && !url.isBlank())
-                .findFirst();
-        dto.setImageUrl(firstPhotoUrl.orElse(null));
+                .toList();
+
+        dto.setImageUrl(photoUrls.stream().findFirst().orElse(null));
+        dto.setImageUrls(photoUrls);
         return dto;
     }
 }
