@@ -137,6 +137,16 @@ public class CarModelService {
         if (dto.getCustomEfficiency() == null) {
             throw new IllegalArgumentException("연비 필수");
         }
+        
+        // 중복 체크: 같은 카테고리 + 연료종류 조합이 이미 존재하는지 확인
+        boolean isDuplicate = carModelRepository.findByCarCategoryIdAndFuelType(
+                dto.getCarCategoryId(), 
+                dto.getFuelType()
+        ).isPresent();
+        
+        if (isDuplicate) {
+            throw new IllegalArgumentException("이미 등록된 차종입니다.");
+        }
     }
 
     private void validateUpdate(CarModelRequestDto dto) {
