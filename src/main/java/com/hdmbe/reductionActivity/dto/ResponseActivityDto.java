@@ -5,9 +5,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
-@Getter @Setter
-public class ResponseActivityDto{
+@Getter
+@Setter
+public class ResponseActivityDto {
+
     private Long id;
 
     private LocalDate periodStart;
@@ -23,4 +26,6 @@ public class ResponseActivityDto{
     private String expectedEffect;
 
     private String imageUrl;
+
+    private List<String> imageUrls;
 }
