@@ -9,7 +9,6 @@ import com.hdmbe.operationPurpose.entity.OperationPurpose;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
-import com.hdmbe.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +18,11 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ViewPeriodInquiryService {
+public class ViewPeriodService {
 
     private final EmissionDailyRepository dailyRepository;
     private final VehicleOperationPurposeMapRepository purposeMapRepository;

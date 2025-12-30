@@ -2,13 +2,12 @@ package com.hdmbe.inquiry.controller;
 
 import com.hdmbe.inquiry.dto.ViewPeriodEmissionRequestDto;
 import com.hdmbe.inquiry.dto.ViewPeriodEmissionResponseDto;
-import com.hdmbe.inquiry.service.ViewPeriodInquiryService;
+import com.hdmbe.inquiry.service.ViewPeriodService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ViewPeriodEmissionController {
 
-    private final ViewPeriodInquiryService inquiryService;
+    private final ViewPeriodService inquiryService;
 
     /**
      * 기간별 탄소 배출량 조회 API
