@@ -118,13 +118,48 @@ public class CompanyService {
 
         Pageable mappedPageable = remapCompanySort(pageable);
 
-        Page<Company> result = companyRepository.search(
-                companyName,
-                supplyTypeName,
-                supplyCustomerName,
-                address,
-                keyword,
-                mappedPageable);
+        // 정렬 키에 따라 다른 쿼리 호출
+        Page<Company> result;
+        if (pageable.getSort().isSorted()) {
+            String sortProperty = pageable.getSort().stream()
+                    .map(org.springframework.data.domain.Sort.Order::getProperty)
+                    .findFirst()
+                    .orElse("");
+
+            if ("supplyTypeName".equals(sortProperty)) {
+                result = companyRepository.searchOrderBySupplyType(
+                        companyName,
+                        supplyTypeName,
+                        supplyCustomerName,
+                        address,
+                        keyword,
+                        mappedPageable);
+            } else if ("customerName".equals(sortProperty)) {
+                result = companyRepository.searchOrderByCustomer(
+                        companyName,
+                        supplyTypeName,
+                        supplyCustomerName,
+                        address,
+                        keyword,
+                        mappedPageable);
+            } else {
+                result = companyRepository.search(
+                        companyName,
+                        supplyTypeName,
+                        supplyCustomerName,
+                        address,
+                        keyword,
+                        mappedPageable);
+            }
+        } else {
+            result = companyRepository.search(
+                    companyName,
+                    supplyTypeName,
+                    supplyCustomerName,
+                    address,
+                    keyword,
+                    mappedPageable);
+        }
 
         System.out.println("[CompanyService] 협력사 검색 결과 - 총 개수: " + result.getTotalElements()
                 + ", 현재 페이지 개수: " + result.getNumberOfElements());
@@ -280,8 +315,10 @@ public class CompanyService {
         Sort.Direction direction = order.getDirection();
 
         return switch (property) {
-            case "supplyTypeName", "customerName" ->
-                null; // Collection 필드로 직렬화 불가능하므로 정렬 제외
+            case "supplyTypeName" ->
+                new Sort.Order(direction, "st.supplyTypeName");
+            case "customerName" ->
+                new Sort.Order(direction, "sc.customerName");
             case "region" ->
                 new Sort.Order(direction, "address");
             default ->
