@@ -16,3 +16,11 @@ spring:
 jwt:
   secret.key: hdm_project_secret_key_must_be_very_long_and_secure
   expiration_time: 86400000
+
+#develop
+uploadLocation: C:/uploads
+photoPath: file:///C:/uploads/
+
+#deploy
+#uploadLocation:
+#photoPath: file:///
