@@ -16,7 +16,7 @@ public class ExcelDownBaseInfoDto {
     private String carNumber;         // 차량번호
     private String employeeName;
     private String driverMemberId;          // 사원번호
-    private String companyName;        // 업체명
+    private String companyName;        // 협력사명
     private String supplyTypeName;     // 공급 유형 (가공, 소재)
     private String supplyCustomerName; // 공급 고객 (1차, 2차)
     private Integer defaultScope;             // Scope (1, 3) -> 서비스에서 숫자로 변환함

@@ -103,7 +103,7 @@ public class BaseInfoCheckService {
                 if (v.getCompany() != null) {
                     // (3) 업체명
                     if (!isSame(v.getCompany().getCompanyName(), dto.getCompanyName())) {
-                        changes.add("업체명");
+                        changes.add("협력사명");
                     }
                     // (4) 주소
                     if (!isSame(v.getCompany().getAddress(), dto.getAddress())) {

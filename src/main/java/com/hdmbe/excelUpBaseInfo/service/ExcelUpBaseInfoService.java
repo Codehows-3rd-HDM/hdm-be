@@ -80,7 +80,7 @@ public class ExcelUpBaseInfoService {
 
                     customerEntity = supplyCustomerRepository.findByCustomerName(customerName)
                             .orElseGet(() -> {
-                                // 💡 [핵심] DB에 없으면 바로 생성!
+                                // DB에 없으면 바로 생성!
                                 SupplyCustomer newCustomer = SupplyCustomer.builder()
                                         .customerName(customerName)
                                         // .remark("")
