@@ -54,7 +54,7 @@ public class NiceExcelUpService
         // 2. [검증 및 변환] DTO 리스트 -> Entity 리스트
         List<NiceparkLog> logList = convertAndValidate(dtoList, year, month,  validCarNumbers);
 
-        // ✅ [추가] 데이터가 하나도 없으면 에러 발생시키기!
+        // [추가] 데이터가 하나도 없으면 에러 발생시키기!
         if (logList.isEmpty()) {
             throw new IllegalArgumentException("업로드된 파일에서 유효한 데이터를 하나도 찾을 수 없습니다. (파일 양식이나 내용을 확인해주세요)");
         }

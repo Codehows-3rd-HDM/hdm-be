@@ -17,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,7 +43,7 @@ public class S1ExcelUpService {
         // 2. [검증 및 변환] DTO 리스트 -> Entity 리스트
         List<S1Log> logList = convertAndValidate(dtoList, year, month, validMembers);
 
-        // ✅ [추가] 데이터가 하나도 없으면 에러 발생시키기!
+        // [추가] 데이터가 하나도 없으면 에러
         if (logList.isEmpty()) {
             throw new IllegalArgumentException("업로드된 파일에서 유효한 데이터를 하나도 찾을 수 없습니다. (파일 양식이나 내용을 확인해주세요)");
         }
@@ -57,7 +55,7 @@ public class S1ExcelUpService {
         s1LogRepository.flush();
 
         // 4. [계산 트리거]
-        // ✅ [수정 3] year, month 파라미터 전달 & 결과 리턴
+        // [수정 3] year, month 파라미터 전달 & 결과 리턴
         log.info("{}년 {}월 S1 데이터 업로드 완료 (원본 저장: {}건)", year, month, logList.size());
 
         return s1EmissionService.process(logList, year, month);
@@ -93,7 +91,10 @@ public class S1ExcelUpService {
     // 내부 메서드 2: Entity 변환 및 검증 (메인 컨트롤러 역할 + 유효한 놈만 골라 담기)
     private List<S1Log> convertAndValidate(List<S1ExcelUpDto> dtoList, int targetYear, int targetMonth, Set<Vehicle> validMembers) {
         List<S1Log> resultList = new ArrayList<>();
-        List<String> errorList = new ArrayList<>();
+
+        // 1. 사번으로 바로 찾을 수 있게 Map으로 세팅
+        Map<String, Vehicle> memberMap = validMembers.stream()
+                .collect(Collectors.toMap(Vehicle::getDriverMemberId, v -> v, (v1, v2) -> v1));
 
         for (int i = 0; i < dtoList.size(); i++) {
             S1ExcelUpDto dto = dtoList.get(i);
@@ -101,15 +102,17 @@ public class S1ExcelUpService {
             try {
                 // 1. 날짜 검증 (아까 만든 validateDate 사용)
                 LocalDate accessDate = validateDate(dto.getAccessDate(), targetYear, targetMonth, i);
-                // 2. [수정] 사번으로 차량 조회, Set에 사번이 있나?
-                if (validMembers.stream().noneMatch(m -> m.getDriverMemberId().equals(dto.getMemberId()))) {
+
+                // 2. Map에서 사번으로 차량 정보 가져오기
+                Vehicle validMember = memberMap.get(dto.getMemberId());
+
+                if (validMember == null) {
                     log.warn("미등록 사원 데이터 제외됨: {}", dto.getMemberId());
                     continue;
                 }
 
-                Vehicle validMember = validMembers.stream().filter( m -> m.getDriverMemberId().equals(dto.getMemberId())).findFirst().orElseThrow();
                 if(validMember.getCalcBaseDate() != null && accessDate.isBefore(validMember.getCalcBaseDate())) {
-                    log.warn("미등록 사원 데이터 제외됨: {}", dto.getMemberId());
+                    log.warn("기준일 이전 데이터 제외됨: 사번 {}, 로그날짜 {}", dto.getMemberId(), accessDate);
                     continue;
                 }
 
@@ -124,8 +127,7 @@ public class S1ExcelUpService {
 
             } catch (IllegalArgumentException e) {
                 log.error(e.getMessage());
-                errorList.add(e.getMessage());
-                // 형님 스타일대로 에러 있으면 멈춤!
+                //  에러 있으면 멈춤
                 throw e;
             }
         }
@@ -153,7 +155,7 @@ public class S1ExcelUpService {
         return date;
     }
 
-    // ✅ [신규] 사번(MemberId)으로 차량 찾기
+    // [신규] 사번(MemberId)으로 차량 찾기
 //    private void validateVehicleByMemberId(String memberId) {
 //        vehicleRepository.findByDriverMemberId(memberId)
 //                .orElseThrow(() -> new IllegalArgumentException(
