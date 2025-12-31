@@ -1,7 +1,22 @@
 package com.hdmbe.vehicle.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hdmbe.carModel.entity.CarModel;
 import com.hdmbe.carModel.repository.CarModelRepository;
+import com.hdmbe.carbonEmission.repository.EmissionDailyRepository;
+import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.company.entity.Company;
 import com.hdmbe.company.repository.CompanyRepository;
 import com.hdmbe.operationPurpose.entity.OperationPurpose;
@@ -10,24 +25,11 @@ import com.hdmbe.vehicle.dto.VehicleRequestDto;
 import com.hdmbe.vehicle.dto.VehicleResponseDto;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
-import com.hdmbe.carbonEmission.repository.EmissionDailyRepository;
-import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import com.hdmbe.vehicle.repository.VehicleOperationPurposeMapRepository;
 import com.hdmbe.vehicle.repository.VehicleRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -234,32 +236,38 @@ public class VehicleService {
         }
 
         // 운행목적 변경
+        VehicleOperationPurposeMap existingMap = vehicleOperationPurposeMapRepository
+                .findByVehicleAndEndDateIsNull(vehicle)
+                .orElse(null);
         VehicleOperationPurposeMap newMap = null;
 
         if (dto.getPurposeId() != null) {
 
-            OperationPurpose purpose
-                    = operationPurposeRepository.findById(dto.getPurposeId())
-                            .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
-            // 기존 목적 종료
-            vehicleOperationPurposeMapRepository
-                    .findByVehicleAndEndDateIsNull(vehicle)
-                    .ifPresent(map -> map.setEndDate(LocalDate.now()));
-            // 신규 목적 등록
-            newMap = vehicleOperationPurposeMapRepository.save(
-                    VehicleOperationPurposeMap.builder()
-                            .vehicle(vehicle)
-                            .operationPurpose(purpose)
-                            .build()
-            );
+            // 동일 목적이면 새 매핑 생성/종료 없이 유지
+            boolean samePurpose = existingMap != null
+                    && Objects.equals(existingMap.getOperationPurpose().getId(), dto.getPurposeId());
+
+            if (samePurpose) {
+                newMap = existingMap;
+            } else {
+                OperationPurpose purpose
+                        = operationPurposeRepository.findById(dto.getPurposeId())
+                                .orElseThrow(() -> new EntityNotFoundException("운행목적 없음"));
+                // 기존 목적 종료 (이력 관리)
+                if (existingMap != null) {
+                    existingMap.setEndDate(LocalDate.now());
+                }
+                // 신규 목적 등록
+                newMap = vehicleOperationPurposeMapRepository.save(
+                        VehicleOperationPurposeMap.builder()
+                                .vehicle(vehicle)
+                                .operationPurpose(purpose)
+                                .build()
+                );
+            }
         }
 
-        VehicleOperationPurposeMap currentMap
-                = newMap != null
-                        ? newMap
-                        : vehicleOperationPurposeMapRepository
-                                .findByVehicleAndEndDateIsNull(vehicle)
-                                .orElse(null);
+        VehicleOperationPurposeMap currentMap = newMap != null ? newMap : existingMap;
 
         return VehicleResponseDto.fromEntity(vehicle, currentMap);
 
