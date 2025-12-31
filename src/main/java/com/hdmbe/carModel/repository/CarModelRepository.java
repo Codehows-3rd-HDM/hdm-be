@@ -30,9 +30,9 @@ public interface CarModelRepository
         AND (:fuelType IS NULL OR cm.fuelType = :fuelType)
         AND (
             :keyword IS NULL OR
-            cc.categoryName LIKE %:keyword% OR
-            pc.categoryName LIKE %:keyword% OR
-            cm.fuelType LIKE %:keyword%
+            LOWER(cc.categoryName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(pc.categoryName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+            LOWER(str(cm.fuelType)) LIKE LOWER(CONCAT('%', :keyword, '%'))
         )
     """)
     Page<CarModel> search(
