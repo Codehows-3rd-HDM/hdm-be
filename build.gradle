@@ -41,10 +41,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-    // [Excel 처리를 위한 Apache POI]
-    // 1. 기본 라이브러리 (.xls 등 구버전 지원)
     implementation 'org.apache.poi:poi:5.2.3'
-    // 2. 최신 엑셀 라이브러리 (.xlsx 등 신버전 지원 - 필수!)
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 }
 
