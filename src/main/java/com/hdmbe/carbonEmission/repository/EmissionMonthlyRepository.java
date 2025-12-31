@@ -135,6 +135,9 @@ GROUP BY c.id, c.companyName, c.address
     );
 
     // 저장된 데이터 중 가장 최근 연도(MAX) 조회
-    @Query("SELECT COALESCE(MAX(m.year), 2025) FROM CarbonEmissionMonthlyLog m")
-    int findLatestYear();
+    @Query("SELECT MAX(m.year) FROM CarbonEmissionMonthlyLog m")
+    Integer findLatestYear();
+
+    @Query("SELECT MAX(m.month) FROM CarbonEmissionMonthlyLog m WHERE m.year = :year")
+    Integer findLatestMonthByYear(@Param("year") int year);
 }

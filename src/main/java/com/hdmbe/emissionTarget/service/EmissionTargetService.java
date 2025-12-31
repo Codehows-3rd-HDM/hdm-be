@@ -87,6 +87,13 @@ public class EmissionTargetService {
                 .collect(Collectors.toList());
     }
 
+    public Integer getLatestDataMonth(int year) {
+        // 쿼리 실행
+        Integer latestMonth = emissionMonthlyRepository.findLatestMonthByYear(year);
+        // 데이터가 없으면 0 반환
+        return (latestMonth != null) ? latestMonth : 0;
+    }
+
     @Transactional(readOnly = true)
     public MonthlyActualResponseDto getActuals(int year) {
         System.out.println("[EmissionTargetService] 기준 연도 실적 조회 year=" + year);

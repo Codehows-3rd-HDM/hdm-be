@@ -37,11 +37,4 @@ public class ViewEmissionTargetController {
         // 2. 응답
         return ResponseEntity.ok(response);
     }
-
-    // 연도 목록 조회 API
-    @GetMapping("/years")
-    public ResponseEntity<List<Integer>> getAvailableYears() {
-        List<Integer> years = viewEmissionTargetService.getAvailableYears();
-        return ResponseEntity.ok(years);
-    }
 }

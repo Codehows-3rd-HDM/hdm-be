@@ -18,6 +18,9 @@ public class ViewEmissionTargetDto {
     // 하단 월별 추이 그래프 (막대 + 꺾은선)
     private List<MonthlyComparisonDto> monthlyData;
 
+    // 이번 연도의 최신 데이터가 몇 월까지인지 알려주는 필드
+    private Integer latestMonth;
+
     @Data
     @Builder
     public static class MonthlyComparisonDto {

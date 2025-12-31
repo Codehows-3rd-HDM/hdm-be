@@ -32,6 +32,9 @@ public class ViewEmissionTargetService {
         // 2. 실적 데이터 가져오기
         MonthlyActualResponseDto actual = getActualByType(year, type);
 
+        // [추가] 최신 데이터가 몇 월까지 있는지 가져오기
+        Integer latestMonth = emissionTargetService.getLatestDataMonth(year);
+
         // 3. 월별 데이터 병합
         List<ViewEmissionTargetDto.MonthlyComparisonDto> comparisonList = new ArrayList<>();
 
@@ -77,7 +80,6 @@ public class ViewEmissionTargetService {
 
         // 실적 총합 (Total Actual) - 현재까지 누적된 값
         BigDecimal totalActual = actual.getTotal();
-        // (참고: 팀원 코드가 이미 있는 데이터만 합쳐서 주기 때문에 그대로 쓰면 됨)
 
         // 달성률 계산 (실적 / 목표 * 100)
         Double rate = 0.0;
@@ -92,6 +94,7 @@ public class ViewEmissionTargetService {
                 .totalActual(totalActual)
                 .totalAchievementRate(rate)
                 .monthlyData(comparisonList)
+                .latestMonth(latestMonth)
                 .build();
     }
 
@@ -106,11 +109,5 @@ public class ViewEmissionTargetService {
         if ("Scope1".equalsIgnoreCase(type)) return emissionTargetService.getActualsByScope(year, 1);
         if ("Scope3".equalsIgnoreCase(type)) return emissionTargetService.getActualsByScope(year, 3);
         return emissionTargetService.getActuals(year);
-    }
-
-    // DB에 실적/목표 데이터가 존재하는 연도 목록 조회
-    @Transactional(readOnly = true)
-    public List<Integer> getAvailableYears() {
-        return emissionTargetService.getAvailableAnalysisYears();
     }
 }

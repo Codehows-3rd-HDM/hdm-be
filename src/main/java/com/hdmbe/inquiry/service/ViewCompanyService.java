@@ -25,7 +25,11 @@ public class ViewCompanyService {
 
         // 1. 연도 처리 (없으면 DB 최신 연도)
         if (req.getYear() == null) {
-            int latestYear = emissionMonthlyRepository.findLatestYear();
+            Integer latestYear = emissionMonthlyRepository.findLatestYear();
+            // 데이터가 없으면(null) 시스템의 현재 연도를 가져옴
+            if (latestYear == null) {
+                latestYear = java.time.LocalDate.now().getYear();
+            }
             req.setYear(latestYear);
         }
 
