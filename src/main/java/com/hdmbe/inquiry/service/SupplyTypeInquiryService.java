@@ -60,9 +60,12 @@ public class SupplyTypeInquiryService {
         for (Object[] r : rows) {
 
             String supplyTypeName = (String) r[0];
-            BigDecimal totalEmission = (BigDecimal) r[1];
-            BigDecimal totalDistance = (BigDecimal) r[2];
-            Long tripCount = (Long) r[3];
+            BigDecimal totalEmission = (r[1] == null) ? BigDecimal.ZERO : (BigDecimal) r[1];
+
+            BigDecimal totalDistance = (r[2] == null) ? BigDecimal.ZERO :
+                    BigDecimal.valueOf(((Number) r[2]).doubleValue());
+
+            Long tripCount = (r[3] == null) ? 0L : ((Number) r[3]).longValue();
 
             BigDecimal ratio =
                     grandTotal.signum() == 0

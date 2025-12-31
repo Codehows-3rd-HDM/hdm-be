@@ -12,20 +12,24 @@ public interface SupplyTypeInquiryRepository extends JpaRepository<CarbonEmissio
     @Query("""
     SELECT
         st.supplyTypeName,
-        SUM(m.totalEmission),
+        SUM(d.dailyEmission),
         SUM(v.operationDistance),
-        COUNT(DISTINCT v.id)
-    FROM CarbonEmissionMonthlyLog m
-    JOIN m.vehicle v
+        COUNT(d.id)
+    FROM CarbonEmissionDailyLog d
+    JOIN d.vehicle v
     JOIN v.company c
-    JOIN CompanySupplyTypeMap cmap
-        ON cmap.company = c
-       AND cmap.endDate IS NULL
+    JOIN CompanySupplyTypeMap cmap ON cmap.company = c
     JOIN cmap.supplyType st
-    WHERE m.year = :year
-  AND (:month IS NULL OR m.month = :month)
-GROUP BY st.supplyTypeName
-""")
+    WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
+      AND (:month IS NULL OR MONTH(d.operationDate) = :month)
+      AND cmap.endDate IS NULL
+      AND cmap.id = (
+          SELECT MIN(cm2.id)
+          FROM CompanySupplyTypeMap cm2
+          WHERE cm2.company = c AND cm2.endDate IS NULL
+      )
+    GROUP BY st.supplyTypeName
+    """)
     List<Object[]> findSupplyTypeSummary(
             @Param("year") Integer year,
             @Param("month") Integer month
@@ -34,18 +38,22 @@ GROUP BY st.supplyTypeName
     @Query("""
     SELECT
         st.supplyTypeName,
-        m.month,
-        SUM(m.totalEmission)
-    FROM CarbonEmissionMonthlyLog m
-    JOIN m.vehicle v
+        MONTH(d.operationDate),
+        SUM(d.dailyEmission)
+    FROM CarbonEmissionDailyLog d
+    JOIN d.vehicle v
     JOIN v.company c
-    JOIN CompanySupplyTypeMap cmap
-        ON cmap.company = c
-       AND cmap.endDate IS NULL
+    JOIN CompanySupplyTypeMap cmap ON cmap.company = c
     JOIN cmap.supplyType st
-    WHERE m.year = :year
-    GROUP BY st.supplyTypeName, m.month
-    ORDER BY m.month
+    WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
+      AND cmap.endDate IS NULL
+      AND cmap.id = (
+          SELECT MIN(cm2.id)
+          FROM CompanySupplyTypeMap cm2
+          WHERE cm2.company = c AND cm2.endDate IS NULL
+      )
+    GROUP BY st.supplyTypeName, MONTH(d.operationDate)
+    ORDER BY MONTH(d.operationDate)
     """)
     List<Object[]> findSupplyTypeMonthlyTrend(
             @Param("year") Integer year

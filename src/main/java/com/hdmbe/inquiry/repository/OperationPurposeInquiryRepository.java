@@ -11,22 +11,27 @@ public interface OperationPurposeInquiryRepository extends JpaRepository<CarbonE
 
     // 파이차트
     @Query("""
-SELECT
-    op.purposeName,
-    SUM(m.totalEmission),              
-    COUNT(m.id),                       
-    SUM(v.operationDistance)           
-FROM CarbonEmissionMonthlyLog m
-JOIN m.vehicle v
-JOIN VehicleOperationPurposeMap vmap
-    ON vmap.vehicle = v
-   AND vmap.endDate IS NULL
-JOIN vmap.operationPurpose op
-WHERE (:year IS NULL OR m.year = :year)
-  AND (:month IS NULL OR m.month = :month)
-  AND (:defaultScope IS NULL OR op.defaultScope = :defaultScope)
-GROUP BY op.purposeName
-""")
+    SELECT
+        op.purposeName,
+        SUM(d.dailyEmission),
+        COUNT(d.id),
+        /* 의도대로 모든 운행 로그에 대해 차량의 거리를 합산 (거리 X 횟수) */
+        SUM(v.operationDistance)
+    FROM CarbonEmissionDailyLog d
+    JOIN d.vehicle v
+    JOIN VehicleOperationPurposeMap vmap ON vmap.vehicle = v
+    JOIN vmap.operationPurpose op
+    WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
+      AND (:month IS NULL OR MONTH(d.operationDate) = :month)
+      AND (:defaultScope IS NULL OR op.defaultScope = :defaultScope)
+      AND vmap.endDate IS NULL
+      AND vmap.id = (
+          SELECT MIN(m2.id)
+          FROM VehicleOperationPurposeMap m2
+          WHERE m2.vehicle = v AND m2.endDate IS NULL
+      )
+    GROUP BY op.purposeName
+    """)
     List<Object[]> findPurposeSummary(
             @Param("year") Integer year,
             @Param("month") Integer month,
@@ -37,18 +42,22 @@ GROUP BY op.purposeName
     @Query("""
     SELECT
         op.purposeName,
-        m.month,
-        SUM(m.totalEmission)
-    FROM CarbonEmissionMonthlyLog m
-    JOIN m.vehicle v
-    JOIN VehicleOperationPurposeMap vmap
-        ON vmap.vehicle = v
-       AND vmap.endDate IS NULL
+        MONTH(d.operationDate),
+        SUM(d.dailyEmission)
+    FROM CarbonEmissionDailyLog d
+    JOIN d.vehicle v
+    JOIN VehicleOperationPurposeMap vmap ON vmap.vehicle = v
     JOIN vmap.operationPurpose op
-    WHERE m.year = :year
+    WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
       AND (:defaultScope IS NULL OR op.defaultScope = :defaultScope)
-    GROUP BY op.purposeName, m.month
-    ORDER BY m.month
+      AND vmap.endDate IS NULL
+      AND vmap.id = (
+          SELECT MIN(m2.id)
+          FROM VehicleOperationPurposeMap m2
+          WHERE m2.vehicle = v AND m2.endDate IS NULL
+      )
+    GROUP BY op.purposeName, MONTH(d.operationDate)
+    ORDER BY MONTH(d.operationDate)
     """)
     List<Object[]> findPurposeMonthlyTrend(
             @Param("year") Integer year,

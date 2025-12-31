@@ -58,10 +58,9 @@ public class OperationPurposeInquiryService {
             String purpose = (String) r[0];
             BigDecimal totalEmission = (BigDecimal) r[1];
             Long tripCount = (Long) r[2];
-            BigDecimal oneTripDistance = (BigDecimal) r[3];
 
-            BigDecimal totalDistance =
-                    oneTripDistance.multiply(BigDecimal.valueOf(tripCount));
+            BigDecimal totalDistance = (r[3] == null) ? BigDecimal.ZERO :
+                    BigDecimal.valueOf(((Number) r[3]).doubleValue());
 
             BigDecimal ratio =
                     grandTotal.signum() == 0

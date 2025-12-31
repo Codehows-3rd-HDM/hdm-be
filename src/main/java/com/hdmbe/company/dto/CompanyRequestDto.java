@@ -31,4 +31,3 @@ public class CompanyRequestDto {
     private String customerName; // 공급 고객 이름
 
 }
-

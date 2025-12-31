@@ -10,11 +10,13 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "CARBON_EMISSION_MONTHLY_LOG",
         uniqueConstraints = {
-        @UniqueConstraint(
-        name = "uk_monthly_log",
-        columnNames = {"year", "month", "car_id"})
-    })
-@Getter @Setter @NoArgsConstructor
+                @UniqueConstraint(
+                        name = "uk_monthly_log",
+                        columnNames = {"year", "month", "car_id"})
+        })
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CarbonEmissionMonthlyLog extends BaseTimeEntity {
