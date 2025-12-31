@@ -4,6 +4,7 @@ import com.hdmbe.emissionTarget.dto.CategoryTargetDto;
 import com.hdmbe.emissionTarget.dto.FullTargetResponseDto;
 import com.hdmbe.emissionTarget.dto.MonthlyActualResponseDto;
 import com.hdmbe.emissionTarget.service.EmissionTargetService;
+import com.hdmbe.inquiry.dto.DashboardYearlyDto;
 import com.hdmbe.inquiry.dto.ViewEmissionTargetDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,7 @@ public class ViewEmissionTargetService {
 
     // 메인 메서드
     @Transactional(readOnly = true)
-    public ViewEmissionTargetDto analyzeTargetVsActual(int year, String type)
-    {
+    public ViewEmissionTargetDto analyzeTargetVsActual(int year, String type) {
         // 1. 목표 데이터 가져오기
         FullTargetResponseDto targets = emissionTargetService.getTargets(year);
         CategoryTargetDto targetDto = extractTargetByType(targets, type);
@@ -49,11 +49,15 @@ public class ViewEmissionTargetService {
 
             // 목표값 (없으면 0)
             BigDecimal tVal = targetDto.getMonthly().get(i).getValue();
-            if (tVal == null) tVal = BigDecimal.ZERO;
+            if (tVal == null) {
+                tVal = BigDecimal.ZERO;
+            }
 
             // 실적값 가져오기
             BigDecimal aVal = actual.getMonthly().get(i).getValue();
-            if (aVal == null) aVal = BigDecimal.ZERO;
+            if (aVal == null) {
+                aVal = BigDecimal.ZERO;
+            }
 
             // [로직] 선택한 연도가 미래거나, '올해의 미래 달'인 경우 실적을 0(또는 null)으로 처리
             // (DB에 데이터가 없어서 이미 0일 확률이 높지만, 확실하게 하기 위함)
@@ -100,14 +104,53 @@ public class ViewEmissionTargetService {
 
     private CategoryTargetDto extractTargetByType(FullTargetResponseDto fullDto, String type) {
         // 프론트 탭: "scope1", "scope3", "total" (소문자로 올 수도 있음)
-        if ("Scope1".equalsIgnoreCase(type)) return fullDto.getScope1();
-        if ("Scope3".equalsIgnoreCase(type)) return fullDto.getScope3();
+        if ("Scope1".equalsIgnoreCase(type)) {
+            return fullDto.getScope1();
+        }
+        if ("Scope3".equalsIgnoreCase(type)) {
+            return fullDto.getScope3();
+        }
         return fullDto.getTotal();
     }
 
     private MonthlyActualResponseDto getActualByType(int year, String type) {
-        if ("Scope1".equalsIgnoreCase(type)) return emissionTargetService.getActualsByScope(year, 1);
-        if ("Scope3".equalsIgnoreCase(type)) return emissionTargetService.getActualsByScope(year, 3);
+        if ("Scope1".equalsIgnoreCase(type)) {
+            return emissionTargetService.getActualsByScope(year, 1);
+        }
+        if ("Scope3".equalsIgnoreCase(type)) {
+            return emissionTargetService.getActualsByScope(year, 3);
+        }
         return emissionTargetService.getActuals(year);
+    }
+
+    /**
+     * 대시보드 연간 요약: 최근 N년의 Scope1/Scope3 실적 + 목표 값 반환.
+     */
+    @Transactional(readOnly = true)
+    public List<DashboardYearlyDto> getYearlySummary(int baseYear, int years) {
+        List<DashboardYearlyDto> list = new ArrayList<>();
+        int startYear = baseYear - years + 1;
+
+        for (int year = startYear; year <= baseYear; year++) {
+            FullTargetResponseDto targets = emissionTargetService.getTargets(year);
+
+            CategoryTargetDto scope1Target = targets.getScope1();
+            CategoryTargetDto scope3Target = targets.getScope3();
+            CategoryTargetDto totalTarget = targets.getTotal();
+
+            MonthlyActualResponseDto scope1Actual = emissionTargetService.getActualsByScope(year, 1);
+            MonthlyActualResponseDto scope3Actual = emissionTargetService.getActualsByScope(year, 3);
+
+            list.add(DashboardYearlyDto.builder()
+                    .year(year)
+                    .scope1Actual(scope1Actual.getTotal())
+                    .scope3Actual(scope3Actual.getTotal())
+                    .scope1Target(scope1Target != null ? scope1Target.getTotal() : null)
+                    .scope3Target(scope3Target != null ? scope3Target.getTotal() : null)
+                    .totalTarget(totalTarget != null ? totalTarget.getTotal() : null)
+                    .build());
+        }
+
+        return list;
     }
 }
