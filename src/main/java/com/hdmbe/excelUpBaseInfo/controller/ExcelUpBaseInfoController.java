@@ -1,6 +1,8 @@
 package com.hdmbe.excelUpBaseInfo.controller;
 
+import com.hdmbe.excelUpBaseInfo.dto.BaseInfoCheckDto;
 import com.hdmbe.excelUpBaseInfo.dto.ExcelUpBaseInfoDto;
+import com.hdmbe.excelUpBaseInfo.service.BaseInfoCheckService;
 import com.hdmbe.excelUpBaseInfo.service.ExcelUpBaseInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ExcelUpBaseInfoController {
     private final ExcelUpBaseInfoService excelUpBaseInfoService;
+    private final BaseInfoCheckService baseInfoCheckService;
 
     @PostMapping("/upload/base-info")
     public ResponseEntity<String> uploadBaseInfo(@RequestBody List<ExcelUpBaseInfoDto> dataList) {
@@ -28,4 +31,14 @@ public class ExcelUpBaseInfoController {
 
         return ResponseEntity.ok("기준정보 업로드 완료! (" + dataList.size() + "건)");
     }
+
+    @PostMapping("/upload/base-info/check")
+    public List<BaseInfoCheckDto> checkBaseInfo(@RequestBody List<ExcelUpBaseInfoDto> dtoList)
+    {
+        return baseInfoCheckService.checkDataStatus(dtoList);
+    }
+
+
 }
+
+

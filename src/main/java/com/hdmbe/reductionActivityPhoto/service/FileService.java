@@ -1,0 +1,34 @@
+package com.hdmbe.reductionActivityPhoto.service;
+
+import lombok.extern.java.Log;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.UUID;
+
+@Service
+@Log
+public class FileService {
+    public String uploadFile(String uploadLocation, String originalFileName, byte[] fileData) throws Exception{
+
+        UUID uuid = UUID.randomUUID();
+        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String savedFileName = uuid.toString() + extension;
+        String fileUploadFullUrl = uploadLocation + "/" + savedFileName;
+
+        //디렉토리 유무 확인
+        File targetDir = new File(uploadLocation);
+        if(!targetDir.exists()){
+            if(!targetDir.mkdirs()){
+                log.info("이미지 저장 경로 생성 실패");
+                throw new RuntimeException();
+            }
+        }
+
+        FileOutputStream fos = new FileOutputStream(fileUploadFullUrl);
+        fos.write(fileData);
+        fos.close();
+        return savedFileName;
+    }
+}

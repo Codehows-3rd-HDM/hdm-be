@@ -40,24 +40,22 @@ public class ExcelUploadController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("업로드할 데이터가 없습니다.");
         }
-        try
-        {
-            // 2. 서비스 호출 (삭제->파싱->저장)
-            niceExcelUpService.uploadNiceParkLog(dtoList, year, month);
+        try {
+            // ✅ 서비스로부터 제외된 차량 리스트를 받습니다.
+            List<String> excludedList = niceExcelUpService.uploadNiceParkLog(dtoList, year, month);
 
-            return ResponseEntity.ok("나이스파크 데이터 업로드가 성공적으로 완료되었습니다.");
-        }
-        catch (IOException e)
-        {
-            // 파일 읽기 실패 시
+            String successMsg = "나이스파크 데이터 업로드가 완료되었습니다.";
+
+            // ✅ 제외된 차량이 있다면 메시지 뒤에 덧붙여줍니다.
+            if (excludedList != null && !excludedList.isEmpty()) {
+                String excludedCarsStr = String.join(", ", excludedList);
+                successMsg += "\n(주의: " + excludedCarsStr + " 차량은 임직원 차량으로 판명되어 계산에서 제외되었습니다.)";
+            }
+
+            return ResponseEntity.ok(successMsg);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("엑셀 파일 처리 중 오류가 발생했습니다: " + e.getMessage());
-        }
-        catch (Exception e)
-        {
-            // 그 외 에러 (DB 오류 등)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("업로드 실패: " + e.getMessage());
+                    .body("업로드 실패: " + e.getMessage());
         }
     }
 
@@ -102,9 +100,10 @@ public class ExcelUploadController {
     // GET /api/log/check?year=2025&month=0
     @GetMapping("/check")
     public ResponseEntity<?> checkData(@RequestParam("year") int year,
-                                       @RequestParam("month") int month)
+                                       @RequestParam("month") int month,
+                                       @RequestParam("source") String source)
     {
-        boolean exists = logCheckService.checkDataExists(year, month);
+        boolean exists = logCheckService.checkDataExists(year, month, source);
         // JSON으로 리턴: { "exists": true }
         return ResponseEntity.ok(Map.of("exists", exists));
     }

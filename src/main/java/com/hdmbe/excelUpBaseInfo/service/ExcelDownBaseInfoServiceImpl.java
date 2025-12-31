@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -20,10 +21,15 @@ public class ExcelDownBaseInfoServiceImpl implements ExcelDownBaseInfoService {
     @Override
     public byte[] downloadBaseInfoExcel() {
         try {
-            // 1️⃣ DB 조회
+            // DB 조회
             List<ExcelDownBaseInfoDto> data = excelBaseInfoRepository.findBaseInfoForExcel();
 
-            // 2️⃣ 엑셀 생성 (데이터가 없어도 빈 엑셀은 내려주는 게 좋음)
+            // 리스트 순서를 역순으로 (DB 쿼리가 최신순(DESC)으로 주고 있다면, 여기서 뒤집으면 과거순(ASC)이 됨)
+            if (data != null && !data.isEmpty()) {
+                Collections.reverse(data);
+            }
+
+            // 엑셀 생성 (데이터가 없어도 빈 엑셀은 내려주는 게 좋음)
             return createExcelFile(data);
 
         } catch (IOException e) {
@@ -47,7 +53,7 @@ public class ExcelDownBaseInfoServiceImpl implements ExcelDownBaseInfoService {
                     "차량 번호",          // 1
                     "소유주",               // 2
                     "사원 번호",          // 3
-                    "협력사",               // 4
+                    "협력사명",               // 4
                     "공급유형",            // 5
                     "공급고객",            // 6
                     "Scope",              // 7
@@ -62,7 +68,7 @@ public class ExcelDownBaseInfoServiceImpl implements ExcelDownBaseInfoService {
                     "탄소 배출 계수"       // 16
             };
 
-            // 🔥 [핵심 2] 줄바꿈(\r\n)이 엑셀에서 보이려면 스타일 설정이 필요함
+            // [핵심 2] 줄바꿈(\r\n)이 엑셀에서 보이려면 스타일 설정이 필요함
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setWrapText(true); // 줄바꿈 허용
             headerStyle.setAlignment(HorizontalAlignment.CENTER); // 가운데 정렬
@@ -73,11 +79,13 @@ public class ExcelDownBaseInfoServiceImpl implements ExcelDownBaseInfoService {
             }
 
             // 데이터 채우기
-            int rowIdx = 1;
+            int rowIdx = 1;      // 엑셀 시트 행 번호
+            int sequence = 1;    // 실제 화면에 보여줄 '순번'
             for (ExcelDownBaseInfoDto dto : data) {
                 Row row = sheet.createRow(rowIdx++);
-                //[0] 순번 (rowIdx가 1부터 시작하므로 그대로 넣으면 1, 2, 3...)
-                row.createCell(0).setCellValue(rowIdx);
+
+                //[0] 순번 (rowIdx 대신 sequence를 넣고 1씩 증가)
+                row.createCell(0).setCellValue(sequence++);
                 row.createCell(1).setCellValue(dto.getCarNumber());
                 row.createCell(2).setCellValue(dto.getEmployeeName());
                 row.createCell(3).setCellValue(dto.getDriverMemberId());

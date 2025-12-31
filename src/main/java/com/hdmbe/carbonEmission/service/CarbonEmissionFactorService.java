@@ -4,17 +4,12 @@ import com.hdmbe.carbonEmission.entity.CarbonEmissionFactor;
 import com.hdmbe.carbonEmission.repository.CarbonEmissionFactorRepository;
 import com.hdmbe.commonModule.constant.FuelType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import com.hdmbe.carbonEmission.dto.CarbonEmissionFactorResponse;
 import com.hdmbe.carbonEmission.dto.CarbonEmissionFactorUpdateRequest;
-import com.hdmbe.carbonEmission.entity.CarbonEmissionFactor;
-import com.hdmbe.carbonEmission.repository.CarbonEmissionFactorRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -43,12 +38,9 @@ public class CarbonEmissionFactorService {
                 ));
     }
 
-
-    private final CarbonEmissionFactorRepository repo;
-
     // 조회
     public List<CarbonEmissionFactorResponse> getAll() {
-        return repo.findAll()
+        return carbonEmissionFactorRepository.findAll()
                 .stream()
                 .map(CarbonEmissionFactorResponse::fromEntity)
                 .toList();
@@ -56,13 +48,13 @@ public class CarbonEmissionFactorService {
 
     // 수정
     public CarbonEmissionFactorResponse update(Long id, CarbonEmissionFactorUpdateRequest dto) {
-        CarbonEmissionFactor entity = repo.findById(id)
+        CarbonEmissionFactor entity = carbonEmissionFactorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 배출계수"));
 
         entity.setEmissionFactor(dto.getEmissionFactor());
         entity.setRemark(dto.getRemark());
 
-        repo.save(entity);
+        carbonEmissionFactorRepository.save(entity);
 
         return CarbonEmissionFactorResponse.fromEntity(entity);
     }

@@ -11,6 +11,8 @@ import lombok.*;
 public class BaseInfoCheckDto {
     private Integer idx;
     private String carNumber;
-    private String status;
+    private String rowStatus;
     private String message;
+
+    private ExcelUpBaseInfoDto dbData;
 }

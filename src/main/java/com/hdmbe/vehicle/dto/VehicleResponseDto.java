@@ -1,11 +1,16 @@
 package com.hdmbe.vehicle.dto;
 
+import java.math.BigDecimal;
+
 import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.vehicle.entity.Vehicle;
 import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
-import lombok.*;
 
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -13,37 +18,41 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class VehicleResponseDto {
+
     // 차량
     private Long id;
     private String carNumber;
-    // 운행목적
-    private Long operationPurposeId;
-    private String operationPurposeName;
-    // scope
-    private Integer defaultScope;
-    // 협렵사
-    private Long companyId;
-    private String companyName;
+    // 모델명
+    private String carName;
     // 사원번호
     private String driverMemberId;
+    // 협렵사
+    private String companyName;
+    // 협력사 Id
+    private Long companyId;
+    // 운행목적
+    private String operationPurposeName;
+    // 운행목적 Id
+    private Long purposeId;
+    // scope
+    private Integer defaultScope;
     // 편도거리
     private BigDecimal operationDistance;
     // 대분류
-    private Long parentCategoryId;
     private String parentCategoryName;
     // 소분류
-    private Long carCategoryId;
     private String carCategoryName;
-    // 차량 모델
-    private Long carModelId;
-    private String carModelName;
+    // 소분류 ID
+    private Long carCategoryId;
     // 연료
     private FuelType fuelType;
     // 비고
     private String remark;
+    // 차량 등록일
+    private String calcBaseDate;
 
     public static VehicleResponseDto fromEntity(Vehicle vehicle,
-        VehicleOperationPurposeMap purposeMap
+            VehicleOperationPurposeMap purposeMap
     ) {
         var company = vehicle.getCompany();
         var carModel = vehicle.getCarModel();
@@ -51,47 +60,37 @@ public class VehicleResponseDto {
         var parentCategory = carCategory.getParentCategory();
         var purpose = purposeMap != null ? purposeMap.getOperationPurpose() : null;
 
+        BigDecimal effectiveDistance
+                = vehicle.getOperationDistance() != null
+                ? vehicle.getOperationDistance()
+                : company.getOneWayDistance();
+
+        // calcBaseDate가 1900-01-01이면 null로 반환
+        String calcBaseDateStr = null;
+        if (vehicle.getCalcBaseDate() != null) {
+            String dateStr = vehicle.getCalcBaseDate().toString();
+            if (!"1900-01-01".equals(dateStr)) {
+                calcBaseDateStr = dateStr;
+            }
+        }
+
         return VehicleResponseDto.builder()
-                // 차량
                 .id(vehicle.getId())
                 .carNumber(vehicle.getCarNumber())
-
-                // 운행 목적
-                .operationPurposeId(
-                        purpose != null ? purposeMap.getOperationPurpose().getId() : null
-                )
-                .operationPurposeName(
-                        purpose != null ? purposeMap.getOperationPurpose().getPurposeName() : null
-                )
-                .defaultScope(
-                        purpose != null ? purposeMap.getOperationPurpose().getDefaultScope() : null
-                )
-
-                // 협력사
-                .companyId(company.getId())
-                .companyName(company.getCompanyName())
-
-                // 사원번호
+                .carName(vehicle.getCarName())
                 .driverMemberId(vehicle.getDriverMemberId())
-
-                // 편도거리 
-                .operationDistance(company.getOneWayDistance())
-
-                // 대분류
-                .parentCategoryId(
-                        parentCategory != null ? parentCategory.getId() : null
-                )
-                .parentCategoryName(
-                        parentCategory != null ? parentCategory.getCategoryName() : null
-                )
-
-                .carCategoryId(carCategory.getId())
+                .companyName(company.getCompanyName())
+                .companyId(company.getId())
+                .operationPurposeName(purpose != null ? purpose.getPurposeName() : null)
+                .purposeId(purpose != null ? purpose.getId() : null)
+                .defaultScope(purpose != null ? purpose.getDefaultScope() : null)
+                .operationDistance(effectiveDistance)
+                .parentCategoryName(parentCategory != null ? parentCategory.getCategoryName() : null)
                 .carCategoryName(carCategory.getCategoryName())
-                .carModelId(carModel.getId())
-                .carModelName(vehicle.getCarName())
+                .carCategoryId(carCategory.getId())
                 .fuelType(carModel.getFuelType())
                 .remark(vehicle.getRemark())
+                .calcBaseDate(calcBaseDateStr)
                 .build();
     }
 }
-

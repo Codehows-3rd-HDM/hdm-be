@@ -5,7 +5,8 @@ import com.hdmbe.supplyType.dto.SupplyTypeResponseDto;
 import com.hdmbe.supplyType.service.SupplyTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,15 +28,14 @@ public class SupplyTypeController {
     @GetMapping("search")
     public Page<SupplyTypeResponseDto> search(
             @RequestParam(required = false) String supplyTypeName,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
+            @PageableDefault(size = 15) Pageable pageable
     ) {
         return supplyTypeService.search(
                 supplyTypeName,
-                page,
-                size
+                pageable
         );
     }
+
     // 단일 수정
     @PutMapping("/{id}")
     public SupplyTypeResponseDto updateSingle(

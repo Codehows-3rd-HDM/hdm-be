@@ -5,6 +5,8 @@ import com.hdmbe.operationPurpose.dto.OperationPurposeResponseDto;
 import com.hdmbe.operationPurpose.service.OperationPurposeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,17 +31,16 @@ public class OperationPurposeController {
             @RequestParam(required = false) String purposeName,
             @RequestParam(required = false) Integer defaultScope,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
+            @PageableDefault(size = 15) Pageable pageable
     ) {
         return operationPurposeService.search(
                 purposeName,
                 defaultScope,
                 keyword,
-                page,
-                size
+                pageable
         );
     }
+
     // 단일 수정
     @PutMapping("/{id}")
     public OperationPurposeResponseDto updateSingle(

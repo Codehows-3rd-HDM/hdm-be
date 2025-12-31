@@ -3,7 +3,7 @@ spring:
     name: HDM-be
 
   datasource:
-    url: jdbc:mysql://localhost:3306/hdm
+    url: jdbc:mysql://localhost:3306/hdm?useSSL=false&rewriteBatchedStatements=true
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -11,8 +11,16 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      #     ddl-auto: create
+#          ddl-auto: create
       ddl-auto: update
 jwt:
   secret.key: hdm_project_secret_key_must_be_very_long_and_secure
   expiration_time: 86400000
+
+#develop
+uploadLocation: C:/uploads
+photoPath: file:///C:/uploads/
+
+#deploy
+#uploadLocation:
+#photoPath: file:///
