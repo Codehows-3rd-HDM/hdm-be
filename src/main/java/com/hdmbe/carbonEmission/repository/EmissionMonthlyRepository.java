@@ -4,16 +4,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
-
-import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.hdmbe.carbonEmission.entity.CarbonEmissionMonthlyLog;
 import com.hdmbe.vehicle.entity.Vehicle;
-import org.springframework.data.jpa.repository.Modifying;
 
 public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionMonthlyLog, Long> {
 
@@ -66,8 +63,6 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
 
         BigDecimal getTotal();
     }
-
-
 
     // 조회 : 연도 + 출처로 존재 여부 확인
     boolean existsByYearAndEmissionSource(int year, String source);

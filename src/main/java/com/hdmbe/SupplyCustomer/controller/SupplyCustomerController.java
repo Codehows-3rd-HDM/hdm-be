@@ -3,7 +3,6 @@ package com.hdmbe.SupplyCustomer.controller;
 import com.hdmbe.SupplyCustomer.dto.SupplyCustomerRequestDto;
 import com.hdmbe.SupplyCustomer.dto.SupplyCustomerResponseDto;
 import com.hdmbe.SupplyCustomer.service.SupplyCustomerService;
-import com.hdmbe.company.dto.CompanyResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

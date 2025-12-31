@@ -126,31 +126,32 @@ public class CompanyService {
                     .findFirst()
                     .orElse("");
 
-            if ("supplyTypeName".equals(sortProperty)) {
-                result = companyRepository.searchOrderBySupplyType(
-                        companyName,
-                        supplyTypeName,
-                        supplyCustomerName,
-                        address,
-                        keyword,
-                        mappedPageable);
-            } else if ("customerName".equals(sortProperty)) {
-                result = companyRepository.searchOrderByCustomer(
-                        companyName,
-                        supplyTypeName,
-                        supplyCustomerName,
-                        address,
-                        keyword,
-                        mappedPageable);
-            } else {
-                result = companyRepository.search(
-                        companyName,
-                        supplyTypeName,
-                        supplyCustomerName,
-                        address,
-                        keyword,
-                        mappedPageable);
-            }
+            result = switch (sortProperty) {
+                case "supplyTypeName" ->
+                    companyRepository.searchOrderBySupplyType(
+                    companyName,
+                    supplyTypeName,
+                    supplyCustomerName,
+                    address,
+                    keyword,
+                    mappedPageable);
+                case "customerName" ->
+                    companyRepository.searchOrderByCustomer(
+                    companyName,
+                    supplyTypeName,
+                    supplyCustomerName,
+                    address,
+                    keyword,
+                    mappedPageable);
+                default ->
+                    companyRepository.search(
+                    companyName,
+                    supplyTypeName,
+                    supplyCustomerName,
+                    address,
+                    keyword,
+                    mappedPageable);
+            };
         } else {
             result = companyRepository.search(
                     companyName,

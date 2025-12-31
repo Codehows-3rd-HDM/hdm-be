@@ -140,31 +140,32 @@ public class VehicleService {
                     .findFirst()
                     .orElse("");
 
-            if ("operationPurposeName".equals(sortProperty) || "purposeId".equals(sortProperty)) {
-                result = vehicleRepository.searchOrderByOperationPurpose(
-                        carNumber,
-                        purposeId,
-                        companyName,
-                        driverMemberId,
-                        keyword,
-                        mappedPageable);
-            } else if ("defaultScope".equals(sortProperty)) {
-                result = vehicleRepository.searchOrderByScope(
-                        carNumber,
-                        purposeId,
-                        companyName,
-                        driverMemberId,
-                        keyword,
-                        mappedPageable);
-            } else {
-                result = vehicleRepository.search(
-                        carNumber,
-                        purposeId,
-                        companyName,
-                        driverMemberId,
-                        keyword,
-                        mappedPageable);
-            }
+            result = switch (sortProperty) {
+                case "operationPurposeName", "purposeId" ->
+                    vehicleRepository.searchOrderByOperationPurpose(
+                    carNumber,
+                    purposeId,
+                    companyName,
+                    driverMemberId,
+                    keyword,
+                    mappedPageable);
+                case "defaultScope" ->
+                    vehicleRepository.searchOrderByScope(
+                    carNumber,
+                    purposeId,
+                    companyName,
+                    driverMemberId,
+                    keyword,
+                    mappedPageable);
+                default ->
+                    vehicleRepository.search(
+                    carNumber,
+                    purposeId,
+                    companyName,
+                    driverMemberId,
+                    keyword,
+                    mappedPageable);
+            };
         } else {
             result = vehicleRepository.search(
                     carNumber,

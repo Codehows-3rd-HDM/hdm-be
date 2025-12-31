@@ -114,19 +114,6 @@ public class OperationPurposeService {
         }
     }
 
-    // 유효성 검사
-    private void validateCreate(OperationPurposeRequestDto dto) {
-        if (dto.getPurposeName() == null || dto.getPurposeName().isBlank()) {
-            throw new IllegalArgumentException("운행목적명 필수");
-        }
-
-        if (dto.getDefaultScopeId() == null) {
-            throw new IllegalArgumentException("Scope 필수");
-        }
-
-        validateScope(dto.getDefaultScopeId());
-    }
-
     private void validateUpdate(OperationPurposeRequestDto dto) {
         if (dto.getPurposeName() != null && dto.getPurposeName().isBlank()) {
             throw new IllegalArgumentException("운행목적명 공백 불가");

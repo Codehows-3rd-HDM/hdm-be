@@ -145,10 +145,6 @@ public class CarModelService {
         }
     }
 
-    private void validateDelete(CarModelRequestDto dto) {
-
-    }
-
     private Pageable remapCarModelSort(Pageable pageable) {
         if (pageable == null || pageable.getSort().isUnsorted()) {
             return pageable;
