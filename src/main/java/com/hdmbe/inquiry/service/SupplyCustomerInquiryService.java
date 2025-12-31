@@ -71,12 +71,9 @@ public class SupplyCustomerInquiryService {
                             : totalEmission.multiply(BigDecimal.valueOf(100))
                             .divide(grandTotal, 2, RoundingMode.HALF_UP);
 
-            BigDecimal avgEmission =
-                    tripCount == 0
-                            ? BigDecimal.ZERO
-                            : totalEmission.divide(
-                                    BigDecimal.valueOf(tripCount), 3, RoundingMode.HALF_UP
-                    );
+            BigDecimal avgEmission = (tripCount == null || tripCount == 0)
+                    ? BigDecimal.ZERO
+                    : totalEmission.divide(BigDecimal.valueOf(tripCount), 3, RoundingMode.HALF_UP);
 
             List<BigDecimal> monthlyTrend = null;
             if (trendMap.containsKey(customerName)) {

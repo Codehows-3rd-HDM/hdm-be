@@ -23,9 +23,11 @@ public interface SupplyTypeInquiryRepository extends JpaRepository<CarbonEmissio
     WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
       AND (:month IS NULL OR MONTH(d.operationDate) = :month)
       AND cmap.endDate IS NULL
-      AND cmap.id = (
-          SELECT MIN(cm2.id)
+      /* 핵심 수정: ID 번호가 아닌 유형 명칭 기준으로 중복 방어 */
+      AND st.supplyTypeName = (
+          SELECT MIN(st2.supplyTypeName)
           FROM CompanySupplyTypeMap cm2
+          JOIN cm2.supplyType st2 ON cm2.supplyType = st2
           WHERE cm2.company = c AND cm2.endDate IS NULL
       )
     GROUP BY st.supplyTypeName
@@ -47,9 +49,10 @@ public interface SupplyTypeInquiryRepository extends JpaRepository<CarbonEmissio
     JOIN cmap.supplyType st
     WHERE (:year IS NULL OR YEAR(d.operationDate) = :year)
       AND cmap.endDate IS NULL
-      AND cmap.id = (
-          SELECT MIN(cm2.id)
+      AND st.supplyTypeName = (
+          SELECT MIN(st2.supplyTypeName)
           FROM CompanySupplyTypeMap cm2
+          JOIN cm2.supplyType st2 ON cm2.supplyType = st2
           WHERE cm2.company = c AND cm2.endDate IS NULL
       )
     GROUP BY st.supplyTypeName, MONTH(d.operationDate)
