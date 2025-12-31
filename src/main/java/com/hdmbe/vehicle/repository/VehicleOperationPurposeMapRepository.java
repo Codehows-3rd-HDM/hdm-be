@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +26,7 @@ public interface VehicleOperationPurposeMapRepository
     Optional<VehicleOperationPurposeMap> findFirstByVehicleAndEndDateIsNull(Vehicle vehicle);
 
     Optional<VehicleOperationPurposeMap> findByVehicleAndEndDateIsNull(Vehicle vehicle);
+
+    // "이 차의 모든 이력을 종료일(endDate) 순서대로 정렬해서 가져와라"
+    List<VehicleOperationPurposeMap> findAllByVehicleOrderByEndDateAsc(Vehicle vehicle);
 }

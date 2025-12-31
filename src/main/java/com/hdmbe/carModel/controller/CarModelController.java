@@ -7,6 +7,7 @@ import com.hdmbe.commonModule.constant.FuelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,16 +33,14 @@ public class CarModelController {
             @RequestParam(required = false) Long carCategoryId,
             @RequestParam(required = false) FuelType fuelType,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "15") int size
+            @PageableDefault(size = 15) Pageable pageable
     ) {
         return carModelService.search(
                 parentCategoryId,
                 carCategoryId,
                 fuelType,
                 keyword,
-                page,
-                size
+                pageable
         );
     }
 
@@ -64,5 +63,4 @@ public class CarModelController {
 //    public void delete(@PathVariable Long id) {
 //        carModelService.deleteCarModel(id);
 //    }
-
 }

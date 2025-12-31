@@ -10,7 +10,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "OPERATION_PURPOSE")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class OperationPurpose extends BaseTimeEntity {
@@ -22,7 +24,7 @@ public class OperationPurpose extends BaseTimeEntity {
     private Long id;
 
     // 목적 이름
-    @Column(name = "purpose_name", length = 20, unique = true)
+    @Column(name = "purpose_name", length = 20)     // unique = true
     private String purposeName;
 
     // 기준 Scope

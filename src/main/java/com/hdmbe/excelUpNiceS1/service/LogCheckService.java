@@ -1,48 +1,29 @@
 package com.hdmbe.excelUpNiceS1.service;
 
-
-import com.hdmbe.excelUpNiceS1.repository.NiceparkLogRepository;
-import com.hdmbe.excelUpNiceS1.repository.S1LogRepository;
+import com.hdmbe.carbonEmission.repository.EmissionMonthlyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class LogCheckService {
-    private final NiceparkLogRepository niceparkLogRepo;
-    private final S1LogRepository s1Repo;
 
-    public boolean checkDataExists(int year, int month)
+    // 계산 결과가 저장되는 Repository를 주입받습니다.
+    private final EmissionMonthlyRepository emissionMonthlyRepository;
+
+    @Transactional(readOnly = true)
+    public boolean checkDataExists(int year, int month, String source)
     {
-        LocalDateTime startDt;
-        LocalDateTime endDt;
-        LocalDate startD;
-        LocalDate endD;
+        // 1. source가 안 넘어왔을 경우(파일 선택 전 등)를 대비한 방어 코드
+        if (source == null || source.isEmpty()) return false;
 
-        if (month == 0)
-        {
-            startDt = LocalDateTime.of(year, 1, 1, 0, 0, 0);
-            endDt = LocalDateTime.of(year, 12, 31, 23, 59, 59);
-            startD = LocalDate.of(year, 1, 1);
-            endD = LocalDate.of(year, 12, 31);
+        if (month == 0) {
+            // 연간 전체 데이터 중 해당 출처(S1/NICE)가 있는지 확인
+            return emissionMonthlyRepository.existsByYearAndEmissionSource(year, source);
+        } else {
+            // 특정 월 데이터 중 해당 출처(S1/NICE)가 있는지 확인
+            return emissionMonthlyRepository.existsByYearAndMonthAndEmissionSource(year, month, source);
         }
-        else
-        {
-            YearMonth ym = YearMonth.of(year, month);
-            startDt = ym.atDay(1).atStartOfDay();
-            endDt = ym.atEndOfMonth().atTime(23, 59, 59);
-            startD = ym.atDay(1);
-            endD = ym.atEndOfMonth();
-        }
-
-        // 나이스파크 또는 에스원 둘 중 하나라도 있으면 true
-        boolean niceExists = niceparkLogRepo.existsByAccessTimeBetween(startDt, endDt);
-        boolean s1Exists = s1Repo.existsByAccessDateBetween(startD, endD);
-
-        return niceExists || s1Exists;
     }
 }
