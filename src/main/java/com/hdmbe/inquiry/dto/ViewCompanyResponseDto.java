@@ -1,6 +1,5 @@
 package com.hdmbe.inquiry.dto;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 public class ViewCompanyResponseDto {
-
     private Long id;
     private String companyName;
     private String address;
@@ -26,6 +24,7 @@ public class ViewCompanyResponseDto {
         this.address = address;
         this.totalEmission = totalEmission;
         // this.ratio는 위에서 이미 0.0으로 초기화됨
-        //this.ratio = ratio;
+        // this.ratio = ratio;
     }
 }
+

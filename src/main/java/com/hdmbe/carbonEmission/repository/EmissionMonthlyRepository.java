@@ -5,9 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+
 import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
-import com.hdmbe.vehicle.entity.VehicleOperationPurposeMap;
-import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

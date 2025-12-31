@@ -1,6 +1,5 @@
 package com.hdmbe.inquiry.controller;
 
-
 import com.hdmbe.inquiry.dto.ViewCompanyRequestDto;
 import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
 import com.hdmbe.inquiry.service.ViewCompanyService;
