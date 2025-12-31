@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import com.hdmbe.inquiry.dto.ViewCompanyResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -102,25 +104,25 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
     WHERE m.year = :year
       AND (:month IS NULL OR m.month = :month)
 
-  /* Scope 4 제외 (해당 월 말 기준 유효한 매핑 중 scope != 4 존재) */
-     AND EXISTS (
-      SELECT 1
-      FROM VehicleOperationPurposeMap vopm
-      JOIN vopm.operationPurpose op
-      WHERE vopm.vehicle = v
-        AND op.defaultScope != 4
-        AND (vopm.endDate IS NULL OR vopm.endDate >= :targetDate)
-  )
+      /* Scope 4 제외 (해당 월 말 기준 유효한 매핑 중 scope != 4 존재) */
+         AND EXISTS (
+          SELECT 1
+          FROM VehicleOperationPurposeMap vopm
+          JOIN vopm.operationPurpose op
+          WHERE vopm.vehicle = v
+            AND op.defaultScope != 4
+            AND (vopm.endDate IS NULL OR vopm.endDate >= :targetDate)
+      )
+    
+      /* 검색어 */
+      AND (
+          :keyword IS NULL
+          OR c.companyName LIKE %:keyword%
+          OR c.address LIKE %:keyword%
+      )
 
-  /* 검색어 */
-  AND (
-      :keyword IS NULL
-      OR c.companyName LIKE %:keyword%
-      OR c.address LIKE %:keyword%
-  )
-
-GROUP BY c.id, c.companyName, c.address
-""")
+    GROUP BY c.id, c.companyName, c.address
+    """)
     List<ViewCompanyResponseDto> findEmissionByCompany(
             @Param("year") int year,
             @Param("month") Integer month,
