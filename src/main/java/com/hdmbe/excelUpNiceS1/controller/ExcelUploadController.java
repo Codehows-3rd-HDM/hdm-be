@@ -25,7 +25,7 @@ public class ExcelUploadController {
     private final S1ExcelUpService s1ExcelUpService;
     private final LogCheckService logCheckService;
 
-    // ✅ [보안 설정] SUPERADMIN 또는 ADMIN만 실행 가능
+    // [보안 설정] SUPERADMIN 또는 ADMIN만 실행 가능
     // (VIEWER가 시도하면 403 Forbidden 에러가 자동으로 뜹니다)
     @PostMapping("/upload/nicepark")
     public ResponseEntity<?> uploadNiceParkLog(
@@ -41,12 +41,12 @@ public class ExcelUploadController {
                     .body("업로드할 데이터가 없습니다.");
         }
         try {
-            // ✅ 서비스로부터 제외된 차량 리스트를 받습니다.
+            // 서비스로부터 제외된 차량 리스트를 받습니다.
             List<String> excludedList = niceExcelUpService.uploadNiceParkLog(dtoList, year, month);
 
             String successMsg = "나이스파크 데이터 업로드가 완료되었습니다.";
 
-            // ✅ 제외된 차량이 있다면 메시지 뒤에 덧붙여줍니다.
+            // 제외된 차량이 있다면 메시지 뒤에 덧붙여줍니다.
             if (excludedList != null && !excludedList.isEmpty()) {
                 String excludedCarsStr = String.join(", ", excludedList);
                 successMsg += "\n(주의: " + excludedCarsStr + " 차량은 임직원 차량으로 판명되어 계산에서 제외되었습니다.)";

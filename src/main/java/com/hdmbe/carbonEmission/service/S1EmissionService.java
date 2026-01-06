@@ -35,13 +35,13 @@ public class S1EmissionService {
     private final CarbonEmissionJdbcRepository carbonEmissionJdbcRepository;
 
     @Transactional
-    // ✅ 파라미터 year, month 추가됨!
+    // 파라미터 year, month 추가
     public List<String> process(List<S1Log> logList, int year, int month) {
         if (logList.isEmpty()) return new ArrayList<>();
 
         List<String> excludedCars = new ArrayList<>(); // 미등록 차량 리스트
 
-        // 1. [삭제 로직] 엑셀 날짜 안 믿음! 사용자가 선택한 "연/월" 기준으로 "S1"만 삭제
+        // 1. [삭제 로직] 엑셀 날짜 무시, 선택한 "연/월" 기준으로 "S1"만 삭제
         LocalDate startDate;
         LocalDate endDate;
 
@@ -68,6 +68,14 @@ public class S1EmissionService {
                 .filter(v -> v.getDriverMemberId() != null)
                 .collect(Collectors.groupingBy(Vehicle::getDriverMemberId));
 
+        // [최적화 2] 배출계수(Factor) 미리 가져오기.  DB를 루프 밖에서 한 번만 찔러서 Map에 담아둡니다.
+        Map<FuelType, BigDecimal> factorMap = factorRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        // 가정: Entity에 getFuelType()이 있다고 가정
+                        f -> f.getFuelType(),
+                        f -> f.getEmissionFactor()
+                ));
+
         // 3. 계산 및 저장 로직 시작
         List<CarbonEmissionDailyLog> dailyLogs = new ArrayList<>();
         Map<String, BigDecimal> monthlyTotalMap = new HashMap<>();
@@ -88,9 +96,16 @@ public class S1EmissionService {
             BigDecimal distance = oneWay.multiply(new BigDecimal("2")); // 왕복 계산
             BigDecimal efficiency = vehicle.getCarModel().getCustomEfficiency();
             FuelType fuelType = vehicle.getCarModel().getFuelType();
-            BigDecimal factor = factorRepository.findByFuelType(fuelType)
-                    .orElseThrow(() -> new IllegalArgumentException("배출계수 데이터 누락: " + fuelType))
-                    .getEmissionFactor();
+//            BigDecimal factor = factorRepository.findByFuelType(fuelType)
+//                    .orElseThrow(() -> new IllegalArgumentException("배출계수 데이터 누락: " + fuelType))
+//                    .getEmissionFactor();
+            // [수정] DB 조회 대신 Map에서 꺼내기
+            BigDecimal factor = factorMap.get(fuelType);
+
+            if (factor == null) {
+                // 혹시 모를 데이터 누락 대비
+                throw new IllegalArgumentException("배출계수 데이터 누락: " + fuelType);
+            }
 
             // 3. 계산기 호출
             BigDecimal emission = calculator.calculate(distance, efficiency, factor);
