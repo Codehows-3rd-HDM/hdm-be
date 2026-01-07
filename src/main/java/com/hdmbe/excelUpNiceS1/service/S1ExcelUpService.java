@@ -172,12 +172,22 @@ public class S1ExcelUpService {
     }
 
     public List<S1ExcelCheckDto> getInvalidLogList(List<S1ExcelCheckDto> dtoList) {
-        List<Vehicle> vehicles = vehicleRepository.findAll().stream()
-                .filter((v) -> v.getDriverMemberId() != null)
-                .toList();
+//        List<Vehicle> vehicles = vehicleRepository.findAll().stream()
+//                .filter((v) -> v.getDriverMemberId() != null)
+//                .toList();
+//        return dtoList.stream()
+//                .filter((e) ->
+//                        vehicles.stream().noneMatch(v -> v.getDriverMemberId().equals(e.getMemberId()))
+//        ).toList();
+
+        // 모든 유효 사번을 Set으로 미리 뽑아둠 (검색 속도 비약적 상승)
+        Set<String> validMemberIds = vehicleRepository.findAllDriverMemberIds().stream()
+                .map(Vehicle::getDriverMemberId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         return dtoList.stream()
-                .filter((e) ->
-                        vehicles.stream().noneMatch(v -> v.getDriverMemberId().equals(e.getMemberId()))
-        ).toList();
+                .filter(e -> !validMemberIds.contains(e.getMemberId()))
+                .toList();
     }
 }
