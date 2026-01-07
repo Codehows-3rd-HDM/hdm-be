@@ -24,8 +24,8 @@ public class HdmBeApplication {
         return args -> {
             try {
                 UserAccountDto admin = new UserAccountDto();
-                admin.setUserName("admin");
-                admin.setPassword("1234");
+                admin.setUserName("hdm2518");
+                admin.setPassword("hdrd0104");
                 admin.setRole(Role.SUPERADMIN);
                 userAccountService.saveUserAccount(admin);
 
