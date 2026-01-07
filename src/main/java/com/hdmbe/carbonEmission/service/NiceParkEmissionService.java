@@ -40,7 +40,7 @@ public class NiceParkEmissionService {
     private final CarbonEmissionJdbcRepository carbonEmissionJdbcRepository;
 
     @Transactional
-    // ✅ year, month 파라미터 추가!
+    // year, month 파라미터 추가
     public List<String> process(List<NiceparkLog> logList, int year, int month) {
 
         // 1. 데이터 없으면 빈 리스트 반환
@@ -100,7 +100,7 @@ public class NiceParkEmissionService {
 
 
             // [나이스 DB에 임직원 차량있을 경우]
-            // 차량이 DB에 없거나, '사번'이 있는 임직원 차량이면 나이스파크 집계에서 제외!
+            // 차량이 DB에 없거나, '사번'이 있는 임직원 차량이면 나이스파크 집계에서 제외
             if (vehicle == null || (memberId != null && !memberId.trim().isEmpty())) {
                 if (vehicle != null) {
                     excludedCars.add(niceparkLog.getCarNumber()); // 제외 명단에 추가!
