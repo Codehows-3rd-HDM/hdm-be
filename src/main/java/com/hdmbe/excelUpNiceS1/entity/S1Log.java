@@ -1,5 +1,6 @@
 package com.hdmbe.excelUpNiceS1.entity;
 
+import com.hdmbe.commonModule.entity.BaseTimeEntity;
 import com.hdmbe.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class S1Log {
+public class S1Log extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
