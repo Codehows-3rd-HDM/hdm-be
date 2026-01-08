@@ -43,6 +43,6 @@ public class CarbonEmissionDailyLog extends BaseTimeEntity {
     //(NUMERIC) 타입을 안전한 소수계산을 위해 사용함
 
     // 꼬리표
-    @Column(name = "emission_source", length = 20, nullable = false)
+    @Column(name = "emission_source", length = 20)
     private String emissionSource; // "S1" 또는 "NICE" 저장
 }
