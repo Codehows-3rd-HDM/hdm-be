@@ -37,8 +37,15 @@ public class S1ExcelUpService {
         // 1. [청소] 해당 연/월의 기존 데이터 삭제
         deleteExistingData(year, month);
 
-        // [수정-최적화] DB에 등록된 모든 사번을 한번에 가져와서 Set 으로 만듬 (null 제외)
-        Set<Vehicle> validMembers = new HashSet<>(vehicleRepository.findAllDriverMemberIds());
+        // [수정] findAllDriverMemberIds()가 만약 distinct 처리가 되어 있다면
+        // 12월 1일자 소나타가 누락될 수 있음.
+        // 안전하게 findAll()로 가져와서 필터링하는 것이 확실함.
+        List<Vehicle> allVehicles = vehicleRepository.findAll().stream()
+                .filter(v -> v.getDriverMemberId() != null)
+                .collect(Collectors.toList());
+
+        // Set으로 변환 (인자를 Set으로 넘기게 되어있으므로)
+        Set<Vehicle> validMembers = new HashSet<>(allVehicles);
 
         // 2. [검증 및 변환] DTO 리스트 -> Entity 리스트
         List<S1Log> logList = convertAndValidate(dtoList, year, month, validMembers);
@@ -93,8 +100,11 @@ public class S1ExcelUpService {
         List<S1Log> resultList = new ArrayList<>();
 
         // 1. 사번으로 바로 찾을 수 있게 Map으로 세팅
-        Map<String, Vehicle> memberMap = validMembers.stream()
-                .collect(Collectors.toMap(Vehicle::getDriverMemberId, v -> v, (v1, v2) -> v1));
+        // [수정 핵심 1] 사번 하나에 여러 차량이 있을 수 있으므로 List로 묶어야 함
+        // 기존: Map<String, Vehicle> -> 사번 중복 시 1개만 남아서 문제 발생
+        // 변경: Map<String, List<Vehicle>>
+        Map<String, List<Vehicle>> memberHistoryMap = validMembers.stream()
+                .collect(Collectors.groupingBy(Vehicle::getDriverMemberId));
 
         for (int i = 0; i < dtoList.size(); i++) {
             S1ExcelUpDto dto = dtoList.get(i);
@@ -104,14 +114,22 @@ public class S1ExcelUpService {
                 LocalDate accessDate = validateDate(dto.getAccessDate(), targetYear, targetMonth, i);
 
                 // 2. Map에서 사번으로 차량 정보 가져오기
-                Vehicle validMember = memberMap.get(dto.getMemberId());
+                //Vehicle validMember = memberMap.get(dto.getMemberId());
 
-                if (validMember == null) {
+                // 2. [수정 핵심 2] 이력 리스트 가져오기
+                List<Vehicle> historyList = memberHistoryMap.get(dto.getMemberId());
+
+                if (historyList == null || historyList.isEmpty()) {
                     log.warn("미등록 사원 데이터 제외됨: {}", dto.getMemberId());
                     continue;
                 }
 
-                if(validMember.getCalcBaseDate() != null && accessDate.isBefore(validMember.getCalcBaseDate())) {
+                // 3. [수정 핵심 3] "그 날짜(accessDate)에 유효했던 차"가 있는지 확인
+                // S1EmissionService에 있는 로직과 동일하게 검증해야 함
+                Vehicle validVehicle = findValidVehicleForUpload(historyList, accessDate);
+
+                if (validVehicle == null) {
+                    // 이력은 있지만, 로그 날짜가 모든 차량의 등록일보다 과거인 경우
                     log.warn("기준일 이전 데이터 제외됨: 사번 {}, 로그날짜 {}", dto.getMemberId(), accessDate);
                     continue;
                 }
@@ -133,6 +151,19 @@ public class S1ExcelUpService {
         }
         return resultList;
     }
+
+    // [신규 추가] 업로드 검증용 차량 찾기 메서드 (S1EmissionService 로직과 동일)
+    private Vehicle findValidVehicleForUpload(List<Vehicle> historyList, LocalDate logDate) {
+        return historyList.stream()
+                // 로그 날짜보다 '이전' 혹은 '같은' 날짜에 등록된 차들만 필터링
+                .filter(v -> !v.getCalcBaseDate().isAfter(logDate))
+                // 최신 등록일 순 정렬
+                .sorted((v1, v2) -> v2.getCalcBaseDate().compareTo(v1.getCalcBaseDate()))
+                // 첫 번째 녀석 리턴 (없으면 null)
+                .findFirst()
+                .orElse(null);
+    }
+
     //날짜 검증 메서드
     // 날짜 파싱 및 연/월 검증 로직 분리
     private LocalDate validateDate(String dateStr, int targetYear, int targetMonth, int rowIndex) {
