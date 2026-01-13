@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @ToString
 public class ExcelUpBaseInfoDto {
 
-    // ✅ [추가] 프론트엔드에서 보낸 순번(idx)을 받기 위해 여기에 꼭 있어야 함!
+    // [추가] 프론트엔드에서 보낸 순번(idx)을 받기 위해 여기에 꼭 있어야 함!
     private Integer idx;
 
     // 1. [기초] 운행 목적 & 배출 계수

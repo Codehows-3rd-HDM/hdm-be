@@ -1,5 +1,8 @@
 package com.hdmbe.excelUpBaseInfo.service;
 
+import com.hdmbe.carbonEmission.entity.CarbonEmissionFactor;
+import com.hdmbe.carbonEmission.repository.CarbonEmissionFactorRepository;
+import com.hdmbe.commonModule.constant.FuelType;
 import com.hdmbe.company.entity.CompanySupplyCustomerMap;
 import com.hdmbe.company.entity.CompanySupplyTypeMap;
 import com.hdmbe.company.repository.CompanySupplyCustomerMapRepository;
@@ -18,9 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,16 +32,24 @@ public class BaseInfoCheckService {
    private final VehicleOperationPurposeMapRepository mapRepository;
    private final CompanySupplyTypeMapRepository supplyTypeMapRepository;
    private final CompanySupplyCustomerMapRepository supplyCustomerMapRepository;
+   private final CarbonEmissionFactorRepository carbonEmissionFactorRepository;
 
 
     @Transactional(readOnly = true)
     public List<BaseInfoCheckDto> checkDataStatus(List<ExcelUpBaseInfoDto> dtoList)
     {
+        validateConsistency(dtoList);
+
         List<BaseInfoCheckDto> results = new ArrayList<>();
 
         // 날짜 포맷터 준비
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate defaultDate = LocalDate.of(1900, 1, 1);
+
+        // [최적화] DB에 있는 모든 글로벌 배출계수를 미리 가져옴 (반복문 안에서 매번 조회하면 느리니까)
+        // Key: FuelType(GASOLINE), Value: 2.13(배출계수)
+        Map<FuelType, BigDecimal> globalFactorMap = carbonEmissionFactorRepository.findAll().stream()
+                .collect(Collectors.toMap(CarbonEmissionFactor::getFuelType, CarbonEmissionFactor::getEmissionFactor));
 
         for (ExcelUpBaseInfoDto dto : dtoList)
         {
@@ -237,10 +247,31 @@ public class BaseInfoCheckService {
                 }
 
                 // =========================================================
-                // 5. 배출계수 (CarbonEmissionFactor) - 보통 연료따라감
+                // 5. 배출계수 비교 (연료별)
                 // =========================================================
-                // 배출계수는 보통 FuelType에 매핑되거나 별도 서비스로 가져와야 해서
-                // Vehicle 엔티티에서 바로 꺼내기 힘들 수 있음. 여기선 생략하거나 로직 추가 필요.
+                if (dto.getFuelName() != null && !dto.getFuelName().trim().isEmpty() && dto.getEmissionFactor() != null) {
+                    try {
+                        // 1. 엑셀에 적힌 연료(휘발유)를 Enum으로 변환
+                        FuelType excelFuelType = FuelType.valueOf(dto.getFuelName().trim().toUpperCase());
+
+                        // 2. DB에 저장된 그 연료의 현재 기준값 가져오기
+                        BigDecimal currentDbFactor = globalFactorMap.get(excelFuelType);
+
+                        // 3. 비교 (DB값 vs 엑셀값)
+                        if (currentDbFactor != null) {
+                            // 값이 다르면 "변경됨"으로 처리!
+                            if (currentDbFactor.compareTo(dto.getEmissionFactor()) != 0) {
+                                changes.add("배출계수(" + currentDbFactor + " -> " + dto.getEmissionFactor() + ")");
+                            }
+                        } else {
+                            // DB에 없는 연료값이면 신규나 마찬가지 -> 변경됨으로 처리
+                            changes.add("배출계수(신규설정)");
+                        }
+
+                    } catch (Exception e) {
+                        // 연료명이 오타이거나 Enum에 없으면 무시 (어차피 위에서 연료 종류 비교할 때 걸림)
+                    }
+                }
 
 
                 // [결과 저장]
@@ -265,6 +296,41 @@ public class BaseInfoCheckService {
             }
         }
         return results;
+    }
+
+    // [추가] 연료별 배출계수 일관성 검증 메서드
+    private void validateConsistency(List<ExcelUpBaseInfoDto> dtoList) {
+        // Key: "연료명", Value: "배출계수"
+        Map<String, BigDecimal> consistencyMap = new HashMap<>();
+
+        for (int i = 0; i < dtoList.size(); i++) {
+            ExcelUpBaseInfoDto dto = dtoList.get(i);
+
+            // 연료나 배출계수가 비어있으면 패스 (Null 체크는 다른데서 하거나 무시)
+            if (dto.getFuelName() == null || dto.getEmissionFactor() == null) continue;
+
+            String fuelName = dto.getFuelName().trim();
+            BigDecimal currentFactor = dto.getEmissionFactor();
+
+            if (consistencyMap.containsKey(fuelName)) {
+                // 이미 이 연료가 등장했었다면, 처음에 나온 값과 똑같은지 비교
+                BigDecimal firstFactor = consistencyMap.get(fuelName);
+
+                // 값이 다르면 에러! (compareTo != 0)
+                if (firstFactor.compareTo(currentFactor) != 0) {
+                    throw new IllegalArgumentException(
+                            String.format("데이터 불일치 오류! \n" +
+                                            "연료 [%s]의 배출계수가 통일되지 않았습니다.\n" +
+                                            "기준 값: %s vs 현재 값: %s (행 번호: %d)\n" +
+                                            "※ 같은 연료라면 엑셀 내 모든 행의 배출계수가 동일해야 합니다.",
+                                    fuelName, firstFactor, currentFactor, i + 1)
+                    );
+                }
+            } else {
+                // 처음 본 연료면 등록 (이게 이 연료의 기준값이 됨)
+                consistencyMap.put(fuelName, currentFactor);
+            }
+        }
     }
 
     // [최종 수정] 수식, 소수점 오차, 공백까지 모두 무시하는 강력한 비교 함수
