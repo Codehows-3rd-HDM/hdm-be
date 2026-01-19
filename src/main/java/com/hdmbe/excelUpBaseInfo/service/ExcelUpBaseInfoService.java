@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +42,18 @@ public class ExcelUpBaseInfoService {
     @Transactional
     public void uploadMasterData(List<ExcelUpBaseInfoDto> dtoList) {
 
+        validateFuelConsistency(dtoList);
+
         for (ExcelUpBaseInfoDto dto : dtoList) {
             try {
                 // 1. [기초] 운행 목적 & 배출 계수 확보
                 OperationPurpose purpose = purposeService.getOrCreate(dto.getPurposeName(), dto.getScope());
-                factorService.getOrCreate(dto.getFuelName(), dto.getEmissionFactor()); // 계수 업데이트
+
+                if (dto.getFuelName() != null && !dto.getFuelName().trim().isEmpty()
+                        && dto.getEmissionFactor() != null) {
+
+                    factorService.getOrCreate(dto.getFuelName(), dto.getEmissionFactor());
+                }
 
                 // 거리 계산 로직 (서비스 호출 전에 미리 결정!)
                 BigDecimal finalCompanyDistance;
@@ -105,6 +114,7 @@ public class ExcelUpBaseInfoService {
                         dto.getSmallCategory(),
                         dto.getFuelName(),
                         dto.getEfficiency()
+
                 );
 
                 // 4. [최종] 차량 저장 (주인공)
@@ -124,6 +134,40 @@ public class ExcelUpBaseInfoService {
                 // 한 줄 에러 나도 멈추지 말고 로그 찍고 계속 갈지, 멈출지 결정
                 // (일단은 에러 터뜨려서 트랜잭션 롤백 시키는 게 안전함)
                 throw new RuntimeException("엑셀 업로드 중 오류 발생 (차량번호: " + dto.getCarNumber() + ") - " + e.getMessage(), e);
+            }
+        }
+    }
+
+    // [검증 메서드] 연료별 배출계수 일관성 체크
+    private void validateFuelConsistency(List<ExcelUpBaseInfoDto> dtoList) {
+        // Key: "연료명", Value: "배출계수"
+        Map<String, BigDecimal> fuelMap = new HashMap<>();
+
+        for (int i = 0; i < dtoList.size(); i++) {
+            ExcelUpBaseInfoDto dto = dtoList.get(i);
+
+            // 연료나 배출계수가 비어있으면 패스
+            if (dto.getFuelName() == null || dto.getEmissionFactor() == null) continue;
+
+            String fuelName = dto.getFuelName().trim();
+            BigDecimal currentFactor = dto.getEmissionFactor();
+
+            if (fuelMap.containsKey(fuelName)) {
+                // 이미 이 연료가 등장했었다면, 값 비교
+                BigDecimal firstFactor = fuelMap.get(fuelName);
+
+                if (firstFactor.compareTo(currentFactor) != 0) {
+                    throw new IllegalArgumentException(
+                            String.format("데이터 불일치 오류! \n" +
+                                            "연료 [%s]의 배출계수가 통일되지 않았습니다.\n" +
+                                            "기존 값: %s vs 현재 값: %s (행 번호: %d)\n" +
+                                            "※ 같은 연료라면 모든 행의 배출계수가 동일해야 합니다.",
+                                    fuelName, firstFactor, currentFactor, i + 1)
+                    );
+                }
+            } else {
+                // 처음 본 연료면 등록
+                fuelMap.put(fuelName, currentFactor);
             }
         }
     }

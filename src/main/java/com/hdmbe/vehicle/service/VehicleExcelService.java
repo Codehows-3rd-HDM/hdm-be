@@ -32,7 +32,8 @@ public class VehicleExcelService {
                                Company company,             // (이미 찾아온 객체)
                                CarModel carModel,           // (이미 찾아온 객체)
                                OperationPurpose newPurpose,    // (이미 찾아온 객체)
-                               String calcBaseDate)
+                               String calcBaseDate
+                               )
     {
 
 //        LocalDate convertedCalcBaseDate = calcBaseDate == null ? null : LocalDate.parse(calcBaseDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -43,6 +44,8 @@ public class VehicleExcelService {
         LocalDate convertedCalcBaseDate = (calcBaseDate == null || calcBaseDate.trim().isEmpty())
                 ? defaultDate     // NULL 대신 1900년 1월 1일
                 : LocalDate.parse(calcBaseDate.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+
 
 
         // 1. [Vehicle] 기본 정보 저장/업데이트
