@@ -47,6 +47,7 @@ public class CarbonEmissionFactorService {
     }
 
     // 수정
+    @Transactional
     public CarbonEmissionFactorResponse update(Long id, CarbonEmissionFactorUpdateRequest dto) {
         CarbonEmissionFactor entity = carbonEmissionFactorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 배출계수"));

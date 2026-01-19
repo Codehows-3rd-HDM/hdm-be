@@ -18,7 +18,7 @@ public class CarbonEmissionJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    // ✅ [추가] 일별(Daily) 데이터 대량 저장 메서드
+    // [추가] 일별(Daily) 데이터 대량 저장 메서드
     @Transactional
     public void saveAllDailyBatch(List<CarbonEmissionDailyLog> logs) {
         // 1. SQL 준비 (테이블명, 컬럼명 확인 필수!)
