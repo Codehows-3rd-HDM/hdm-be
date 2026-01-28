@@ -30,7 +30,26 @@ public interface EmissionMonthlyRepository extends JpaRepository<CarbonEmissionM
     Optional<CarbonEmissionMonthlyLog> findByVehicleAndYearAndMonth(Vehicle vehicle, int year, int month);
 
     // 특정 연도의 월별 합계 조회 (전체 차량 합산)
-    @Query("select m.month as month, sum(m.totalEmission) as total from CarbonEmissionMonthlyLog m where m.year = :year group by m.month order by m.month")
+//    @Query("select m.month as month, sum(m.totalEmission) as total from CarbonEmissionMonthlyLog m where m.year = :year group by m.month order by m.month")
+//    List<MonthlySumView> sumByYear(@Param("year") int year);
+    @Query(value = "SELECT m.month AS month, SUM(m.total_emission) AS total "
+            + "FROM carbon_emission_monthly_log m "
+            + "WHERE m.year = :year "
+            /* 유효한 매핑이 존재하면서 & 그 매핑의 Scope가 4가 아닌 경우만 합산 */
+            + "AND EXISTS ("
+            + "  SELECT 1 FROM vehicle_operation_purpose_map v "
+            + "  JOIN operation_purpose op ON op.purpose_id = v.purpose_id "
+            + "  WHERE v.car_id = m.car_id "
+            + "    AND op.default_scope != 4 "  // <--- 여기가 핵심! (Scope 4 제외)
+            + "    AND COALESCE(v.end_date, DATE('9999-12-31')) >= LAST_DAY(CONCAT(m.year, '-', LPAD(m.month, 2, '0'), '-01')) "
+            + "    AND NOT EXISTS ("
+            + "      SELECT 1 FROM vehicle_operation_purpose_map v2 "
+            + "      WHERE v2.car_id = m.car_id "
+            + "        AND COALESCE(v2.end_date, DATE('9999-12-31')) >= LAST_DAY(CONCAT(m.year, '-', LPAD(m.month, 2, '0'), '-01')) "
+            + "        AND COALESCE(v2.end_date, DATE('9999-12-31')) < COALESCE(v.end_date, DATE('9999-12-31'))"
+            + "    )"
+            + ") "
+            + "GROUP BY m.month ORDER BY m.month", nativeQuery = true)
     List<MonthlySumView> sumByYear(@Param("year") int year);
 
     // Scope별 월별 합계 조회 (운행목적 변경 이력 반영, 월 기준 단일 매핑 선택)
