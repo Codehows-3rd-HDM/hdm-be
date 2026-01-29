@@ -50,5 +50,6 @@ public class ReductionActivity extends BaseTimeEntity {
     private String expectedEffect;
 
     @OneToMany(mappedBy = "reductionActivity", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<ReductionActivityPhoto> photos = new ArrayList<>();
 }

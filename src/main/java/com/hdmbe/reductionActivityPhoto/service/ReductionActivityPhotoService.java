@@ -26,7 +26,7 @@ public class ReductionActivityPhotoService {
         String imgName = "";
         String photoUrl = "";
 
-        if(!StringUtils.isEmpty(originalFileName)){
+        if (StringUtils.hasText(originalFileName)) {
             imgName = fileService.uploadFile(uploadLocation, originalFileName, file.getBytes());
             photoUrl = "/photos/" + imgName;
         }
